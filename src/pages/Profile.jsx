@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import HoloGrid from '@/components/wegottado/HoloGrid';
+import HoloCursor from '@/components/wegottado/HoloCursor';
 
 const TABS = [
   { id: 'profile', label: 'PROFILE', icon: User },
@@ -81,6 +82,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen page-enter relative" style={{ background: 'var(--metal-dark)' }}>
+      <HoloCursor />
       <HoloGrid />
       <div className="relative z-10">
         {/* Top bar */}

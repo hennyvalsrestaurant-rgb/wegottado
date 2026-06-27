@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
+import HoloCursor from '@/components/wegottado/HoloCursor';
 
 const STEPS = ['BAG', 'SHIPPING', 'PAYMENT', 'CONFIRMED'];
 
@@ -93,6 +94,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen page-enter relative" style={{ background: 'var(--metal-dark)' }}>
+      <HoloCursor />
       <HoloGrid />
       <div className="relative z-10">
         {/* Progress bar */}
