@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Plus, Trash2, Edit2, Save, X, Package } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, Package, Upload, ImageIcon } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,7 @@ export default function Admin() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [user, setUser] = useState(null);
   const [unauthorized, setUnauthorized] = useState(false);
 
@@ -38,6 +39,15 @@ export default function Admin() {
   const openNew = () => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); };
   const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '' }); setEditId(p.id); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditId(null); setForm(EMPTY_FORM); };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(prev => ({ ...prev, image_url: file_url }));
+    setUploading(false);
+  };
 
   const handleSave = async () => {
     if (!form.name || !form.price) return;
@@ -163,23 +173,46 @@ export default function Admin() {
               </div>
 
               <div className="space-y-5">
-                {[
-                  { label: 'PRODUCT NAME *', key: 'name', placeholder: 'e.g. The Sovereign Coat' },
-                  { label: 'IMAGE URL', key: 'image_url', placeholder: 'https://...' },
-                  { label: 'DESCRIPTION', key: 'description', placeholder: 'Short product description' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>{f.label}</label>
-                    {f.key === 'description' ? (
-                      <textarea value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        placeholder={f.placeholder} rows={3}
-                        className="holo-input w-full px-4 py-3 resize-none" />
-                    ) : (
-                      <input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        placeholder={f.placeholder} className="holo-input w-full px-4 py-3" />
-                    )}
+                {/* Product Name */}
+                <div>
+                  <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>PRODUCT NAME *</label>
+                  <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                    placeholder="e.g. The Sovereign Coat" className="holo-input w-full px-4 py-3" />
+                </div>
+
+                {/* Image Upload */}
+                <div>
+                  <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>PRODUCT IMAGE</label>
+                  <div className="flex gap-3 items-start">
+                    {/* Preview */}
+                    <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center"
+                      style={{ border: '1px solid rgba(0,245,255,0.15)', background: 'rgba(0,245,255,0.03)' }}>
+                      {form.image_url
+                        ? <img src={form.image_url} alt="preview" className="w-full h-full object-cover" />
+                        : <ImageIcon size={24} style={{ color: 'rgba(0,245,255,0.2)' }} />}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      {/* File picker */}
+                      <label className="flex items-center gap-2 px-4 py-2 cursor-hover meta-text text-[10px] w-full justify-center"
+                        style={{ border: '1px solid rgba(0,245,255,0.2)', color: uploading ? 'rgba(0,245,255,0.4)' : 'var(--neon-cyan)' }}>
+                        <Upload size={13} />
+                        {uploading ? 'UPLOADING...' : 'UPLOAD FILE'}
+                        <input type="file" accept=".jpg,.jpeg,.png,.svg,.gif,image/jpeg,image/png,image/svg+xml,image/gif"
+                          className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                      </label>
+                      {/* Manual URL fallback */}
+                      <input value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))}
+                        placeholder="…or paste URL" className="holo-input w-full px-3 py-2 text-[11px]" />
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>DESCRIPTION</label>
+                  <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                    placeholder="Short product description" rows={3} className="holo-input w-full px-4 py-3 resize-none" />
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
