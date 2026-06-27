@@ -1,11 +1,12 @@
 import React from 'react';
-import CustomCursor from '@/components/wegottado/CustomCursor';
+import HoloCursor from '@/components/wegottado/HoloCursor';
+import HoloGrid from '@/components/wegottado/HoloGrid';
 import GoldenParticles from '@/components/wegottado/GoldenParticles';
 import GoldenSeam from '@/components/wegottado/GoldenSeam';
 import Navbar from '@/components/wegottado/Navbar';
 import HeroSection from '@/components/wegottado/HeroSection';
 import ManifestoSection from '@/components/wegottado/ManifestoSection';
-import AtelierGallery from '@/components/wegottado/AtelierGallery';
+import HoloShowroom from '@/components/wegottado/HoloShowroom';
 import FeaturedCollection from '@/components/wegottado/FeaturedCollection';
 import CraftSection from '@/components/wegottado/CraftSection';
 import LookbookSection from '@/components/wegottado/LookbookSection';
@@ -14,14 +15,15 @@ import Footer from '@/components/wegottado/Footer';
 
 export default function Home() {
   return (
-    <div className="film-grain relative" style={{ background: 'var(--obsidian)' }}>
-      <CustomCursor />
+    <div className="film-grain relative" style={{ background: 'var(--metal-dark)' }}>
+      <HoloCursor />
+      <HoloGrid />
       <GoldenParticles />
       <GoldenSeam />
       <Navbar />
       <HeroSection />
       <ManifestoSection />
-      <AtelierGallery />
+      <HoloShowroom />
       <FeaturedCollection />
       <CraftSection />
       <LookbookSection />
