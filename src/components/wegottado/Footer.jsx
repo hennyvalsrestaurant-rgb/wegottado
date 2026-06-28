@@ -13,9 +13,11 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
         {/* Brand */}
         <div>
-          <span className="heading-display text-2xl block mb-6" style={{ color: 'var(--gold)' }}>
-            WEGOTTADO
-          </span>
+          <img
+            src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
+            alt="WEGOTTADO"
+            className="h-16 w-auto object-contain mb-6"
+          />
           <p className="text-xs leading-relaxed" style={{ color: 'rgba(245,245,247,0.35)', lineHeight: 1.8 }}>
             The Kinetic Atelier. Hand-sculpted luxury for those who refuse to follow.
           </p>

@@ -51,9 +51,11 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between px-6 md:px-12 py-5">
           <button onClick={() => scrollTo('#hero')} className="cursor-hover">
-            <span className="heading-display text-xl md:text-2xl tracking-wider" style={{ color: 'var(--gold)' }}>
-              WEGOTTADO
-            </span>
+            <img
+              src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
+              alt="WEGOTTADO"
+              className="h-10 w-auto object-contain"
+            />
           </button>
 
           <div className="hidden md:flex items-center gap-10">

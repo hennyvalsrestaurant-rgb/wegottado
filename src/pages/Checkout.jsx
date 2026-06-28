@@ -152,7 +152,11 @@ export default function Checkout() {
             <ArrowLeft size={16} />
             <span className="meta-text text-[10px]">BACK TO SHOWROOM</span>
           </Link>
-          <span className="heading-display text-xl" style={{ color: 'var(--gold)' }}>WEGOTTADO</span>
+          <img
+            src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
+            alt="WEGOTTADO"
+            className="h-9 w-auto object-contain"
+          />
           <Link to="/profile" className="flex items-center gap-2 cursor-hover" style={{ color: 'rgba(245,245,247,0.4)' }}>
             <span className="meta-text text-[10px]">MY PROFILE</span>
           </Link>
