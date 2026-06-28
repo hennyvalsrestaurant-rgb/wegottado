@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, animate } from 'framer-motion';
 
 const HERO_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png";
 
@@ -27,12 +27,28 @@ export default function HeroSection() {
 
   const rotateX = (mousePos.y - 0.5) * -18;
   const rotateY = (mousePos.x - 0.5) * 22;
+
+  // Autonomous looping animation variants for the background
+  const bgVariants = {
+    animate: {
+      scale: [1.05, 1.18, 1.08, 1.22, 1.05],
+      rotate: [0, 2, -1.5, 3, 0],
+      x: [0, 18, -12, 8, 0],
+      y: [0, -10, 14, -6, 0],
+      transition: {
+        duration: 18,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        repeatType: 'loop',
+      },
+    },
+  };
   const imgTranslateX = (mousePos.x - 0.5) * -20;
   const imgTranslateY = (mousePos.y - 0.5) * -15;
 
   return (
     <section id="hero" ref={sectionRef} className="relative h-screen overflow-hidden" style={{ perspective: '1200px' }}>
-      {/* 3D Magical background image */}
+      {/* 3D Magical background image — outer wrapper for scroll parallax + mouse 3D tilt */}
       <motion.div
         className="absolute inset-0"
         style={{
@@ -43,40 +59,56 @@ export default function HeroSection() {
           transition: 'transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1)',
         }}
       >
-        <img
-          src={HERO_IMG}
-          alt="WEGOTTADO hero"
-          className="w-full h-full object-cover"
-          style={{
-            transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) scale(1.15)`,
-            transition: 'transform 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
-            transformOrigin: 'center center',
-            filter: 'brightness(0.85) saturate(1.3)',
+        {/* Inner wrapper drives the autonomous pop/rotate/drift loop */}
+        <motion.div
+          className="absolute inset-0"
+          variants={bgVariants}
+          animate="animate"
+          style={{ transformOrigin: 'center center', willChange: 'transform' }}
+        >
+          <img
+            src={HERO_IMG}
+            alt="WEGOTTADO hero"
+            className="w-full h-full object-cover"
+            style={{
+              transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) scale(1.12)`,
+              transition: 'transform 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
+              transformOrigin: 'center center',
+              filter: 'brightness(0.85) saturate(1.4)',
+            }}
+          />
+        </motion.div>
+
+        {/* Holographic rainbow sheen — shifts hue as image rotates */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{
+            background: [
+              `linear-gradient(135deg, rgba(0,245,255,0.09) 0%, rgba(123,47,255,0.12) 33%, rgba(255,0,255,0.09) 66%, rgba(212,175,55,0.11) 100%)`,
+              `linear-gradient(225deg, rgba(212,175,55,0.11) 0%, rgba(0,245,255,0.09) 33%, rgba(123,47,255,0.12) 66%, rgba(255,0,255,0.09) 100%)`,
+              `linear-gradient(315deg, rgba(255,0,255,0.09) 0%, rgba(212,175,55,0.11) 33%, rgba(0,245,255,0.09) 66%, rgba(123,47,255,0.12) 100%)`,
+              `linear-gradient(135deg, rgba(0,245,255,0.09) 0%, rgba(123,47,255,0.12) 33%, rgba(255,0,255,0.09) 66%, rgba(212,175,55,0.11) 100%)`,
+            ],
           }}
+          transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+          style={{ mixBlendMode: 'screen' }}
         />
-        {/* Holographic rainbow sheen layer */}
+
+        {/* Specular highlight follows mouse */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `linear-gradient(
-              ${135 + rotateY * 2}deg,
-              rgba(0,245,255,0.08) 0%,
-              rgba(123,47,255,0.10) 25%,
-              rgba(255,0,255,0.08) 50%,
-              rgba(212,175,55,0.10) 75%,
-              rgba(0,245,255,0.06) 100%
-            )`,
-            mixBlendMode: 'screen',
-            transition: 'background 0.4s ease',
-          }}
-        />
-        {/* Specular highlight that follows mouse */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 60% 50% at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.07) 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse 60% 50% at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.08) 0%, transparent 70%)`,
             transition: 'background 0.3s ease',
           }}
+        />
+
+        {/* Pulsing vignette pop */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(8,8,8,0.6) 100%)' }}
         />
       </motion.div>
 
