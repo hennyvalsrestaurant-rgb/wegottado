@@ -40,8 +40,9 @@ export default function HeroSection() {
           alt="WEGOTTADO hero editorial fashion photograph"
           className="w-full h-full object-cover"
           style={{
-            transform: `translate(${imgTranslateX}px, ${imgTranslateY}px)`,
+            transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) rotateX(90deg)`,
             transition: 'transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)',
+            transformOrigin: 'center center',
           }}
         />
       </motion.div>
