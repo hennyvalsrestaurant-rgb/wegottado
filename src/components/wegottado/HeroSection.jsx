@@ -135,27 +135,117 @@ export default function HeroSection() {
           AUTUMN / WINTER 2026
         </motion.p>
 
-        {/* Split wordmark */}
-        <div className="flex items-center overflow-hidden">
+        {/* Neon Shatter wordmark */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+          className="relative px-8 py-4 md:px-12 md:py-6"
+          style={{
+            background: 'rgba(3,3,12,0.92)',
+            borderRadius: '32px',
+            border: '1.5px solid rgba(0,245,255,0.25)',
+            boxShadow: '0 0 40px rgba(0,245,255,0.35), 0 0 80px rgba(255,0,255,0.2), 0 0 140px rgba(0,245,255,0.1), inset 0 0 30px rgba(0,0,0,0.7)',
+          }}
+        >
+          {/* Glitch layer 1 — cyan offset */}
           <motion.span
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{ x: textLeftX, color: 'var(--carrara)' }}
-            className="heading-display text-6xl sm:text-7xl md:text-8xl lg:text-[10vw]"
+            animate={{ x: [-2, 2, -1, 3, -2], opacity: [0.6, 0.8, 0.5, 0.7, 0.6] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 700,
+              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              letterSpacing: '-0.02em',
+              color: 'transparent',
+              WebkitTextStroke: '2px rgba(0,245,255,0.7)',
+              filter: 'blur(0.5px)',
+              clipPath: 'inset(0 0 50% 0)',
+            }}
           >
-            WEGOTTA
+            WEGOTTADO
           </motion.span>
+
+          {/* Glitch layer 2 — magenta offset */}
           <motion.span
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{ x: textRightX, color: 'var(--gold)' }}
-            className="heading-display text-6xl sm:text-7xl md:text-8xl lg:text-[10vw]"
+            animate={{ x: [2, -3, 1, -2, 2], opacity: [0.5, 0.7, 0.4, 0.6, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 700,
+              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              letterSpacing: '-0.02em',
+              color: 'transparent',
+              WebkitTextStroke: '2px rgba(255,0,255,0.6)',
+              filter: 'blur(0.5px)',
+              clipPath: 'inset(50% 0 0 0)',
+            }}
           >
-            DO
+            WEGOTTADO
           </motion.span>
-        </div>
+
+          {/* Main neon text */}
+          <motion.span
+            animate={{
+              textShadow: [
+                '0 0 10px #00F5FF, 0 0 30px #00F5FF, 0 0 60px rgba(0,245,255,0.5), 4px 0 0 rgba(255,0,255,0.4)',
+                '0 0 14px #FF00FF, 0 0 40px #FF00FF, 0 0 80px rgba(255,0,255,0.5), -4px 0 0 rgba(0,245,255,0.4)',
+                '0 0 10px #00F5FF, 0 0 30px #00F5FF, 0 0 60px rgba(0,245,255,0.5), 4px 0 0 rgba(255,0,255,0.4)',
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 700,
+              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              letterSpacing: '-0.02em',
+              color: 'rgba(200,235,255,0.98)',
+              WebkitTextStroke: '1.5px rgba(0,245,255,0.8)',
+              position: 'relative',
+              zIndex: 1,
+              display: 'block',
+            }}
+          >
+            WEGOTTADO
+          </motion.span>
+
+          {/* Electric arc sparks */}
+          {[
+            { left: '12%', top: '20%' },
+            { left: '38%', top: '30%' },
+            { left: '62%', top: '25%' },
+            { left: '82%', top: '20%' },
+          ].map((pos, i) => (
+            <motion.div
+              key={i}
+              className="absolute pointer-events-none"
+              style={{ left: pos.left, top: pos.top, width: 2, height: 2 }}
+              animate={{
+                opacity: [0, 1, 0, 0.8, 0],
+                scale: [0.5, 2, 0.3, 1.5, 0],
+                boxShadow: [
+                  '0 0 0px transparent',
+                  '0 0 12px 4px rgba(0,245,255,0.9)',
+                  '0 0 0px transparent',
+                  '0 0 8px 2px rgba(255,255,255,0.8)',
+                  '0 0 0px transparent',
+                ],
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.6, ease: 'easeOut' }}
+            />
+          ))}
+
+          {/* Scanline overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none rounded-[28px] overflow-hidden"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,245,255,0.03) 0px, rgba(0,245,255,0.03) 1px, transparent 1px, transparent 3px)',
+              zIndex: 2,
+            }}
+          />
+        </motion.div>
 
         {/* Subheading */}
         <motion.p
