@@ -75,6 +75,7 @@
 
 /* Custom cursor */
 * { cursor: none !important; }
+input, textarea, select { cursor: text !important; pointer-events: auto !important; }
 
 /* Film grain overlay */
 .film-grain::after {

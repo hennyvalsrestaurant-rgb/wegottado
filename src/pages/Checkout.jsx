@@ -384,11 +384,12 @@ export default function Checkout() {
                 <h2 className="heading-display text-4xl mb-8" style={{ color: 'var(--carrara)' }}>
                   <span className="metallic-text">Payment</span> Details
                 </h2>
-                {/* Holographic card preview */}
-                <div className="relative h-40 overflow-hidden mb-6"
-                  style={{ background: 'linear-gradient(135deg, var(--metal-mid), var(--metal-light))', border: '1px solid rgba(0,245,255,0.2)' }}>
-                  <div className="holo-shimmer absolute inset-0 pointer-events-none" />
-                  <div className="absolute inset-6 pointer-events-none">
+
+                {/* Holographic card preview — purely decorative, no pointer events */}
+                <div className="h-40 overflow-hidden mb-6 pointer-events-none"
+                  style={{ background: 'linear-gradient(135deg, var(--metal-mid), var(--metal-light))', border: '1px solid rgba(0,245,255,0.2)', position: 'relative' }}>
+                  <div className="holo-shimmer absolute inset-0" />
+                  <div className="absolute inset-6">
                     <div className="flex justify-between items-start mb-8">
                       <span className="meta-text text-[9px]" style={{ color: 'rgba(0,245,255,0.5)' }}>WEGOTTADO PAY</span>
                       <div className="flex gap-1">
@@ -410,73 +411,80 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                <div className="holo-card p-8 space-y-6 mb-6" style={{ position: 'relative', zIndex: 10 }}>
-                  <div>
-                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARD NUMBER</label>
-                    <input
-                      value={payment.card}
-                      onChange={e => setPayment(prev => ({ ...prev, card: formatCardNumber(e.target.value) }))}
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                      inputMode="numeric"
-                      className="holo-input w-full px-4 py-3 tracking-widest"
-                      style={{ position: 'relative', zIndex: 10 }}
-                    />
-                  </div>
-                  <div>
-                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARDHOLDER NAME</label>
-                    <input
-                      value={payment.name}
-                      onChange={e => setPayment(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
-                      placeholder="NAME ON CARD"
-                      className="holo-input w-full px-4 py-3 tracking-wider"
-                      style={{ position: 'relative', zIndex: 10 }}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Payment form */}
+                <div className="holo-card p-8 mb-6">
+                  <div className="space-y-6">
                     <div>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>EXPIRY DATE</label>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARD NUMBER</label>
                       <input
-                        value={payment.expiry}
-                        onChange={e => setPayment(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
-                        placeholder="MM/YY"
-                        maxLength={5}
+                        value={payment.card}
+                        onChange={e => setPayment(prev => ({ ...prev, card: formatCardNumber(e.target.value) }))}
+                        placeholder="1234 5678 9012 3456"
+                        maxLength={19}
                         inputMode="numeric"
-                        className="holo-input w-full px-4 py-3"
-                        style={{ position: 'relative', zIndex: 10 }}
+                        autoComplete="cc-number"
+                        className="holo-input w-full px-4 py-3 tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CVV</label>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARDHOLDER NAME</label>
                       <input
-                        value={payment.cvv}
-                        onChange={e => setPayment(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                        placeholder="•••"
-                        maxLength={4}
-                        inputMode="numeric"
-                        type="password"
-                        className="holo-input w-full px-4 py-3"
-                        style={{ position: 'relative', zIndex: 10 }}
+                        value={payment.name}
+                        onChange={e => setPayment(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
+                        placeholder="NAME ON CARD"
+                        autoComplete="cc-name"
+                        className="holo-input w-full px-4 py-3 tracking-wider"
                       />
                     </div>
-                  </div>
-
-                  <div className="pt-4" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
-                    <div className="flex justify-between">
-                      <span className="meta-text text-[10px]">ORDER TOTAL</span>
-                      <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>EXPIRY DATE</label>
+                        <input
+                          value={payment.expiry}
+                          onChange={e => setPayment(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          inputMode="numeric"
+                          autoComplete="cc-exp"
+                          className="holo-input w-full px-4 py-3"
+                        />
+                      </div>
+                      <div>
+                        <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CVV</label>
+                        <input
+                          value={payment.cvv}
+                          onChange={e => setPayment(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                          placeholder="•••"
+                          maxLength={4}
+                          inputMode="numeric"
+                          autoComplete="cc-csc"
+                          type="password"
+                          className="holo-input w-full px-4 py-3"
+                        />
+                      </div>
+                    </div>
+                    <div className="pt-4" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
+                      <div className="flex justify-between">
+                        <span className="meta-text text-[10px]">ORDER TOTAL</span>
+                        <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4 relative z-20">
-                  <button onClick={() => setStep(1)} className="px-8 py-4 cursor-hover meta-text text-xs"
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="px-8 py-4 cursor-hover meta-text text-xs"
                     style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'rgba(245,245,247,0.5)' }}>
                     ← BACK
                   </button>
                   <button
+                    type="button"
                     onClick={placeOrder}
                     disabled={placing || !payment.card || !payment.name}
-                    className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300 relative z-20"
+                    className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300"
                     style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)', opacity: (!payment.card || !payment.name) ? 0.5 : 1 }}>
                     {placing ? 'PROCESSING...' : `PLACE ORDER — $${total.toFixed(2)}`}
                   </button>
