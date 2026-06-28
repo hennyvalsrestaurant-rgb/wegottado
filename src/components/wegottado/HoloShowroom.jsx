@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import HoloProductCard from './HoloProductCard';
-import { useToast } from '@/components/ui/use-toast';
 import { Link } from 'react-router-dom';
-import { X, Star, ShoppingBag } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { X, Star, ShoppingBag, Check } from 'lucide-react';
 
 const STATIC_PRODUCTS = [
   {
@@ -41,12 +39,11 @@ const STATIC_PRODUCTS = [
 ];
 
 export default function HoloShowroom() {
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
+  const [cartNotif, setCartNotif] = useState(null); // { name, id }
 
   const CATEGORIES = ['ALL', 'OUTERWEAR', 'SUITING', 'ACCESSORIES', 'EVENING WEAR', 'JEWELRY'];
 
@@ -56,7 +53,8 @@ export default function HoloShowroom() {
 
   const handleAddToCart = async (product) => {
     if (!user) {
-      toast({ title: 'Sign in required', description: 'Please sign in to add items to your bag.' });
+      setCartNotif({ type: 'error', name: 'Please sign in to add items to your bag.' });
+      setTimeout(() => setCartNotif(null), 4000);
       return;
     }
     setCartLoading(true);
@@ -70,8 +68,8 @@ export default function HoloShowroom() {
         quantity: 1,
         size: 'M',
       });
-      toast({ title: 'Added to bag', description: `${product.name} has been added to your shopping bag.` });
-      navigate('/checkout');
+      setCartNotif({ type: 'success', name: product.name });
+      setTimeout(() => setCartNotif(null), 4000);
       await base44.entities.Notification.create({
         user_id: user.id,
         title: 'Item Added to Bag',
@@ -80,7 +78,8 @@ export default function HoloShowroom() {
         read: false,
       });
     } catch {
-      toast({ title: 'Error', description: 'Could not add to bag. Please try again.' });
+      setCartNotif({ type: 'error', name: 'Could not add to bag. Please try again.' });
+      setTimeout(() => setCartNotif(null), 4000);
     }
     setCartLoading(false);
   };
@@ -89,6 +88,51 @@ export default function HoloShowroom() {
 
   return (
     <section id="showroom" className="relative py-24 md:py-36 px-6 md:px-[8vw]">
+
+      {/* Custom cart notification */}
+      <AnimatePresence>
+        {cartNotif && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -20, x: '-50%' }}
+            className="fixed top-6 left-1/2 z-[9999] flex items-start gap-4 px-5 py-4 min-w-[300px] max-w-sm"
+            style={{
+              background: 'var(--metal-mid)',
+              border: `1px solid ${cartNotif.type === 'success' ? 'rgba(0,245,255,0.3)' : 'rgba(255,100,100,0.3)'}`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.6)`,
+            }}
+          >
+            <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
+              style={{ background: cartNotif.type === 'success' ? 'rgba(0,245,255,0.15)' : 'rgba(255,100,100,0.15)' }}>
+              {cartNotif.type === 'success'
+                ? <Check size={13} style={{ color: 'var(--neon-cyan)' }} />
+                : <X size={13} style={{ color: '#FF6B6B' }} />}
+            </div>
+            <div className="flex-1">
+              <p className="meta-text text-[10px] mb-1" style={{ color: cartNotif.type === 'success' ? 'var(--neon-cyan)' : '#FF6B6B' }}>
+                {cartNotif.type === 'success' ? 'ADDED TO BAG' : 'ERROR'}
+              </p>
+              <p className="text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>
+                {cartNotif.type === 'success' ? `${cartNotif.name} has been added to your bag.` : cartNotif.name}
+              </p>
+              {cartNotif.type === 'success' && (
+                <Link to="/checkout" className="meta-text text-[10px] mt-2 inline-block cursor-hover"
+                  style={{ color: 'var(--gold)', textDecoration: 'underline' }}>
+                  VIEW BAG →
+                </Link>
+              )}
+            </div>
+            <button
+              onClick={() => setCartNotif(null)}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center cursor-hover"
+              style={{ color: 'rgba(245,245,247,0.4)' }}
+            >
+              <X size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="mb-16 text-center">
         <motion.span

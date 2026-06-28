@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle } from 'lucide-react';
+import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle, Wallet, TrendingUp, CreditCard, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
@@ -9,6 +9,7 @@ import HoloCursor from '@/components/wegottado/HoloCursor';
 const TABS = [
   { id: 'profile', label: 'PROFILE', icon: User },
   { id: 'orders', label: 'ORDERS', icon: Package },
+  { id: 'wallet', label: 'WALLET', icon: Wallet },
   { id: 'notifications', label: 'ALERTS', icon: Bell },
 ];
 
@@ -348,6 +349,97 @@ export default function Profile() {
                 })}
               </div>
             )}
+
+            {/* WALLET TAB */}
+            {tab === 'wallet' && (() => {
+              const totalSpent = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+              const confirmedOrders = orders.filter(o => o.status === 'confirmed' || o.status === 'delivered' || o.status === 'shipped' || o.status === 'processing');
+              const avgOrder = confirmedOrders.length ? totalSpent / confirmedOrders.length : 0;
+              return (
+                <div className="space-y-6">
+                  {/* Balance cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { label: 'TOTAL SPENT', value: `$${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: TrendingUp, color: 'var(--gold)' },
+                      { label: 'TOTAL ORDERS', value: confirmedOrders.length, icon: ShoppingBag, color: 'var(--neon-cyan)' },
+                      { label: 'AVG ORDER VALUE', value: `$${avgOrder.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: CreditCard, color: '#7B2FFF' },
+                    ].map(({ label, value, icon: Icon, color }) => (
+                      <div key={label} className="holo-card p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="meta-text text-[10px]" style={{ color: 'rgba(0,245,255,0.5)' }}>{label}</span>
+                          <Icon size={16} style={{ color }} />
+                        </div>
+                        <p className="heading-display text-3xl" style={{ color }}>{value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Holographic wallet card visual */}
+                  <div className="relative h-44 overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg, #0D0D14, #1A1A2E)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    <div className="holo-shimmer absolute inset-0 opacity-60 pointer-events-none" />
+                    <div className="absolute inset-6 pointer-events-none">
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(212,175,55,0.6)' }}>WEGOTTADO MAISON</span>
+                          <span className="heading-display text-lg" style={{ color: 'var(--gold)' }}>Digital Wallet</span>
+                        </div>
+                        <Wallet size={24} style={{ color: 'var(--gold)', opacity: 0.7 }} />
+                      </div>
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(245,245,247,0.3)' }}>CARDHOLDER</span>
+                          <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>{user?.full_name || user?.email || 'VALUED CLIENT'}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(245,245,247,0.3)' }}>MEMBER SINCE</span>
+                          <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>
+                            {user?.created_date ? new Date(user.created_date).getFullYear() : '2024'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Spending history */}
+                  <div className="holo-card p-6">
+                    <span className="meta-text text-[10px] block mb-5" style={{ color: 'var(--neon-cyan)' }}>SPENDING HISTORY</span>
+                    {orders.length === 0 ? (
+                      <div className="text-center py-8">
+                        <ShoppingBag size={32} className="mx-auto mb-3 opacity-20" />
+                        <p className="text-sm" style={{ color: 'rgba(245,245,247,0.3)' }}>No transactions yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {orders.slice(0, 8).map((order) => (
+                          <div key={order.id} className="flex items-center justify-between py-3"
+                            style={{ borderBottom: '1px solid rgba(0,245,255,0.06)' }}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 flex items-center justify-center"
+                                style={{ background: order.status === 'cancelled' ? 'rgba(255,68,68,0.1)' : 'rgba(0,245,255,0.08)', border: `1px solid ${order.status === 'cancelled' ? 'rgba(255,68,68,0.2)' : 'rgba(0,245,255,0.15)'}` }}>
+                                <Package size={13} style={{ color: order.status === 'cancelled' ? '#FF4444' : 'var(--neon-cyan)' }} />
+                              </div>
+                              <div>
+                                <p className="meta-text text-[10px]" style={{ color: 'var(--carrara)' }}>ORDER #{order.id.slice(-6).toUpperCase()}</p>
+                                <p className="meta-text text-[9px] mt-0.5" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                                  {new Date(order.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="meta-text text-xs" style={{ color: order.status === 'cancelled' ? '#FF4444' : 'var(--gold)' }}>
+                                {order.status === 'cancelled' ? '—' : `$${(order.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                              </p>
+                              <p className="meta-text text-[9px] mt-0.5" style={{ color: 'rgba(245,245,247,0.3)' }}>{order.status?.toUpperCase()}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* NOTIFICATIONS TAB */}
             {tab === 'notifications' && (
