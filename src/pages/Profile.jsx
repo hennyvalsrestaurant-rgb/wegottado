@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight } from 'lucide-react';
+import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
@@ -64,6 +64,17 @@ export default function Profile() {
     shipped: '#30D5C8',
     delivered: '#00FF88',
     cancelled: '#FF4444',
+  };
+
+  const STATUS_STEPS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+
+  const STATUS_META = {
+    pending:    { icon: Clock,        label: 'Order Pending',     desc: 'Awaiting confirmation' },
+    confirmed:  { icon: CheckCircle2, label: 'Order Confirmed',   desc: 'Payment verified' },
+    processing: { icon: RotateCcw,    label: 'Being Prepared',    desc: 'Hand-wrapping your pieces' },
+    shipped:    { icon: Truck,        label: 'Dispatched',        desc: 'On its way to you' },
+    delivered:  { icon: CheckCircle2, label: 'Delivered',         desc: 'Enjoy your purchase' },
+    cancelled:  { icon: XCircle,      label: 'Cancelled',         desc: 'Order was cancelled' },
   };
 
   const NOTIF_ICONS = { order: '📦', promo: '✨', system: '⚙️', delivery: '🚚' };
@@ -221,7 +232,7 @@ export default function Profile() {
 
             {/* ORDERS TAB */}
             {tab === 'orders' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {orders.length === 0 ? (
                   <div className="holo-card p-12 text-center">
                     <Package size={40} className="mx-auto mb-4 opacity-20" />
@@ -232,38 +243,109 @@ export default function Profile() {
                       EXPLORE COLLECTION
                     </Link>
                   </div>
-                ) : orders.map((order, i) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="holo-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-hover"
-                  >
-                    <div>
-                      <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>
-                        ORDER #{order.id.slice(-8).toUpperCase()}
-                      </span>
-                      <p className="text-sm" style={{ color: 'var(--carrara)' }}>
-                        {order.items?.length || 0} items — ${order.total?.toLocaleString()}
-                      </p>
-                      <p className="meta-text text-[10px] mt-1" style={{ color: 'rgba(245,245,247,0.3)' }}>
-                        {new Date(order.created_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="meta-text text-[10px] px-3 py-1"
-                        style={{
-                          border: `1px solid ${STATUS_COLORS[order.status] || '#fff'}40`,
-                          color: STATUS_COLORS[order.status] || '#fff',
-                          background: `${STATUS_COLORS[order.status] || '#fff'}10`,
-                        }}>
-                        {(order.status || 'pending').toUpperCase()}
-                      </span>
-                      <ChevronRight size={14} style={{ color: 'rgba(245,245,247,0.3)' }} />
-                    </div>
-                  </motion.div>
-                ))}
+                ) : orders.map((order, i) => {
+                  const status = order.status || 'pending';
+                  const isCancelled = status === 'cancelled';
+                  const currentStep = STATUS_STEPS.indexOf(status);
+                  const meta = STATUS_META[status] || STATUS_META.pending;
+                  const StatusIcon = meta.icon;
+
+                  return (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="holo-card p-6"
+                    >
+                      {/* Order header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                        <div>
+                          <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>
+                            ORDER #{order.id.slice(-8).toUpperCase()}
+                          </span>
+                          <p className="text-sm" style={{ color: 'var(--carrara)' }}>
+                            {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''} · <span className="metallic-text">${order.total?.toLocaleString()}</span>
+                          </p>
+                          <p className="meta-text text-[10px] mt-1" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                            {new Date(order.created_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 self-start sm:self-center px-3 py-2"
+                          style={{
+                            border: `1px solid ${STATUS_COLORS[status] || '#fff'}40`,
+                            background: `${STATUS_COLORS[status] || '#fff'}0d`,
+                          }}>
+                          <StatusIcon size={13} style={{ color: STATUS_COLORS[status] }} />
+                          <span className="meta-text text-[10px]" style={{ color: STATUS_COLORS[status] }}>
+                            {meta.label.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Tracking timeline */}
+                      {!isCancelled ? (
+                        <div className="relative">
+                          {/* Progress bar track */}
+                          <div className="absolute top-3 left-3 right-3 h-px" style={{ background: 'rgba(0,245,255,0.1)' }} />
+                          <div
+                            className="absolute top-3 left-3 h-px transition-all duration-700"
+                            style={{
+                              background: `linear-gradient(to right, var(--neon-cyan), var(--gold))`,
+                              width: currentStep < 0 ? '0%' : `calc(${(currentStep / (STATUS_STEPS.length - 1)) * 100}% - 24px)`,
+                              boxShadow: '0 0 8px rgba(0,245,255,0.4)',
+                            }}
+                          />
+                          <div className="flex justify-between relative z-10">
+                            {STATUS_STEPS.map((step, idx) => {
+                              const done = currentStep >= idx;
+                              const active = currentStep === idx;
+                              const StepMeta = STATUS_META[step];
+                              const StepIcon = StepMeta.icon;
+                              return (
+                                <div key={step} className="flex flex-col items-center gap-2" style={{ flex: 1 }}>
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500"
+                                    style={{
+                                      background: done ? (active ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.2)') : 'rgba(0,245,255,0.06)',
+                                      border: `1px solid ${done ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`,
+                                      boxShadow: active ? '0 0 12px rgba(0,245,255,0.5)' : 'none',
+                                    }}>
+                                    <StepIcon size={11} style={{ color: done ? (active ? 'var(--obsidian)' : 'var(--neon-cyan)') : 'rgba(0,245,255,0.3)' }} />
+                                  </div>
+                                  <span className="meta-text text-center hidden sm:block"
+                                    style={{ fontSize: '8px', color: done ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.25)', lineHeight: 1.3 }}>
+                                    {StepMeta.label.toUpperCase()}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {/* Current status description */}
+                          <p className="meta-text mt-4 text-center" style={{ fontSize: '10px', color: 'rgba(245,245,247,0.4)' }}>
+                            {meta.desc}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 py-2" style={{ borderTop: '1px solid rgba(255,68,68,0.1)' }}>
+                          <XCircle size={14} style={{ color: '#FF4444' }} />
+                          <span className="meta-text text-[10px]" style={{ color: 'rgba(255,68,68,0.7)' }}>This order was cancelled</span>
+                        </div>
+                      )}
+
+                      {/* Items preview */}
+                      {order.items?.length > 0 && (
+                        <div className="mt-4 pt-4 flex flex-wrap gap-2" style={{ borderTop: '1px solid rgba(0,245,255,0.06)' }}>
+                          {order.items.map((item, idx) => (
+                            <span key={idx} className="meta-text text-[9px] px-2 py-1"
+                              style={{ background: 'rgba(0,245,255,0.04)', border: '1px solid rgba(0,245,255,0.1)', color: 'rgba(245,245,247,0.5)' }}>
+                              {item.name} ×{item.qty || 1}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
 

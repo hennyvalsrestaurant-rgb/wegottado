@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import HoloProductCard from './HoloProductCard';
 import { useToast } from '@/components/ui/use-toast';
 import { Link } from 'react-router-dom';
-import { X, Star } from 'lucide-react';
+import { X, Star, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const STATIC_PRODUCTS = [
   {
@@ -41,6 +42,7 @@ const STATIC_PRODUCTS = [
 
 export default function HoloShowroom() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
@@ -69,6 +71,7 @@ export default function HoloShowroom() {
         size: 'M',
       });
       toast({ title: 'Added to bag', description: `${product.name} has been added to your shopping bag.` });
+      navigate('/checkout');
       await base44.entities.Notification.create({
         user_id: user.id,
         title: 'Item Added to Bag',
@@ -189,10 +192,10 @@ export default function HoloShowroom() {
             >
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="absolute top-4 right-4 z-10 cursor-hover"
-                style={{ color: 'var(--neon-cyan)' }}
+                className="absolute top-4 right-4 z-10 cursor-hover w-8 h-8 flex items-center justify-center"
+                style={{ background: 'rgba(8,8,8,0.75)', border: '1px solid rgba(0,245,255,0.3)', color: 'var(--neon-cyan)' }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
               <img
                 src={selectedProduct.image_url}
@@ -222,10 +225,11 @@ export default function HoloShowroom() {
                 <button
                   onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
                   disabled={cartLoading}
-                  className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300"
+                  className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
                 >
-                  {cartLoading ? 'ADDING...' : 'ADD TO SHOPPING BAG'}
+                  <ShoppingBag size={14} />
+                  {cartLoading ? 'ADDING...' : 'ADD TO BAG & CHECKOUT'}
                 </button>
               </div>
             </motion.div>
