@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 
@@ -19,6 +19,41 @@ export default function Checkout() {
 
   const [shipping, setShipping] = useState({ name: '', address: '', city: '', country: 'US', zip: '' });
   const [payment, setPayment] = useState({ card: '', expiry: '', cvv: '', name: '' });
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const addressDebounceRef = useRef(null);
+
+  const fetchAddressSuggestions = useCallback((query) => {
+    if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
+    if (query.length < 4) { setAddressSuggestions([]); return; }
+    addressDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(query)}`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+        setAddressSuggestions(data);
+        setShowSuggestions(true);
+      } catch { setAddressSuggestions([]); }
+    }, 350);
+  }, []);
+
+  const selectAddress = (place) => {
+    const a = place.address || {};
+    const street = [a.house_number, a.road].filter(Boolean).join(' ') || place.display_name.split(',')[0];
+    const city = a.city || a.town || a.village || a.county || '';
+    const zip = a.postcode || '';
+    setShipping(prev => ({ ...prev, address: street, city, zip }));
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const formatCardNumber = (val) => val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+  const formatExpiry = (val) => {
+    const digits = val.replace(/\D/g, '').slice(0, 4);
+    return digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -237,23 +272,82 @@ export default function Checkout() {
                   <span className="metallic-text">Shipping</span> Details
                 </h2>
                 <div className="holo-card p-8 space-y-6">
-                  {[
-                    { label: 'FULL NAME', key: 'name', placeholder: 'Your name' },
-                    { label: 'STREET ADDRESS', key: 'address', placeholder: 'Street address' },
-                    { label: 'CITY', key: 'city', placeholder: 'City' },
-                    { label: 'ZIP CODE', key: 'zip', placeholder: 'Postal code' },
-                  ].map(f => (
-                    <div key={f.key}>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>{f.label}</label>
+                  {/* Full Name */}
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>FULL NAME</label>
+                    <input
+                      value={shipping.name}
+                      onChange={e => setShipping(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Your name"
+                      className="holo-input w-full px-4 py-3"
+                    />
+                  </div>
+
+                  {/* Address with autocomplete */}
+                  <div className="relative">
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>STREET ADDRESS</label>
+                    <div className="relative">
                       <input
-                        value={shipping[f.key]}
-                        onChange={e => setShipping(prev => ({ ...prev, [f.key]: e.target.value }))}
-                        placeholder={f.placeholder}
+                        value={shipping.address}
+                        onChange={e => {
+                          setShipping(prev => ({ ...prev, address: e.target.value }));
+                          fetchAddressSuggestions(e.target.value);
+                        }}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                        placeholder="Start typing your address…"
+                        className="holo-input w-full px-4 py-3 pr-10"
+                      />
+                      <MapPin size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: 'rgba(0,245,255,0.35)' }} />
+                    </div>
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1 z-50 overflow-hidden"
+                        style={{ background: 'var(--metal-mid)', border: '1px solid rgba(0,245,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                        {addressSuggestions.map((place, idx) => (
+                          <button
+                            key={place.place_id}
+                            type="button"
+                            onMouseDown={() => selectAddress(place)}
+                            className="w-full text-left px-4 py-3 cursor-hover transition-colors"
+                            style={{
+                              borderBottom: idx < addressSuggestions.length - 1 ? '1px solid rgba(0,245,255,0.06)' : 'none',
+                              background: 'transparent',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,245,255,0.06)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <p className="text-xs truncate" style={{ color: 'var(--carrara)' }}>{place.display_name.split(',').slice(0, 3).join(',')}</p>
+                            <p className="meta-text mt-0.5 truncate" style={{ fontSize: '9px', color: 'rgba(0,245,255,0.4)' }}>
+                              {place.display_name.split(',').slice(3).join(',').trim()}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* City & Zip */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CITY</label>
+                      <input
+                        value={shipping.city}
+                        onChange={e => setShipping(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="City"
                         className="holo-input w-full px-4 py-3"
-                        style={{ '::placeholder': { color: 'rgba(245,245,247,0.2)' } }}
                       />
                     </div>
-                  ))}
+                    <div>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>ZIP CODE</label>
+                      <input
+                        value={shipping.zip}
+                        onChange={e => setShipping(prev => ({ ...prev, zip: e.target.value }))}
+                        placeholder="Postal code"
+                        className="holo-input w-full px-4 py-3"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-4 mt-6">
                   <button onClick={() => setStep(0)} className="px-8 py-4 cursor-hover meta-text text-xs"
@@ -304,23 +398,51 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  {[
-                    { label: 'CARD NUMBER', key: 'card', placeholder: '1234 5678 9012 3456', maxLength: 16 },
-                    { label: 'CARDHOLDER NAME', key: 'name', placeholder: 'Name on card' },
-                    { label: 'EXPIRY DATE', key: 'expiry', placeholder: 'MM/YY' },
-                    { label: 'CVV', key: 'cvv', placeholder: '•••', maxLength: 3 },
-                  ].map(f => (
-                    <div key={f.key}>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>{f.label}</label>
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARD NUMBER</label>
+                    <input
+                      value={payment.card}
+                      onChange={e => setPayment(prev => ({ ...prev, card: formatCardNumber(e.target.value) }))}
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={19}
+                      inputMode="numeric"
+                      className="holo-input w-full px-4 py-3 tracking-widest"
+                    />
+                  </div>
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARDHOLDER NAME</label>
+                    <input
+                      value={payment.name}
+                      onChange={e => setPayment(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
+                      placeholder="NAME ON CARD"
+                      className="holo-input w-full px-4 py-3 tracking-wider"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>EXPIRY DATE</label>
                       <input
-                        value={payment[f.key]}
-                        onChange={e => setPayment(prev => ({ ...prev, [f.key]: e.target.value }))}
-                        placeholder={f.placeholder}
-                        maxLength={f.maxLength}
+                        value={payment.expiry}
+                        onChange={e => setPayment(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
+                        placeholder="MM/YY"
+                        maxLength={5}
+                        inputMode="numeric"
                         className="holo-input w-full px-4 py-3"
                       />
                     </div>
-                  ))}
+                    <div>
+                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CVV</label>
+                      <input
+                        value={payment.cvv}
+                        onChange={e => setPayment(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                        placeholder="•••"
+                        maxLength={4}
+                        inputMode="numeric"
+                        type="password"
+                        className="holo-input w-full px-4 py-3"
+                      />
+                    </div>
+                  </div>
 
                   <div className="pt-4" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
                     <div className="flex justify-between mb-2">
@@ -329,7 +451,7 @@ export default function Checkout() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 relative z-20">
                   <button onClick={() => setStep(1)} className="px-8 py-4 cursor-hover meta-text text-xs"
                     style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'rgba(245,245,247,0.5)' }}>
                     ← BACK
@@ -337,8 +459,8 @@ export default function Checkout() {
                   <button
                     onClick={placeOrder}
                     disabled={placing || !payment.card || !payment.name}
-                    className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300"
-                    style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)' }}>
+                    className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300 relative z-20"
+                    style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)', opacity: (!payment.card || !payment.name) ? 0.5 : 1 }}>
                     {placing ? 'PROCESSING...' : `PLACE ORDER — $${total.toFixed(2)}`}
                   </button>
                 </div>
