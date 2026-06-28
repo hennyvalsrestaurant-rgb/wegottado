@@ -149,7 +149,7 @@ export default function Checkout() {
           ))}
         </div>
 
-        <div className="max-w-4xl mx-auto px-6 md:px-12 pb-20">
+        <div className="max-w-4xl mx-auto px-6 md:px-12 pb-20 relative z-20">
           <AnimatePresence mode="wait">
             {/* STEP 0: BAG */}
             {step === 0 && (
@@ -221,9 +221,9 @@ export default function Checkout() {
                     </div>
 
                     <button onClick={() => setStep(1)}
-                      className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300"
+                      className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 relative z-20"
                       style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}>
-                      PROCEED TO SHIPPING →
+                      PROCEED TO CHECKOUT →
                     </button>
                   </>
                 )}
