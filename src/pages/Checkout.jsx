@@ -327,6 +327,19 @@ export default function Checkout() {
                     )}
                   </div>
 
+                  {/* Apartment / Suite (optional) */}
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>
+                      APT / SUITE / FLOOR <span style={{ color: 'rgba(245,245,247,0.25)' }}>(OPTIONAL)</span>
+                    </label>
+                    <input
+                      value={shipping.apt || ''}
+                      onChange={e => setShipping(prev => ({ ...prev, apt: e.target.value }))}
+                      placeholder="Apt 4B, Suite 200, Floor 3…"
+                      className="holo-input w-full px-4 py-3"
+                    />
+                  </div>
+
                   {/* City & Zip */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
