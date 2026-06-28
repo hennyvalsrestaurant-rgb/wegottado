@@ -136,37 +136,6 @@ export default function HeroSection() {
           THE KINETIC ATELIER
         </motion.p>
 
-        {/* 3D Transform Info Panel */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute top-1/2 right-6 md:right-10 -translate-y-1/2 pointer-events-none"
-          style={{
-            background: 'rgba(10,10,20,0.65)',
-            border: '1px solid rgba(0,245,255,0.25)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 0 30px rgba(0,245,255,0.12), inset 0 0 20px rgba(0,0,0,0.4)',
-            padding: '18px 20px',
-            minWidth: '180px',
-          }}
-        >
-          <p className="meta-text mb-3" style={{ color: 'var(--neon-cyan)', fontSize: '9px', letterSpacing: '0.2em' }}>3D TRANSFORM</p>
-          {[
-            { label: 'AXIS', value: `X:${rotateX.toFixed(1)}° Y:${rotateY.toFixed(1)}°` },
-            { label: 'PIVOT', value: 'CENTER' },
-            { label: 'SPACE', value: 'LOCAL' },
-            { label: 'INTERP', value: 'LIVE / 1.2s' },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex justify-between items-center gap-4 mb-1.5">
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(245,245,247,0.35)', letterSpacing: '0.15em' }}>{label}</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(245,245,247,0.75)' }}>{value}</span>
-            </div>
-          ))}
-          <div className="mt-3 h-px" style={{ background: 'linear-gradient(to right, var(--neon-cyan), transparent)', opacity: 0.3 }} />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', color: 'rgba(0,245,255,0.4)', marginTop: '8px', letterSpacing: '0.1em' }}>MOVE MOUSE TO ROTATE</p>
-        </motion.div>
-
         {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
