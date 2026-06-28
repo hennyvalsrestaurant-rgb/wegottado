@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const HERO_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png";
 
@@ -25,24 +25,57 @@ export default function HeroSection() {
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
+  const rotateX = (mousePos.y - 0.5) * -18;
+  const rotateY = (mousePos.x - 0.5) * 22;
   const imgTranslateX = (mousePos.x - 0.5) * -20;
   const imgTranslateY = (mousePos.y - 0.5) * -15;
 
   return (
-    <section id="hero" ref={sectionRef} className="relative h-screen overflow-hidden">
-      {/* Background image with parallax + mouse tracking */}
+    <section id="hero" ref={sectionRef} className="relative h-screen overflow-hidden" style={{ perspective: '1200px' }}>
+      {/* 3D Magical background image */}
       <motion.div
         className="absolute inset-0"
-        style={{ scale: imgScale, y: imgY }}
+        style={{
+          scale: imgScale,
+          y: imgY,
+          transformStyle: 'preserve-3d',
+          transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+          transition: 'transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        }}
       >
         <img
           src={HERO_IMG}
-          alt="WEGOTTADO hero editorial fashion photograph"
+          alt="WEGOTTADO hero"
           className="w-full h-full object-cover"
           style={{
-            transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) rotateZ(90deg)`,
-            transition: 'transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1)',
+            transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) scale(1.15)`,
+            transition: 'transform 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
             transformOrigin: 'center center',
+            filter: 'brightness(0.85) saturate(1.3)',
+          }}
+        />
+        {/* Holographic rainbow sheen layer */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(
+              ${135 + rotateY * 2}deg,
+              rgba(0,245,255,0.08) 0%,
+              rgba(123,47,255,0.10) 25%,
+              rgba(255,0,255,0.08) 50%,
+              rgba(212,175,55,0.10) 75%,
+              rgba(0,245,255,0.06) 100%
+            )`,
+            mixBlendMode: 'screen',
+            transition: 'background 0.4s ease',
+          }}
+        />
+        {/* Specular highlight that follows mouse */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 60% 50% at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.07) 0%, transparent 70%)`,
+            transition: 'background 0.3s ease',
           }}
         />
       </motion.div>
@@ -102,6 +135,37 @@ export default function HeroSection() {
         >
           THE KINETIC ATELIER
         </motion.p>
+
+        {/* 3D Transform Info Panel */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 2, duration: 1 }}
+          className="absolute top-1/2 right-6 md:right-10 -translate-y-1/2 pointer-events-none"
+          style={{
+            background: 'rgba(10,10,20,0.65)',
+            border: '1px solid rgba(0,245,255,0.25)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 0 30px rgba(0,245,255,0.12), inset 0 0 20px rgba(0,0,0,0.4)',
+            padding: '18px 20px',
+            minWidth: '180px',
+          }}
+        >
+          <p className="meta-text mb-3" style={{ color: 'var(--neon-cyan)', fontSize: '9px', letterSpacing: '0.2em' }}>3D TRANSFORM</p>
+          {[
+            { label: 'AXIS', value: `X:${rotateX.toFixed(1)}° Y:${rotateY.toFixed(1)}°` },
+            { label: 'PIVOT', value: 'CENTER' },
+            { label: 'SPACE', value: 'LOCAL' },
+            { label: 'INTERP', value: 'LIVE / 1.2s' },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex justify-between items-center gap-4 mb-1.5">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(245,245,247,0.35)', letterSpacing: '0.15em' }}>{label}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(245,245,247,0.75)' }}>{value}</span>
+            </div>
+          ))}
+          <div className="mt-3 h-px" style={{ background: 'linear-gradient(to right, var(--neon-cyan), transparent)', opacity: 0.3 }} />
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', color: 'rgba(0,245,255,0.4)', marginTop: '8px', letterSpacing: '0.1em' }}>MOVE MOUSE TO ROTATE</p>
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
