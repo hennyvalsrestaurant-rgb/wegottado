@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
 import Admin from './pages/Admin';
+import OrderConfirmed from './pages/OrderConfirmed';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -41,6 +42,7 @@ const AuthenticatedApp = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/order-confirmed" element={<OrderConfirmed />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

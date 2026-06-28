@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Zap } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 
@@ -19,7 +19,6 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [shipping, setShipping] = useState({ name: '', address: '', city: '', country: 'US', zip: '' });
-  const [payment, setPayment] = useState({ card: '', expiry: '', cvv: '', name: '' });
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const addressDebounceRef = useRef(null);
@@ -48,12 +47,6 @@ export default function Checkout() {
     setShipping(prev => ({ ...prev, address: street, city, zip }));
     setAddressSuggestions([]);
     setShowSuggestions(false);
-  };
-
-  const formatCardNumber = (val) => val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
-  const formatExpiry = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    return digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
   };
 
   useEffect(() => {
@@ -86,37 +79,42 @@ export default function Checkout() {
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  const placeOrder = async () => {
-    if (!payment.card || !payment.name) {
-      setOrderError('Please fill in your card number and cardholder name.');
-      return;
-    }
+  const handlePayWithBase44 = async () => {
     setOrderError(null);
     setPlacing(true);
     try {
-      const order = await base44.entities.Order.create({
-        user_id: user.id,
-        items: cartItems.map(i => ({ name: i.product_name, price: i.price, qty: i.quantity })),
-        total: Math.round(total * 100) / 100,
-        status: 'confirmed',
-        shipping_address: shipping,
-        payment_method: 'card',
+      const res = await base44.functions.invoke('create-checkout', {
+        items: cartItems,
+        userId: user?.id,
       });
-      setOrderId(order.id);
-      await Promise.all(cartItems.map(i => base44.entities.CartItem.delete(i.id)));
-      setCartItems([]);
-      await base44.entities.Notification.create({
-        user_id: user.id,
-        title: 'Order Confirmed',
-        message: `Your order #${order.id.slice(-8).toUpperCase()} has been confirmed. Total: $${total.toFixed(2)}`,
-        type: 'order',
-        order_id: order.id,
-        read: false,
-      });
-      setStep(3);
+      if (res.data.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        setOrderError(res.data.error || 'Checkout failed. Please try again.');
+      }
     } catch (err) {
       console.error(err);
-      setOrderError('Something went wrong placing your order. Please try again.');
+      setOrderError('Something went wrong. Please try again.');
+    }
+    setPlacing(false);
+  };
+
+  const handlePayWithStripe = async () => {
+    setOrderError(null);
+    setPlacing(true);
+    try {
+      const res = await base44.functions.invoke('create-stripe-checkout', {
+        items: cartItems,
+        userId: user?.id,
+      });
+      if (res.data.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        setOrderError(res.data.error || 'Checkout failed. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setOrderError('Something went wrong. Please try again.');
     }
     setPlacing(false);
   };
@@ -387,116 +385,87 @@ export default function Checkout() {
             {step === 2 && (
               <motion.div key="pay" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
                 <h2 className="heading-display text-4xl mb-8" style={{ color: 'var(--carrara)' }}>
-                  <span className="metallic-text">Payment</span> Details
+                  <span className="metallic-text">Payment</span> Method
                 </h2>
 
-                {/* Holographic card preview — purely decorative, no pointer events */}
-                <div className="h-40 overflow-hidden mb-6 pointer-events-none"
-                  style={{ background: 'linear-gradient(135deg, var(--metal-mid), var(--metal-light))', border: '1px solid rgba(0,245,255,0.2)', position: 'relative' }}>
-                  <div className="holo-shimmer absolute inset-0" />
-                  <div className="absolute inset-6">
-                    <div className="flex justify-between items-start mb-8">
-                      <span className="meta-text text-[9px]" style={{ color: 'rgba(0,245,255,0.5)' }}>WEGOTTADO PAY</span>
-                      <div className="flex gap-1">
-                        <div className="w-6 h-6 rounded-full opacity-70" style={{ background: 'var(--gold)' }} />
-                        <div className="w-6 h-6 rounded-full opacity-50 -ml-3" style={{ background: '#FF6B6B' }} />
+                {/* Order summary */}
+                <div className="holo-card p-6 mb-6">
+                  <div className="space-y-3">
+                    {[['SUBTOTAL', subtotal], ['TAX (10%)', tax]].map(([l, v]) => (
+                      <div key={l} className="flex justify-between">
+                        <span className="meta-text text-[10px]">{l}</span>
+                        <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>${v.toFixed(2)}</span>
                       </div>
-                    </div>
-                    <p className="meta-text text-sm tracking-widest" style={{ color: 'rgba(245,245,247,0.6)' }}>
-                      {payment.card || '•••• •••• •••• ••••'}
-                    </p>
-                    <div className="flex justify-between mt-3">
-                      <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
-                        {payment.name || 'CARDHOLDER NAME'}
-                      </span>
-                      <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
-                        {payment.expiry || 'MM/YY'}
-                      </span>
+                    ))}
+                    <div className="flex justify-between pt-3" style={{ borderTop: '1px solid rgba(0,245,255,0.1)' }}>
+                      <span className="meta-text text-[10px]" style={{ color: 'var(--neon-cyan)' }}>TOTAL</span>
+                      <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Payment form */}
-                <div className="holo-card p-8 mb-6">
-                  <div className="space-y-6">
-                    <div>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARD NUMBER</label>
-                      <input
-                        value={payment.card}
-                        onChange={e => setPayment(prev => ({ ...prev, card: formatCardNumber(e.target.value) }))}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={19}
-                        inputMode="numeric"
-                        autoComplete="cc-number"
-                        className="holo-input w-full px-4 py-3 tracking-widest"
-                      />
-                    </div>
-                    <div>
-                      <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARDHOLDER NAME</label>
-                      <input
-                        value={payment.name}
-                        onChange={e => setPayment(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
-                        placeholder="NAME ON CARD"
-                        autoComplete="cc-name"
-                        className="holo-input w-full px-4 py-3 tracking-wider"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>EXPIRY DATE</label>
-                        <input
-                          value={payment.expiry}
-                          onChange={e => setPayment(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          inputMode="numeric"
-                          autoComplete="cc-exp"
-                          className="holo-input w-full px-4 py-3"
-                        />
+                <p className="meta-text text-[10px] mb-4" style={{ color: 'rgba(245,245,247,0.4)' }}>
+                  SELECT PAYMENT PROVIDER — YOU WILL BE REDIRECTED TO A SECURE CHECKOUT PAGE
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  {/* Base44 Payments */}
+                  <button
+                    type="button"
+                    onClick={handlePayWithBase44}
+                    disabled={placing}
+                    className="w-full py-5 px-6 cursor-hover flex items-center justify-between transition-all duration-300 holo-card"
+                    style={{ border: '1px solid rgba(212,175,55,0.4)', opacity: placing ? 0.6 : 1 }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 flex items-center justify-center"
+                        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                        <Zap size={18} style={{ color: 'var(--gold)' }} />
                       </div>
-                      <div>
-                        <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CVV</label>
-                        <input
-                          value={payment.cvv}
-                          onChange={e => setPayment(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                          placeholder="•••"
-                          maxLength={4}
-                          inputMode="numeric"
-                          autoComplete="cc-csc"
-                          type="password"
-                          className="holo-input w-full px-4 py-3"
-                        />
+                      <div className="text-left">
+                        <p className="meta-text text-[11px]" style={{ color: 'var(--gold)' }}>BASE44 PAYMENTS</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(245,245,247,0.4)' }}>Secure hosted checkout</p>
                       </div>
                     </div>
-                    <div className="pt-4" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
-                      <div className="flex justify-between">
-                        <span className="meta-text text-[10px]">ORDER TOTAL</span>
-                        <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
+                    <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                      {placing ? 'REDIRECTING...' : '→'}
+                    </span>
+                  </button>
+
+                  {/* Stripe */}
+                  <button
+                    type="button"
+                    onClick={handlePayWithStripe}
+                    disabled={placing}
+                    className="w-full py-5 px-6 cursor-hover flex items-center justify-between transition-all duration-300 holo-card"
+                    style={{ border: '1px solid rgba(0,245,255,0.2)', opacity: placing ? 0.6 : 1 }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 flex items-center justify-center"
+                        style={{ background: 'rgba(0,245,255,0.08)', border: '1px solid rgba(0,245,255,0.2)' }}>
+                        <CreditCard size={18} style={{ color: 'var(--neon-cyan)' }} />
+                      </div>
+                      <div className="text-left">
+                        <p className="meta-text text-[11px]" style={{ color: 'var(--neon-cyan)' }}>STRIPE</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(245,245,247,0.4)' }}>Credit / Debit card via Stripe</p>
                       </div>
                     </div>
-                  </div>
+                    <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                      {placing ? 'REDIRECTING...' : '→'}
+                    </span>
+                  </button>
                 </div>
 
                 {orderError && (
                   <p className="mb-4 text-xs px-1" style={{ color: '#FF6B6B' }}>{orderError}</p>
                 )}
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="px-8 py-4 cursor-hover meta-text text-xs"
-                    style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'rgba(245,245,247,0.5)' }}>
-                    ← BACK
-                  </button>
-                  <button
-                    type="button"
-                    onClick={placeOrder}
-                    disabled={placing}
-                    className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300"
-                    style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)' }}>
-                    {placing ? 'PROCESSING...' : `PLACE ORDER — $${total.toFixed(2)}`}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="px-8 py-4 cursor-hover meta-text text-xs"
+                  style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'rgba(245,245,247,0.5)' }}>
+                  ← BACK
+                </button>
               </motion.div>
             )}
 
