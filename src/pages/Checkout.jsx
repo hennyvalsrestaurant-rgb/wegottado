@@ -384,33 +384,33 @@ export default function Checkout() {
                 <h2 className="heading-display text-4xl mb-8" style={{ color: 'var(--carrara)' }}>
                   <span className="metallic-text">Payment</span> Details
                 </h2>
-                <div className="holo-card p-8 space-y-6 mb-6">
-                  {/* Holographic card preview */}
-                  <div className="relative h-40 overflow-hidden mb-4"
-                    style={{ background: 'linear-gradient(135deg, var(--metal-mid), var(--metal-light))', border: '1px solid rgba(0,245,255,0.2)' }}>
-                    <div className="holo-shimmer absolute inset-0" />
-                    <div className="absolute inset-6">
-                      <div className="flex justify-between items-start mb-8">
-                        <span className="meta-text text-[9px]" style={{ color: 'rgba(0,245,255,0.5)' }}>WEGOTTADO PAY</span>
-                        <div className="flex gap-1">
-                          <div className="w-6 h-6 rounded-full opacity-70" style={{ background: 'var(--gold)' }} />
-                          <div className="w-6 h-6 rounded-full opacity-50 -ml-3" style={{ background: '#FF6B6B' }} />
-                        </div>
-                      </div>
-                      <p className="meta-text text-sm tracking-widest" style={{ color: 'rgba(245,245,247,0.6)' }}>
-                        {payment.card ? payment.card.replace(/(\d{4})/g, '$1 ').trim() : '•••• •••• •••• ••••'}
-                      </p>
-                      <div className="flex justify-between mt-3">
-                        <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
-                          {payment.name || 'CARDHOLDER NAME'}
-                        </span>
-                        <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
-                          {payment.expiry || 'MM/YY'}
-                        </span>
+                {/* Holographic card preview */}
+                <div className="relative h-40 overflow-hidden mb-6"
+                  style={{ background: 'linear-gradient(135deg, var(--metal-mid), var(--metal-light))', border: '1px solid rgba(0,245,255,0.2)' }}>
+                  <div className="holo-shimmer absolute inset-0 pointer-events-none" />
+                  <div className="absolute inset-6 pointer-events-none">
+                    <div className="flex justify-between items-start mb-8">
+                      <span className="meta-text text-[9px]" style={{ color: 'rgba(0,245,255,0.5)' }}>WEGOTTADO PAY</span>
+                      <div className="flex gap-1">
+                        <div className="w-6 h-6 rounded-full opacity-70" style={{ background: 'var(--gold)' }} />
+                        <div className="w-6 h-6 rounded-full opacity-50 -ml-3" style={{ background: '#FF6B6B' }} />
                       </div>
                     </div>
+                    <p className="meta-text text-sm tracking-widest" style={{ color: 'rgba(245,245,247,0.6)' }}>
+                      {payment.card || '•••• •••• •••• ••••'}
+                    </p>
+                    <div className="flex justify-between mt-3">
+                      <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
+                        {payment.name || 'CARDHOLDER NAME'}
+                      </span>
+                      <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.4)' }}>
+                        {payment.expiry || 'MM/YY'}
+                      </span>
+                    </div>
                   </div>
+                </div>
 
+                <div className="holo-card p-8 space-y-6 mb-6" style={{ position: 'relative', zIndex: 10 }}>
                   <div>
                     <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>CARD NUMBER</label>
                     <input
@@ -420,6 +420,7 @@ export default function Checkout() {
                       maxLength={19}
                       inputMode="numeric"
                       className="holo-input w-full px-4 py-3 tracking-widest"
+                      style={{ position: 'relative', zIndex: 10 }}
                     />
                   </div>
                   <div>
@@ -429,6 +430,7 @@ export default function Checkout() {
                       onChange={e => setPayment(prev => ({ ...prev, name: e.target.value.toUpperCase() }))}
                       placeholder="NAME ON CARD"
                       className="holo-input w-full px-4 py-3 tracking-wider"
+                      style={{ position: 'relative', zIndex: 10 }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -441,6 +443,7 @@ export default function Checkout() {
                         maxLength={5}
                         inputMode="numeric"
                         className="holo-input w-full px-4 py-3"
+                        style={{ position: 'relative', zIndex: 10 }}
                       />
                     </div>
                     <div>
@@ -453,12 +456,13 @@ export default function Checkout() {
                         inputMode="numeric"
                         type="password"
                         className="holo-input w-full px-4 py-3"
+                        style={{ position: 'relative', zIndex: 10 }}
                       />
                     </div>
                   </div>
 
                   <div className="pt-4" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
-                    <div className="flex justify-between mb-2">
+                    <div className="flex justify-between">
                       <span className="meta-text text-[10px]">ORDER TOTAL</span>
                       <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
                     </div>
