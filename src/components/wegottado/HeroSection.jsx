@@ -140,7 +140,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative px-8 py-4 md:px-12 md:py-6"
+          className="relative px-8 py-4 md:px-12 md:py-6 opacity-75"
           style={{
             background: 'rgba(3,3,12,0.92)',
             borderRadius: '32px',
