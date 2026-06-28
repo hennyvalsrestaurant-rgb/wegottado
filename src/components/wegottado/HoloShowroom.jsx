@@ -5,51 +5,26 @@ import HoloProductCard from './HoloProductCard';
 import { Link } from 'react-router-dom';
 import { X, Star, ShoppingBag, Check } from 'lucide-react';
 
-const STATIC_PRODUCTS = [
-  {
-    id: 's1', name: 'The Sovereign Coat', category: 'OUTERWEAR', price: 4800, tag: 'LIMITED',
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/2da261c99_generated_abc73311.png',
-    description: 'A structural masterpiece in heavy black wool. Architectural lapels, gold-clasp closure.',
-  },
-  {
-    id: 's2', name: 'The Obsidian Bag', category: 'ACCESSORIES', price: 2200, tag: 'NEW',
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/af94bce3e_generated_402b5792.png',
-    description: 'Hand-stitched leather with 18k gold hardware. Lined in black satin.',
-  },
-  {
-    id: 's3', name: 'The Monolith Suit', category: 'SUITING', price: 6500, tag: 'EXCLUSIVE',
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/9367500c8_generated_ca3d562c.png',
-    description: 'Double-breasted midnight black with gold-thread pinstripe. Florence tailored.',
-  },
-  {
-    id: 's4', name: 'The Atelier Set', category: 'ACCESSORIES', price: 1800, tag: null,
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/af06bafc8_generated_b9f51f06.png',
-    description: 'Curated silk pocket square, gold cufflinks, and black leather gloves.',
-  },
-  {
-    id: 's5', name: 'The Ivory Gown', category: 'EVENING WEAR', price: 8900, tag: 'COUTURE',
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/0f2fef579_generated_d7ac6c34.png',
-    description: 'Kyoto silk. Fifty pieces total. Gold-leaf detailing. Numbered.',
-  },
-  {
-    id: 's6', name: 'The Gold Chain Portrait', category: 'JEWELRY', price: 3400, tag: null,
-    image_url: 'https://media.base44.com/images/public/6a401981c451758a55e9b4f5/4aa583f5f_generated_b919dd87.png',
-    description: 'Heavy 18k yellow gold chain. 72cm length. Handcrafted in Florence.',
-  },
-];
+
 
 export default function HoloShowroom() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
-  const [cartNotif, setCartNotif] = useState(null); // { name, id }
-
-  const CATEGORIES = ['ALL', 'OUTERWEAR', 'SUITING', 'ACCESSORIES', 'EVENING WEAR', 'JEWELRY'];
+  const [cartNotif, setCartNotif] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
+    base44.entities.Product.filter({ in_stock: true }).then(data => {
+      setProducts(data);
+      setLoadingProducts(false);
+    }).catch(() => setLoadingProducts(false));
   }, []);
+
+  const CATEGORIES = ['ALL', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
 
   const handleAddToCart = async (product) => {
     if (!user) {
@@ -84,7 +59,7 @@ export default function HoloShowroom() {
     setCartLoading(false);
   };
 
-  const filtered = STATIC_PRODUCTS.filter(p => filter === 'ALL' || p.category === filter);
+  const filtered = products.filter(p => filter === 'ALL' || p.category === filter);
 
   return (
     <section id="showroom" className="relative py-24 md:py-36 px-6 md:px-[8vw]">
@@ -177,6 +152,16 @@ export default function HoloShowroom() {
       </div>
 
       {/* Product grid */}
+      {loadingProducts ? (
+        <div className="flex items-center justify-center py-24">
+          <div className="w-10 h-10 border border-[var(--neon-cyan)] rounded-full animate-spin"
+            style={{ borderTopColor: 'transparent' }} />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-24">
+          <p className="heading-display text-3xl" style={{ color: 'rgba(245,245,247,0.3)' }}>No items in this category</p>
+        </div>
+      ) : (
       <motion.div
         layout
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
@@ -200,6 +185,7 @@ export default function HoloShowroom() {
           ))}
         </AnimatePresence>
       </motion.div>
+      )}
 
       {/* View all CTA */}
       <div className="text-center mt-16">
@@ -264,7 +250,9 @@ export default function HoloShowroom() {
                   <span className="heading-display text-3xl metallic-text">
                     ${selectedProduct.price.toLocaleString()}
                   </span>
-                  <span className="meta-text text-[10px]" style={{ color: 'rgba(0,245,255,0.5)' }}>IN STOCK</span>
+                  <span className="meta-text text-[10px]" style={{ color: selectedProduct.in_stock ? 'rgba(0,245,255,0.5)' : 'rgba(255,100,100,0.5)' }}>
+                    {selectedProduct.in_stock !== false ? 'IN STOCK' : 'OUT OF STOCK'}
+                  </span>
                 </div>
                 <button
                   onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
