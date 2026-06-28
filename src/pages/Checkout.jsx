@@ -15,6 +15,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [orderError, setOrderError] = useState(null);
   const navigate = useNavigate();
 
   const [shipping, setShipping] = useState({ name: '', address: '', city: '', country: 'US', zip: '' });
@@ -86,6 +87,11 @@ export default function Checkout() {
   const total = subtotal + tax;
 
   const placeOrder = async () => {
+    if (!payment.card || !payment.name) {
+      setOrderError('Please fill in your card number and cardholder name.');
+      return;
+    }
+    setOrderError(null);
     setPlacing(true);
     try {
       const order = await base44.entities.Order.create({
@@ -97,10 +103,8 @@ export default function Checkout() {
         payment_method: 'card',
       });
       setOrderId(order.id);
-      // Clear cart
       await Promise.all(cartItems.map(i => base44.entities.CartItem.delete(i.id)));
       setCartItems([]);
-      // Notification
       await base44.entities.Notification.create({
         user_id: user.id,
         title: 'Order Confirmed',
@@ -112,6 +116,7 @@ export default function Checkout() {
       setStep(3);
     } catch (err) {
       console.error(err);
+      setOrderError('Something went wrong placing your order. Please try again.');
     }
     setPlacing(false);
   };
@@ -472,6 +477,9 @@ export default function Checkout() {
                   </div>
                 </div>
 
+                {orderError && (
+                  <p className="mb-4 text-xs px-1" style={{ color: '#FF6B6B' }}>{orderError}</p>
+                )}
                 <div className="flex gap-4">
                   <button
                     type="button"
@@ -483,9 +491,9 @@ export default function Checkout() {
                   <button
                     type="button"
                     onClick={placeOrder}
-                    disabled={placing || !payment.card || !payment.name}
+                    disabled={placing}
                     className="flex-1 py-4 cursor-hover meta-text text-xs transition-all duration-300"
-                    style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)', opacity: (!payment.card || !payment.name) ? 0.5 : 1 }}>
+                    style={{ background: placing ? 'rgba(212,175,55,0.5)' : 'var(--gold)', color: 'var(--obsidian)' }}>
                     {placing ? 'PROCESSING...' : `PLACE ORDER — $${total.toFixed(2)}`}
                   </button>
                 </div>
