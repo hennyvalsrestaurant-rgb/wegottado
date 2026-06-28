@@ -103,35 +103,6 @@ export default function HeroSection() {
           THE KINETIC ATELIER
         </motion.p>
 
-        {/* Floating info panel */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 2, duration: 0.8 }}
-          className="absolute top-1/2 right-8 -translate-y-1/2 z-20 p-5 max-w-[220px]"
-          style={{
-            background: 'rgba(13,13,20,0.85)',
-            border: '1px solid rgba(0,245,255,0.2)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 0 30px rgba(0,245,255,0.08)',
-          }}
-        >
-          <p className="meta-text text-[9px] mb-3" style={{ color: 'var(--neon-cyan)' }}>TRANSFORM PARAMETERS</p>
-          {[
-            { label: 'Axis', value: 'X, Y, or Z (camera / world / local)' },
-            { label: 'Angle', value: 'Degrees — positive = CCW (right‑hand rule)' },
-            { label: 'Pivot', value: 'Object center, world origin, custom point, or bbox corner' },
-            { label: 'Space', value: 'Local / object · World / global · Camera' },
-            { label: 'Interpolation', value: 'Instant or animated keyframes (duration, easing)' },
-            { label: 'Output', value: 'Overwrite, new layer / object, or export PNG / OBJ' },
-          ].map(({ label, value }) => (
-            <div key={label} className="mb-3 last:mb-0">
-              <span className="meta-text text-[9px] block mb-0.5" style={{ color: 'var(--gold)' }}>{label}</span>
-              <span className="text-[10px] leading-relaxed" style={{ color: 'rgba(245,245,247,0.55)', fontFamily: 'var(--font-mono)' }}>{value}</span>
-            </div>
-          ))}
-        </motion.div>
-
         {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
