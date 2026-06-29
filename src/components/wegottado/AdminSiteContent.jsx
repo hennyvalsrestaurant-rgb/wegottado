@@ -4,6 +4,7 @@ import { Upload, X, Save, ImageIcon, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SECTIONS = [
+  { key: 'featured', label: 'FEATURED COLLECTION', description: '1 hero image shown in the Featured Collection section', max: 1 },
   { key: 'atelier', label: 'COLLECTION GALLERY', hint: 'Up to 6 images shown in the Atelier Gallery grid', max: 6 },
   { key: 'lookbook', label: 'LOOKBOOK', hint: '3 images: wide cinematic + 2 portrait side by side', max: 3 },
   { key: 'craft', label: 'CRAFT', hint: '1 image shown in the Craft section', max: 1 },

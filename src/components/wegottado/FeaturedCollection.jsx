@@ -1,9 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
-const COLLECTION_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/0f2fef579_generated_d7ac6c34.png";
+const DEFAULT_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/0f2fef579_generated_d7ac6c34.png";
 
 export default function FeaturedCollection() {
+  const [imgSrc, setImgSrc] = useState(DEFAULT_IMG);
+
+  useEffect(() => {
+    base44.entities.SiteContent.filter({ section: 'featured' }).then(records => {
+      const url = records?.[0]?.images?.[0];
+      if (url) setImgSrc(url);
+    }).catch(() => {});
+  }, []);
   const sectionRef = useRef(null);
   const textRef = useRef(null);
   const isInView = useInView(textRef, { once: true, margin: '-100px' });
@@ -20,7 +29,7 @@ export default function FeaturedCollection() {
           <motion.div className="relative" style={{ y: imgY }}>
             <div className="relative overflow-hidden glossy-reflection">
               <img
-                src={COLLECTION_IMG}
+                src={imgSrc}
                 alt="The Ivory Collection editorial fashion"
                 className="w-full h-[500px] md:h-[700px] object-cover"
               />
