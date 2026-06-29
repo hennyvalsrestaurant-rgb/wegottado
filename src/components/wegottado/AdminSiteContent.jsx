@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Upload, X, Save, ImageIcon } from 'lucide-react';
+import { Upload, X, Save, ImageIcon, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SECTIONS = [
@@ -14,8 +14,11 @@ function SectionEditor({ section }) {
   const [images, setImages] = useState([]);
   const [recordId, setRecordId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [replacingIdx, setReplacingIdx] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const replaceInputRef = useRef(null);
+  const replaceIdxRef = useRef(null);
 
   useEffect(() => {
     base44.entities.SiteContent.filter({ section: section.key }).then(results => {
@@ -30,6 +33,22 @@ function SectionEditor({ section }) {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setImages(prev => [...prev, file_url]);
     setUploading(false);
+    e.target.value = '';
+  };
+
+  const handleReplace = (idx) => {
+    replaceIdxRef.current = idx;
+    replaceInputRef.current.click();
+  };
+
+  const handleReplaceFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const idx = replaceIdxRef.current;
+    setReplacingIdx(idx);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setImages(prev => prev.map((img, i) => i === idx ? file_url : img));
+    setReplacingIdx(null);
     e.target.value = '';
   };
 
@@ -62,15 +81,32 @@ function SectionEditor({ section }) {
         </button>
       </div>
 
+      {/* Hidden input for replace */}
+      <input ref={replaceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
+
       <div className="flex flex-wrap gap-3">
         {images.map((url, idx) => (
-          <div key={idx} className="relative w-20 h-20 flex-shrink-0">
+          <div key={idx} className="relative w-24 h-24 flex-shrink-0 group">
             <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" style={{ border: '1px solid rgba(0,245,255,0.15)' }} />
-            <button onClick={() => removeImage(idx)}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center cursor-hover"
-              style={{ background: '#FF4444', color: '#fff' }}>
-              <X size={10} />
-            </button>
+            {replacingIdx === idx && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(8,8,8,0.7)' }}>
+                <span className="meta-text text-[8px]" style={{ color: 'var(--neon-cyan)' }}>...</span>
+              </div>
+            )}
+            {/* Action overlay on hover */}
+            <div className="absolute inset-0 flex items-end justify-center gap-1 pb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.85), transparent 60%)' }}>
+              <button onClick={() => handleReplace(idx)} title="Replace image"
+                className="w-7 h-7 flex items-center justify-center cursor-hover"
+                style={{ background: 'rgba(0,245,255,0.15)', border: '1px solid rgba(0,245,255,0.4)', color: 'var(--neon-cyan)' }}>
+                <RefreshCw size={11} />
+              </button>
+              <button onClick={() => removeImage(idx)} title="Remove image"
+                className="w-7 h-7 flex items-center justify-center cursor-hover"
+                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.4)', color: '#FF4444' }}>
+                <X size={11} />
+              </button>
+            </div>
           </div>
         ))}
         {images.length < section.max && (
