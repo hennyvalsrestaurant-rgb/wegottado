@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useScroll, useTransform, useSpring, animate } from 'framer-motion';
 
 const HERO_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png";
@@ -27,6 +27,144 @@ export default function HeroSection() {
 
   const rotateX = (mousePos.y - 0.5) * -18;
   const rotateY = (mousePos.x - 0.5) * 22;
+
+  // ── Fireworks canvas ──────────────────────────────────────────────────
+  const fwCanvasRef = useRef(null);
+  const fwParticlesRef = useRef([]);
+  const fwRafRef = useRef(null);
+  const fwActiveRef = useRef(false);
+  const wordmarkRef = useRef(null);
+
+  const COLORS = ['#00F5FF', '#FF00FF', '#7B2FFF', '#FFD700', '#FF6060', '#00FF99', '#fff'];
+
+  const launchFireworks = useCallback(() => {
+    if (fwActiveRef.current) return;
+    fwActiveRef.current = true;
+    const canvas = fwCanvasRef.current;
+    if (!canvas) return;
+
+    // Position bursts around the wordmark
+    const wm = wordmarkRef.current;
+    const rect = wm ? wm.getBoundingClientRect() : { left: window.innerWidth / 2 - 200, top: window.innerHeight / 2 - 40, width: 400, height: 80 };
+    const canvasRect = canvas.getBoundingClientRect();
+
+    const origins = [
+      { x: rect.left - canvasRect.left + rect.width * 0.1, y: rect.top - canvasRect.top + rect.height * 0.5 },
+      { x: rect.left - canvasRect.left + rect.width * 0.35, y: rect.top - canvasRect.top + rect.height * 0.2 },
+      { x: rect.left - canvasRect.left + rect.width * 0.5,  y: rect.top - canvasRect.top + rect.height * 0.5 },
+      { x: rect.left - canvasRect.left + rect.width * 0.65, y: rect.top - canvasRect.top + rect.height * 0.2 },
+      { x: rect.left - canvasRect.left + rect.width * 0.9, y: rect.top - canvasRect.top + rect.height * 0.5 },
+    ];
+
+    origins.forEach(({ x, y }, bi) => {
+      const count = 28 + Math.floor(Math.random() * 16);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+        const speed = 2.5 + Math.random() * 4.5;
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        fwParticlesRef.current.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.5,
+          alpha: 1,
+          radius: 1.5 + Math.random() * 2,
+          color,
+          gravity: 0.09 + Math.random() * 0.04,
+          decay: 0.013 + Math.random() * 0.008,
+          trail: [],
+          delay: bi * 80,
+          born: performance.now(),
+          // 3D-ish z-scale wobble
+          zScale: 0.6 + Math.random() * 0.8,
+        });
+      }
+    });
+
+    const ctx = canvas.getContext('2d');
+
+    const tick = (now) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fwParticlesRef.current = fwParticlesRef.current.filter(p => {
+        if (now - p.born < p.delay) return true; // waiting
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 5) p.trail.shift();
+
+        // draw trail
+        p.trail.forEach((t, ti) => {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y * p.zScale + canvas.height * (1 - p.zScale) * 0.5, p.radius * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha * (ti / p.trail.length) * 0.4;
+          ctx.fill();
+        });
+
+        // draw particle with 3D squash on y
+        ctx.beginPath();
+        ctx.arc(p.x, p.y * p.zScale + canvas.height * (1 - p.zScale) * 0.5, p.radius * p.zScale, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.vx *= 0.98;
+        p.alpha -= p.decay;
+        p.zScale = Math.max(0.3, p.zScale - 0.002);
+
+        return p.alpha > 0.02;
+      });
+
+      if (fwParticlesRef.current.length > 0) {
+        fwRafRef.current = requestAnimationFrame(tick);
+      } else {
+        fwActiveRef.current = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+
+    fwRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => {
+    // Resize canvas to full section
+    const canvas = fwCanvasRef.current;
+    const section = sectionRef.current;
+    if (!canvas || !section) return;
+    const resize = () => {
+      canvas.width = section.offsetWidth;
+      canvas.height = section.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Detect scroll start / end
+    let scrollTimer = null;
+    let hasScrolled = false;
+    const onScroll = () => {
+      if (!hasScrolled) {
+        hasScrolled = true;
+        launchFireworks();
+      }
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        hasScrolled = false;
+        launchFireworks();
+      }, 200);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(fwRafRef.current);
+    };
+  }, [launchFireworks]);
+  // ─────────────────────────────────────────────────────────────────────
 
   // Autonomous looping animation variants for the background
   const bgVariants = {
@@ -121,6 +259,13 @@ export default function HeroSection() {
         style={{
           background: 'radial-gradient(ellipse at center, transparent 40%, rgba(8,8,8,0.8) 100%)'
         }} />
+
+      {/* Fireworks canvas — sits above bg, below content */}
+      <canvas
+        ref={fwCanvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 8 }}
+      />
       
 
       {/* Content */}
@@ -137,6 +282,7 @@ export default function HeroSection() {
 
         {/* Neon Shatter wordmark */}
         <motion.div
+          ref={wordmarkRef}
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
