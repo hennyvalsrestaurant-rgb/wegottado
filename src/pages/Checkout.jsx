@@ -212,42 +212,54 @@ export default function Checkout() {
                   <>
                     <div className="space-y-4 mb-8">
                       {cartItems.map(item => (
-                        <div key={item.id} className="holo-card p-5 flex items-center gap-5">
-                          <img src={item.product_image} alt={item.product_name}
-                            className="w-20 h-20 object-cover flex-shrink-0" />
-                          <div className="flex-1">
-                            <h4 className="heading-display text-xl" style={{ color: 'var(--carrara)' }}>{item.product_name}</h4>
-                            <div className="flex items-center gap-3 mt-0.5">
-                              <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
-                                ${item.price.toLocaleString()}
-                              </span>
-                              {item.size && (
-                                <span className="meta-text text-[9px] px-2 py-0.5" style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
-                                  SIZE {item.size}
+                        <div key={item.id} className="holo-card p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                          {/* Top row on mobile: image + name + delete */}
+                          <div className="flex items-start gap-4 flex-1 min-w-0">
+                            <img src={item.product_image} alt={item.product_name}
+                              className="w-16 h-16 sm:w-20 sm:h-20 object-cover flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="heading-display text-lg sm:text-xl" style={{ color: 'var(--carrara)' }}>{item.product_name}</h4>
+                              <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                                <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
+                                  ${item.price.toLocaleString()}
                                 </span>
-                              )}
+                                {item.size && (
+                                  <span className="meta-text text-[9px] px-2 py-0.5" style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
+                                    SIZE {item.size}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button onClick={() => updateQty(item, -1)} className="cursor-hover w-7 h-7 flex items-center justify-center"
-                              style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
-                              <Minus size={12} />
+                            {/* Delete — always visible, top-right on mobile */}
+                            <button onClick={() => removeItem(item)} className="cursor-hover p-2 flex items-center justify-center flex-shrink-0 sm:hidden"
+                              style={{ border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', background: 'rgba(255,68,68,0.06)' }}>
+                              <Trash2 size={14} />
                             </button>
-                            <span className="meta-text text-xs w-4 text-center" style={{ color: 'var(--carrara)' }}>
-                              {item.quantity}
+                          </div>
+                          {/* Bottom row on mobile: qty + total + delete (desktop) */}
+                          <div className="flex items-center gap-3 justify-between sm:justify-end">
+                            <div className="flex items-center gap-3">
+                              <button onClick={() => updateQty(item, -1)} className="cursor-hover w-7 h-7 flex items-center justify-center"
+                                style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
+                                <Minus size={12} />
+                              </button>
+                              <span className="meta-text text-xs w-4 text-center" style={{ color: 'var(--carrara)' }}>
+                                {item.quantity}
+                              </span>
+                              <button onClick={() => updateQty(item, 1)} className="cursor-hover w-7 h-7 flex items-center justify-center"
+                                style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                            <span className="meta-text text-xs w-20 text-right metallic-text">
+                              ${(item.price * item.quantity).toLocaleString()}
                             </span>
-                            <button onClick={() => updateQty(item, 1)} className="cursor-hover w-7 h-7 flex items-center justify-center"
-                              style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
-                              <Plus size={12} />
+                            {/* Delete — desktop only */}
+                            <button onClick={() => removeItem(item)} className="cursor-hover p-2 flex items-center justify-center flex-shrink-0 hidden sm:flex"
+                              style={{ border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', background: 'rgba(255,68,68,0.06)' }}>
+                              <Trash2 size={14} />
                             </button>
                           </div>
-                          <span className="meta-text text-xs w-20 text-right metallic-text">
-                            ${(item.price * item.quantity).toLocaleString()}
-                          </span>
-                          <button onClick={() => removeItem(item)} className="cursor-hover p-2 flex items-center justify-center flex-shrink-0"
-                            style={{ border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', background: 'rgba(255,68,68,0.06)' }}>
-                            <Trash2 size={14} />
-                          </button>
                         </div>
                       ))}
                     </div>
