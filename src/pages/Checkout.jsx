@@ -217,9 +217,16 @@ export default function Checkout() {
                             className="w-20 h-20 object-cover flex-shrink-0" />
                           <div className="flex-1">
                             <h4 className="heading-display text-xl" style={{ color: 'var(--carrara)' }}>{item.product_name}</h4>
-                            <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
-                              ${item.price.toLocaleString()}
-                            </span>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
+                                ${item.price.toLocaleString()}
+                              </span>
+                              {item.size && (
+                                <span className="meta-text text-[9px] px-2 py-0.5" style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
+                                  SIZE {item.size}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-3">
                             <button onClick={() => updateQty(item, -1)} className="cursor-hover w-7 h-7 flex items-center justify-center"
