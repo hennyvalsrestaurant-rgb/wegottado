@@ -2,11 +2,16 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Eye } from 'lucide-react';
 
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
 export default function HoloProductCard({ product, onAddToCart, onView }) {
   const [hovered, setHovered] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
   const cardRef = useRef(null);
+
+  const availableSizes = product.sizes?.length ? product.sizes : SIZES;
 
   const onMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -93,7 +98,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             className="absolute bottom-4 left-4 right-4 flex gap-3"
           >
             <button
-              onClick={() => onAddToCart(product)}
+              onClick={() => onAddToCart(product, selectedSize || availableSizes[0])}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover"
               style={{
                 background: 'var(--gold)',
@@ -101,7 +106,9 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
               }}
             >
               <ShoppingBag size={14} />
-              <span className="meta-text text-[10px]">ADD TO BAG</span>
+              <span className="meta-text text-[10px]">
+                {selectedSize ? `ADD — ${selectedSize}` : 'ADD TO BAG'}
+              </span>
             </button>
             <button
               onClick={() => onView(product)}
@@ -124,6 +131,28 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
           <span className="meta-text text-xs metallic-text">
             ${typeof product.price === 'number' ? product.price.toLocaleString() : product.price}
           </span>
+
+          {/* Size selector */}
+          <div className="mt-4">
+            <span className="meta-text text-[9px] block mb-2" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SIZE</span>
+            <div className="flex flex-wrap gap-1.5">
+              {availableSizes.map(sz => (
+                <button
+                  key={sz}
+                  onClick={(e) => { e.stopPropagation(); setSelectedSize(sz === selectedSize ? null : sz); }}
+                  className="cursor-hover w-9 h-9 meta-text text-[9px] flex items-center justify-center transition-all duration-200"
+                  style={{
+                    border: `1px solid ${selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.12)'}`,
+                    color: selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.35)',
+                    background: selectedSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent',
+                    boxShadow: selectedSize === sz ? '0 0 8px rgba(0,245,255,0.2)' : 'none',
+                  }}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Holo border */}

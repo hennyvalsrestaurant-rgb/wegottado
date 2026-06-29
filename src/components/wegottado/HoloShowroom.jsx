@@ -9,6 +9,8 @@ import { X, Star, ShoppingBag, Check } from 'lucide-react';
 
 export default function HoloShowroom() {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalSize, setModalSize] = useState(null);
+  const MODAL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
@@ -42,7 +44,7 @@ export default function HoloShowroom() {
   const CATEGORIES = ['ALL', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
   const SIZES = ['ALL', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-  const handleAddToCart = async (product) => {
+  const handleAddToCart = async (product, size) => {
     if (!user) {
       setCartNotif({ type: 'error', name: 'Please sign in to add items to your bag.' });
       setTimeout(() => setCartNotif(null), 4000);
@@ -57,7 +59,7 @@ export default function HoloShowroom() {
         product_image: product.image_url,
         price: product.price,
         quantity: 1,
-        size: 'M',
+        size: size || 'M',
       });
       setCartNotif({ type: 'success', name: product.name });
       setTimeout(() => setCartNotif(null), 4000);
@@ -263,7 +265,7 @@ export default function HoloShowroom() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200] flex items-center justify-center p-6"
             style={{ background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)' }}
-            onClick={() => setSelectedProduct(null)}
+            onClick={() => { setSelectedProduct(null); setModalSize(null); }}
           >
             <motion.div
               initial={{ scale: 0.9, y: 30 }}
@@ -308,8 +310,31 @@ export default function HoloShowroom() {
                     {selectedProduct.in_stock !== false ? 'IN STOCK' : 'OUT OF STOCK'}
                   </span>
                 </div>
+
+                {/* Size selector */}
+                <div className="mb-6">
+                  <span className="meta-text text-[9px] block mb-3" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SELECT SIZE</span>
+                  <div className="flex flex-wrap gap-2">
+                    {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).map(sz => (
+                      <button
+                        key={sz}
+                        onClick={() => setModalSize(sz === modalSize ? null : sz)}
+                        className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200"
+                        style={{
+                          border: `1px solid ${modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`,
+                          color: modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)',
+                          background: modalSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent',
+                          boxShadow: modalSize === sz ? '0 0 10px rgba(0,245,255,0.2)' : 'none',
+                        }}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
+                  onClick={() => { handleAddToCart(selectedProduct, modalSize || (selectedProduct.sizes?.[0] || 'M')); setSelectedProduct(null); setModalSize(null); }}
                   disabled={cartLoading}
                   className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}

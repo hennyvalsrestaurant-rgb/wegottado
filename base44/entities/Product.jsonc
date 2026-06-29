@@ -23,6 +23,13 @@
     "in_stock": {
       "type": "boolean",
       "default": true
+    },
+    "sizes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available sizes e.g. XS, S, M, L, XL, XXL"
     }
   },
   "required": [
