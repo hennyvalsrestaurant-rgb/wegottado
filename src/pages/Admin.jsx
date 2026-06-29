@@ -6,7 +6,8 @@ import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import { Link } from 'react-router-dom';
 
-const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', tag: '', in_stock: true };
+const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', images: [], tag: '', in_stock: true };
+const MAX_IMAGES = 5;
 const CATEGORIES = ['OUTERWEAR', 'SUITING', 'EVENING WEAR', 'ACCESSORIES', 'JEWELRY', 'TOPS', 'BOTTOMS'];
 const TAGS = ['', 'NEW', 'LIMITED', 'EXCLUSIVE', 'COUTURE', 'SOLD OUT'];
 
@@ -37,7 +38,7 @@ export default function Admin() {
   };
 
   const openNew = () => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); };
-  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '' }); setEditId(p.id); setShowForm(true); };
+  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '', images: p.images || [] }); setEditId(p.id); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditId(null); setForm(EMPTY_FORM); };
 
   const handleImageUpload = async (e) => {
@@ -47,6 +48,21 @@ export default function Admin() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setForm(prev => ({ ...prev, image_url: file_url }));
     setUploading(false);
+  };
+
+  const handleAdditionalImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if ((form.images || []).length >= MAX_IMAGES) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(prev => ({ ...prev, images: [...(prev.images || []), file_url] }));
+    setUploading(false);
+    e.target.value = '';
+  };
+
+  const removeAdditionalImage = (idx) => {
+    setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
   };
 
   const handleSave = async () => {
@@ -204,6 +220,36 @@ export default function Admin() {
                       <input value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))}
                         placeholder="…or paste URL" className="holo-input w-full px-3 py-2 text-[11px]" />
                     </div>
+                  </div>
+                </div>
+
+                {/* Additional Images */}
+                <div>
+                  <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>
+                    ADDITIONAL IMAGES <span style={{ color: 'rgba(245,245,247,0.25)' }}>({(form.images || []).length}/{MAX_IMAGES})</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {(form.images || []).map((url, idx) => (
+                      <div key={idx} className="relative w-16 h-16 flex-shrink-0">
+                        <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" style={{ border: '1px solid rgba(0,245,255,0.15)' }} />
+                        <button
+                          type="button"
+                          onClick={() => removeAdditionalImage(idx)}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center cursor-hover"
+                          style={{ background: '#FF4444', color: '#fff' }}
+                        >
+                          <X size={9} />
+                        </button>
+                      </div>
+                    ))}
+                    {(form.images || []).length < MAX_IMAGES && (
+                      <label className="w-16 h-16 flex flex-col items-center justify-center flex-shrink-0 cursor-hover"
+                        style={{ border: '1px dashed rgba(0,245,255,0.2)', color: 'rgba(0,245,255,0.35)', background: 'rgba(0,245,255,0.02)' }}>
+                        <Plus size={16} />
+                        <span className="meta-text text-[8px] mt-1">{uploading ? '...' : 'ADD'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAdditionalImageUpload} disabled={uploading} />
+                      </label>
+                    )}
                   </div>
                 </div>
 

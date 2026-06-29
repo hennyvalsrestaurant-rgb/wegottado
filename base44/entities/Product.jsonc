@@ -17,6 +17,13 @@
     "image_url": {
       "type": "string"
     },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Up to 5 product image URLs"
+    },
     "tag": {
       "type": "string"
     },
