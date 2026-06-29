@@ -10,6 +10,7 @@ import { X, Star, ShoppingBag, Check } from 'lucide-react';
 export default function HoloShowroom() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalSize, setModalSize] = useState(null);
+  const [activeImage, setActiveImage] = useState(null);
   const MODAL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
@@ -265,7 +266,7 @@ export default function HoloShowroom() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200] flex items-center justify-center p-6"
             style={{ background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(20px)' }}
-            onClick={() => { setSelectedProduct(null); setModalSize(null); }}
+            onClick={() => { setSelectedProduct(null); setModalSize(null); setActiveImage(null); }}
           >
             <motion.div
               initial={{ scale: 0.9, y: 30 }}
@@ -277,17 +278,40 @@ export default function HoloShowroom() {
               onClick={e => e.stopPropagation()}
             >
               <button
-                onClick={() => setSelectedProduct(null)}
+                onClick={() => { setSelectedProduct(null); setModalSize(null); setActiveImage(null); }}
                 className="absolute top-4 right-4 z-10 cursor-hover w-8 h-8 flex items-center justify-center"
                 style={{ background: 'rgba(8,8,8,0.75)', border: '1px solid rgba(0,245,255,0.3)', color: 'var(--neon-cyan)' }}
               >
                 <X size={16} />
               </button>
               <img
-                src={selectedProduct.image_url}
+                src={activeImage || selectedProduct.image_url}
                 alt={selectedProduct.name}
                 className="w-full h-64 object-cover"
               />
+              {/* Thumbnail strip */}
+              {selectedProduct.images?.length > 0 && (
+                <div className="flex gap-2 px-4 py-3" style={{ background: 'rgba(0,0,0,0.4)' }}>
+                  {/* Main image thumb */}
+                  <button
+                    onClick={() => setActiveImage(null)}
+                    className="w-14 h-14 flex-shrink-0 cursor-hover overflow-hidden"
+                    style={{ border: `1px solid ${!activeImage ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`, boxShadow: !activeImage ? '0 0 8px rgba(0,245,255,0.3)' : 'none' }}
+                  >
+                    <img src={selectedProduct.image_url} alt="main" className="w-full h-full object-cover" />
+                  </button>
+                  {selectedProduct.images.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImage(url)}
+                      className="w-14 h-14 flex-shrink-0 cursor-hover overflow-hidden"
+                      style={{ border: `1px solid ${activeImage === url ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`, boxShadow: activeImage === url ? '0 0 8px rgba(0,245,255,0.3)' : 'none' }}
+                    >
+                      <img src={url} alt={`view-${i}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="p-8">
                 <span className="meta-text text-[10px] block mb-3" style={{ color: 'var(--neon-cyan)' }}>
                   {selectedProduct.category}
