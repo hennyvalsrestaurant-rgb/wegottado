@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const FOOTER_LINKS = {
   'THE HOUSE': ['Our Story', 'The Atelier', 'Sustainability', 'Careers'],
@@ -51,16 +52,9 @@ export default function Footer() {
           © 2026 WEGOTTADO. ALL RIGHTS RESERVED.
         </span>
         <div className="flex items-center gap-8">
-          {['PRIVACY', 'TERMS', 'COOKIES'].map(item => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className="meta-text text-[10px] gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]"
-              style={{ color: 'rgba(245,245,247,0.2)' }}
-            >
-              {item}
-            </a>
-          ))}
+          <Link to="/privacy" className="meta-text text-[10px] gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]" style={{ color: 'rgba(245,245,247,0.2)' }}>PRIVACY</Link>
+          <Link to="/terms" className="meta-text text-[10px] gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]" style={{ color: 'rgba(245,245,247,0.2)' }}>TERMS</Link>
+          <a href="#cookies" className="meta-text text-[10px] gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]" style={{ color: 'rgba(245,245,247,0.2)' }}>COOKIES</a>
         </div>
       </div>
 

@@ -1,0 +1,27 @@
+{
+  "name": "SiteContent",
+  "type": "object",
+  "properties": {
+    "section": {
+      "type": "string",
+      "description": "Section identifier e.g. atelier, lookbook, craft, maison"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Image URLs for this section"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional label per image (name, caption)"
+    }
+  },
+  "required": [
+    "section"
+  ]
+}
