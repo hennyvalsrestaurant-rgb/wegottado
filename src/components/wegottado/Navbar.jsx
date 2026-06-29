@@ -98,7 +98,7 @@ export default function Navbar() {
               </>
             )}
             {!user && (
-              <Link to="/login" className="meta-text text-[10px] cursor-hover hidden md:block"
+              <Link to="/login" className="meta-text text-[10px] cursor-hover"
                 style={{ color: 'var(--gold)', border: '1px solid rgba(212,175,55,0.3)', padding: '6px 14px' }}>
                 SIGN IN
               </Link>
