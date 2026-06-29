@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import HoloProductCard from './HoloProductCard';
@@ -12,9 +12,24 @@ export default function HoloShowroom() {
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
+  const [sizeFilter, setSizeFilter] = useState('ALL');
   const [cartNotif, setCartNotif] = useState(null);
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [filtersVisible, setFiltersVisible] = useState(true);
+  const scrollTimerRef = useRef(null);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setFiltersVisible(false);
+      clearTimeout(scrollTimerRef.current);
+      scrollTimerRef.current = setTimeout(() => setFiltersVisible(true), 600);
+      lastScrollY.current = window.scrollY;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(scrollTimerRef.current); };
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -25,6 +40,7 @@ export default function HoloShowroom() {
   }, []);
 
   const CATEGORIES = ['ALL', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const SIZES = ['ALL', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const handleAddToCart = async (product) => {
     if (!user) {
@@ -59,7 +75,10 @@ export default function HoloShowroom() {
     setCartLoading(false);
   };
 
-  const filtered = products.filter(p => filter === 'ALL' || p.category === filter);
+  const filtered = products.filter(p =>
+    (filter === 'ALL' || p.category === filter) &&
+    (sizeFilter === 'ALL' || !p.sizes || p.sizes?.includes(sizeFilter))
+  );
 
   return (
     <section id="showroom" className="relative py-24 md:py-36 px-6 md:px-[8vw]">
@@ -131,24 +150,59 @@ export default function HoloShowroom() {
           <div className="h-px w-20" style={{ background: 'linear-gradient(to left, transparent, var(--neon-cyan))' }} />
         </div>
 
-        {/* Category filter */}
-        <div className="flex flex-wrap justify-center gap-3 mt-10">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className="cursor-hover px-4 py-2 meta-text text-[10px] transition-all duration-300"
-              style={{
-                border: `1px solid ${filter === cat ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`,
-                color: filter === cat ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)',
-                background: filter === cat ? 'rgba(0,245,255,0.08)' : 'transparent',
-                boxShadow: filter === cat ? '0 0 15px rgba(0,245,255,0.2)' : 'none',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Filters — fade on scroll */}
+        <motion.div
+          animate={{ opacity: filtersVisible ? 1 : 0, y: filtersVisible ? 0 : -6 }}
+          transition={{ duration: 0.35, ease: 'easeInOut' }}
+          className="mt-10 space-y-4"
+        >
+          {/* Category row */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="meta-text text-[9px] self-center mr-2" style={{ color: 'rgba(245,245,247,0.25)', letterSpacing: '0.2em' }}>CATEGORY</span>
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className="cursor-hover px-5 py-1.5 meta-text text-[9px] transition-all duration-400"
+                style={{
+                  border: `1px solid ${filter === cat ? 'var(--gold)' : 'rgba(245,245,247,0.1)'}`,
+                  color: filter === cat ? 'var(--gold)' : 'rgba(245,245,247,0.35)',
+                  background: filter === cat ? 'rgba(212,175,55,0.07)' : 'transparent',
+                  letterSpacing: '0.18em',
+                  boxShadow: filter === cat ? '0 0 12px rgba(212,175,55,0.18)' : 'none',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Thin separator */}
+          <div className="flex justify-center">
+            <div className="h-px w-32" style={{ background: 'linear-gradient(to right, transparent, rgba(245,245,247,0.08), transparent)' }} />
+          </div>
+
+          {/* Size row */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="meta-text text-[9px] self-center mr-2" style={{ color: 'rgba(245,245,247,0.25)', letterSpacing: '0.2em' }}>SIZE</span>
+            {SIZES.map(sz => (
+              <button
+                key={sz}
+                onClick={() => setSizeFilter(sz)}
+                className="cursor-hover w-10 h-10 meta-text text-[9px] transition-all duration-400 flex items-center justify-center"
+                style={{
+                  border: `1px solid ${sizeFilter === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.1)'}`,
+                  color: sizeFilter === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.3)',
+                  background: sizeFilter === sz ? 'rgba(0,245,255,0.07)' : 'transparent',
+                  boxShadow: sizeFilter === sz ? '0 0 10px rgba(0,245,255,0.15)' : 'none',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                {sz}
+              </button>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       {/* Product grid */}
