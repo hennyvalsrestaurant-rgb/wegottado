@@ -244,8 +244,9 @@ export default function Checkout() {
                           <span className="meta-text text-xs w-20 text-right metallic-text">
                             ${(item.price * item.quantity).toLocaleString()}
                           </span>
-                          <button onClick={() => removeItem(item)} className="cursor-hover opacity-40 hover:opacity-100 transition-opacity">
-                            <Trash2 size={14} style={{ color: '#FF4444' }} />
+                          <button onClick={() => removeItem(item)} className="cursor-hover p-2 flex items-center justify-center flex-shrink-0"
+                            style={{ border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', background: 'rgba(255,68,68,0.06)' }}>
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       ))}

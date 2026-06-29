@@ -24,7 +24,7 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     base44.auth.me().then(me => {
       setUser(me);
-      base44.entities.CartItem.filter({ user_id: me.id }).then(items => setCartCount(items.length)).catch(() => {});
+      base44.entities.CartItem.filter({ user_id: me.id }).then(items => setCartCount(items.reduce((s, i) => s + (i.quantity || 1), 0))).catch(() => {});
       base44.entities.Notification.filter({ user_id: me.id, read: false }).then(n => setNotifCount(n.length)).catch(() => {});
     }).catch(() => {});
     return () => window.removeEventListener('scroll', onScroll);
