@@ -4,15 +4,29 @@ import { base44 } from '@/api/base44Client';
 
 const DEFAULT_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/0f2fef579_generated_d7ac6c34.png";
 
+const DEFAULT_TEXT = {
+  subtitle: 'FEATURED COLLECTION — AW26',
+  titleLine1: 'The Ivory',
+  titleLine2: 'Doctrine',
+  description: "Fifty pieces. No more. Each garment in The Ivory Doctrine is cut from a single bolt of hand-woven silk, sourced from the last atelier in Kyoto that still operates a century-old loom. When it's gone, it's gone.",
+  bullets: ['Hand-woven Kyoto silk', 'Gold-leaf detailing', 'Numbered certificate of authenticity'],
+  floatingLabel: 'LIMITED EDITION — 001/050',
+};
+
 export default function FeaturedCollection() {
   const [imgSrc, setImgSrc] = useState(DEFAULT_IMG);
+  const [text, setText] = useState(DEFAULT_TEXT);
 
   useEffect(() => {
     base44.entities.SiteContent.filter({ section: 'featured' }).then(records => {
-      const url = records?.[0]?.images?.[0];
-      if (url) setImgSrc(url);
+      const record = records?.[0];
+      if (record?.images?.[0]) setImgSrc(record.images[0]);
+      if (record?.labels?.[0]) {
+        try { setText(JSON.parse(record.labels[0])); } catch {}
+      }
     }).catch(() => {});
   }, []);
+
   const sectionRef = useRef(null);
   const textRef = useRef(null);
   const isInView = useInView(textRef, { once: true, margin: '-100px' });
@@ -30,7 +44,7 @@ export default function FeaturedCollection() {
             <div className="relative overflow-hidden glossy-reflection">
               <img
                 src={imgSrc}
-                alt="The Ivory Collection editorial fashion"
+                alt={text.titleLine1 + ' ' + text.titleLine2}
                 className="w-full h-[500px] md:h-[700px] object-cover"
               />
               {/* Gold frame */}
@@ -47,7 +61,7 @@ export default function FeaturedCollection() {
               className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 -rotate-90"
             >
               <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
-                LIMITED EDITION — 001/050
+                {text.floatingLabel}
               </span>
             </motion.div>
           </motion.div>
@@ -60,7 +74,7 @@ export default function FeaturedCollection() {
               transition={{ duration: 1 }}
               className="meta-text block mb-8"
             >
-              FEATURED COLLECTION — AW26
+              {text.subtitle}
             </motion.span>
 
             <motion.h2
@@ -70,8 +84,8 @@ export default function FeaturedCollection() {
               className="heading-display text-5xl md:text-6xl lg:text-7xl mb-8"
               style={{ color: 'var(--carrara)' }}
             >
-              The Ivory{' '}
-              <span className="italic" style={{ color: 'var(--gold)' }}>Doctrine</span>
+              {text.titleLine1}{' '}
+              <span className="italic" style={{ color: 'var(--gold)' }}>{text.titleLine2}</span>
             </motion.h2>
 
             <motion.p
@@ -81,9 +95,7 @@ export default function FeaturedCollection() {
               className="text-base leading-relaxed mb-8"
               style={{ color: 'rgba(245,245,247,0.5)', lineHeight: 1.8 }}
             >
-              Fifty pieces. No more. Each garment in The Ivory Doctrine is cut from a single
-              bolt of hand-woven silk, sourced from the last atelier in Kyoto that still
-              operates a century-old loom. When it's gone, it's gone.
+              {text.description}
             </motion.p>
 
             <motion.div
@@ -92,7 +104,7 @@ export default function FeaturedCollection() {
               transition={{ duration: 1, delay: 0.6 }}
               className="space-y-4"
             >
-              {['Hand-woven Kyoto silk', 'Gold-leaf detailing', 'Numbered certificate of authenticity'].map((item, i) => (
+              {text.bullets.map((item, i) => (
                 <div key={i} className="flex items-center gap-4">
                   <div className="w-6 h-px" style={{ background: 'var(--gold)' }} />
                   <span className="text-sm" style={{ color: 'rgba(245,245,247,0.7)' }}>{item}</span>

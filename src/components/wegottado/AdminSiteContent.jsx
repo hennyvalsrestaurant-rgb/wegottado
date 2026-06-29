@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Upload, X, Save, ImageIcon, RefreshCw } from 'lucide-react';
+import { Upload, X, Save, ImageIcon, RefreshCw, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SECTIONS = [
@@ -18,12 +18,20 @@ function SectionEditor({ section }) {
   const [replacingIdx, setReplacingIdx] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [generatingText, setGeneratingText] = useState(false);
+  const [generatedText, setGeneratedText] = useState(null);
   const replaceInputRef = useRef(null);
   const replaceIdxRef = useRef(null);
 
   useEffect(() => {
     base44.entities.SiteContent.filter({ section: section.key }).then(results => {
-      if (results[0]) { setImages(results[0].images || []); setRecordId(results[0].id); }
+      if (results[0]) {
+        setImages(results[0].images || []);
+        setRecordId(results[0].id);
+        if (results[0].labels?.[0]) {
+          try { setGeneratedText(JSON.parse(results[0].labels[0])); } catch {}
+        }
+      }
     }).catch(() => {});
   }, [section.key]);
 
@@ -55,12 +63,43 @@ function SectionEditor({ section }) {
 
   const removeImage = (idx) => setImages(prev => prev.filter((_, i) => i !== idx));
 
+  const handleGenerateText = async () => {
+    if (!images[0]) return;
+    setGeneratingText(true);
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are a luxury fashion copywriter for WEGOTTADO, an ultra-high-end fashion house. Analyze this fashion image and generate editorial copy for the "Featured Collection" section. Return JSON with exactly these fields:
+- subtitle: a short all-caps collection label like "FEATURED COLLECTION — AW26" (keep the AW26 or infer season)
+- titleLine1: 2-3 words (the first part of the headline, plain)
+- titleLine2: 1-2 words (the second part, shown in italic gold — make it poetic/evocative)
+- description: 2-3 sentences of luxury editorial prose about the garment/collection
+- bullets: array of exactly 3 short material/craft highlights (e.g. "Hand-woven silk", "24k gold thread")
+- floatingLabel: a short vertical side label like "LIMITED EDITION — 001/050"
+
+Be poetic, minimal, and ultra-luxurious. Base everything on what you see in the image.`,
+      file_urls: [images[0]],
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          subtitle: { type: 'string' },
+          titleLine1: { type: 'string' },
+          titleLine2: { type: 'string' },
+          description: { type: 'string' },
+          bullets: { type: 'array', items: { type: 'string' } },
+          floatingLabel: { type: 'string' },
+        }
+      }
+    });
+    setGeneratedText(result);
+    setGeneratingText(false);
+  };
+
   const handleSave = async () => {
     setSaving(true);
+    const labels = generatedText ? [JSON.stringify(generatedText)] : [];
     if (recordId) {
-      await base44.entities.SiteContent.update(recordId, { images });
+      await base44.entities.SiteContent.update(recordId, { images, labels });
     } else {
-      const created = await base44.entities.SiteContent.create({ section: section.key, images });
+      const created = await base44.entities.SiteContent.create({ section: section.key, images, labels });
       setRecordId(created.id);
     }
     setSaving(false);
@@ -124,6 +163,46 @@ function SectionEditor({ section }) {
           </div>
         )}
       </div>
+
+      {/* AI text generation — featured section only */}
+      {section.key === 'featured' && images.length > 0 && (
+        <div className="space-y-3 pt-2" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
+          <div className="flex items-center justify-between">
+            <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>AI COPY GENERATION</span>
+            <button
+              onClick={handleGenerateText}
+              disabled={generatingText}
+              className="flex items-center gap-2 px-4 py-2 cursor-hover meta-text text-[10px] transition-all"
+              style={{
+                border: '1px solid rgba(212,175,55,0.4)',
+                color: generatingText ? 'rgba(212,175,55,0.4)' : 'var(--gold)',
+                background: 'rgba(212,175,55,0.06)',
+              }}>
+              <Sparkles size={11} />
+              {generatingText ? 'GENERATING...' : generatedText ? 'REGENERATE TEXT' : 'GENERATE TEXT FROM IMAGE'}
+            </button>
+          </div>
+          {generatedText && (
+            <div className="p-4 space-y-2" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              <p className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{generatedText.subtitle}</p>
+              <p className="heading-display text-lg" style={{ color: 'var(--carrara)' }}>
+                {generatedText.titleLine1} <span className="italic" style={{ color: 'var(--gold)' }}>{generatedText.titleLine2}</span>
+              </p>
+              <p className="text-xs" style={{ color: 'rgba(245,245,247,0.45)', lineHeight: 1.7 }}>{generatedText.description}</p>
+              <ul className="space-y-1 mt-2">
+                {generatedText.bullets?.map((b, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <div className="w-4 h-px flex-shrink-0" style={{ background: 'var(--gold)' }} />
+                    <span className="text-xs" style={{ color: 'rgba(245,245,247,0.5)' }}>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="meta-text text-[9px] mt-1" style={{ color: 'rgba(212,175,55,0.5)' }}>{generatedText.floatingLabel}</p>
+              <p className="meta-text text-[9px] mt-3" style={{ color: 'rgba(0,245,255,0.4)' }}>↑ Hit SAVE above to apply this text to the site</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
