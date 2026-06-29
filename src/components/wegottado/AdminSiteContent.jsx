@@ -84,35 +84,35 @@ function SectionEditor({ section }) {
       {/* Hidden input for replace */}
       <input ref={replaceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-4">
         {images.map((url, idx) => (
-          <div key={idx} className="relative w-24 h-24 flex-shrink-0 group">
-            <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" style={{ border: '1px solid rgba(0,245,255,0.15)' }} />
-            {replacingIdx === idx && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(8,8,8,0.7)' }}>
-                <span className="meta-text text-[8px]" style={{ color: 'var(--neon-cyan)' }}>...</span>
-              </div>
-            )}
-            {/* Action overlay on hover */}
-            <div className="absolute inset-0 flex items-end justify-center gap-1 pb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.85), transparent 60%)' }}>
-              <button onClick={() => handleReplace(idx)} title="Replace image"
-                className="w-7 h-7 flex items-center justify-center cursor-hover"
-                style={{ background: 'rgba(0,245,255,0.15)', border: '1px solid rgba(0,245,255,0.4)', color: 'var(--neon-cyan)' }}>
-                <RefreshCw size={11} />
+          <div key={idx} className="flex flex-col gap-1.5 flex-shrink-0" style={{ width: 120 }}>
+            <div className="relative" style={{ width: 120, height: 120 }}>
+              <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" style={{ border: '1px solid rgba(0,245,255,0.2)', display: 'block' }} />
+              {replacingIdx === idx && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(8,8,8,0.75)' }}>
+                  <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>UPLOADING...</span>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-1">
+              <button onClick={() => handleReplace(idx)} title="Replace"
+                className="flex-1 flex items-center justify-center gap-1 py-1.5 cursor-hover meta-text text-[9px]"
+                style={{ background: 'rgba(0,245,255,0.08)', border: '1px solid rgba(0,245,255,0.25)', color: 'var(--neon-cyan)' }}>
+                <RefreshCw size={10} /> REPLACE
               </button>
-              <button onClick={() => removeImage(idx)} title="Remove image"
-                className="w-7 h-7 flex items-center justify-center cursor-hover"
-                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.4)', color: '#FF4444' }}>
+              <button onClick={() => removeImage(idx)} title="Delete"
+                className="flex items-center justify-center px-2 cursor-hover"
+                style={{ background: 'rgba(255,68,68,0.08)', border: '1px solid rgba(255,68,68,0.25)', color: '#FF4444' }}>
                 <X size={11} />
               </button>
             </div>
           </div>
         ))}
         {images.length < section.max && (
-          <label className="w-20 h-20 flex flex-col items-center justify-center flex-shrink-0 cursor-hover"
-            style={{ border: '1px dashed rgba(0,245,255,0.2)', color: 'rgba(0,245,255,0.35)', background: 'rgba(0,245,255,0.02)' }}>
-            {uploading ? <span className="meta-text text-[8px]">...</span> : <><Upload size={16} /><span className="meta-text text-[8px] mt-1">ADD</span></>}
+          <label className="flex flex-col items-center justify-center flex-shrink-0 cursor-hover"
+            style={{ width: 120, height: 120, border: '1px dashed rgba(0,245,255,0.2)', color: 'rgba(0,245,255,0.35)', background: 'rgba(0,245,255,0.02)' }}>
+            {uploading ? <span className="meta-text text-[9px]">UPLOADING...</span> : <><Upload size={20} /><span className="meta-text text-[9px] mt-2">ADD IMAGE</span></>}
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
         )}
