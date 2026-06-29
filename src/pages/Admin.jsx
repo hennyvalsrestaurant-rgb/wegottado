@@ -180,7 +180,9 @@ export default function Admin() {
             className="fixed inset-0 z-50 flex items-center justify-center p-6"
             style={{ background: 'rgba(0,0,0,0.85)' }}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-              className="holo-card w-full max-w-lg p-8 relative overflow-y-auto max-h-[90vh]">
+              className="holo-card w-full max-w-lg relative flex flex-col"
+              style={{ maxHeight: '90vh' }}>
+              <div className="p-8 overflow-y-auto flex-1">
               <div className="flex items-center justify-between mb-8">
                 <span className="meta-text text-[10px]" style={{ color: 'var(--neon-cyan)' }}>
                   {editId ? 'EDIT PRODUCT' : 'NEW PRODUCT'}
@@ -294,8 +296,9 @@ export default function Admin() {
                   </div>
                 </div>
               </div>
+              </div>
 
-              <div className="flex gap-4 mt-8">
+              <div className="flex gap-4 p-6 flex-shrink-0" style={{ borderTop: '1px solid rgba(0,245,255,0.1)' }}>
                 <button onClick={closeForm} className="px-6 py-3 cursor-hover meta-text text-[10px]"
                   style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'rgba(245,245,247,0.5)' }}>
                   CANCEL
