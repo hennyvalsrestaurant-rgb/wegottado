@@ -98,7 +98,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
               <img
                 src={allImages[imgIndex]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 style={{ transform: hovered ? 'scale(1.06)' : 'scale(1)', transition: 'transform 1s ease', pointerEvents: 'none' }}
                 draggable={false}
               />
