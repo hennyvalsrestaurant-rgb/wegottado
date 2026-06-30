@@ -1,0 +1,44 @@
+{
+  "name": "PreOrder",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Up to 5 product image URLs"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Expected release / drop date"
+    },
+    "notify_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow users to register interest"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

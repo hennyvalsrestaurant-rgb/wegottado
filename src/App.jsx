@@ -13,6 +13,7 @@ import Checkout from './pages/Checkout';
 import Admin from './pages/Admin';
 import OrderConfirmed from './pages/OrderConfirmed';
 import Privacy from './pages/Privacy';
+import PreOrders from './pages/PreOrders';
 import Terms from './pages/Terms';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/order-confirmed" element={<OrderConfirmed />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/pre-orders" element={<PreOrders />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
