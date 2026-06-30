@@ -18,18 +18,20 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
 
   const goNext = (e) => {
     e.stopPropagation();
+    if (imgIndex >= allImages.length - 1) return;
     setDirection(1);
-    setImgIndex(i => (i + 1) % allImages.length);
+    setImgIndex(i => i + 1);
   };
   const goPrev = (e) => {
     e.stopPropagation();
+    if (imgIndex <= 0) return;
     setDirection(-1);
-    setImgIndex(i => (i - 1 + allImages.length) % allImages.length);
+    setImgIndex(i => i - 1);
   };
 
   const handleDragEnd = (e, info) => {
-    if (info.offset.x < -40) { setDirection(1); setImgIndex(i => (i + 1) % allImages.length); }
-    else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
+    if (info.offset.x < -40 && imgIndex < allImages.length - 1) { setDirection(1); setImgIndex(i => i + 1); }
+    else if (info.offset.x > 40 && imgIndex > 0) { setDirection(-1); setImgIndex(i => i - 1); }
   };
 
   const availableSizes = product.sizes?.length ? product.sizes : SIZES;
@@ -86,10 +88,10 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-              drag="x"
+              drag={allImages.length > 1 ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.15}
-              onDragEnd={handleDragEnd}
+              onDragEnd={allImages.length > 1 ? handleDragEnd : undefined}
               className="absolute inset-0"
               style={{ transformStyle: 'preserve-3d', perspective: 800 }}
             >
