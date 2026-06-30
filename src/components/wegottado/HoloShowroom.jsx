@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import HoloProductCard from './HoloProductCard';
 import { Link } from 'react-router-dom';
 import { X, Star, ShoppingBag, Check } from 'lucide-react';
+import { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 
 
@@ -42,6 +43,7 @@ export default function HoloShowroom() {
     }).catch(() => setLoadingProducts(false));
   }, []);
 
+  const { format } = useCurrency();
   const CATEGORIES = ['ALL', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
   const SIZES = ['ALL', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
@@ -328,7 +330,7 @@ export default function HoloShowroom() {
                 </div>
                 <div className="flex items-center justify-between mb-6">
                   <span className="heading-display text-3xl metallic-text">
-                    ${selectedProduct.price.toLocaleString()}
+                    {format(selectedProduct.price)}
                   </span>
                   <span className="meta-text text-[10px]" style={{ color: selectedProduct.in_stock ? 'rgba(0,245,255,0.5)' : 'rgba(255,100,100,0.5)' }}>
                     {selectedProduct.in_stock !== false ? 'IN STOCK' : 'OUT OF STOCK'}

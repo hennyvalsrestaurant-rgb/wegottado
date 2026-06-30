@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Eye } from 'lucide-react';
+import { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
@@ -32,6 +33,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
   };
 
   const availableSizes = product.sizes?.length ? product.sizes : SIZES;
+  const { format } = useCurrency();
 
   const onMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -175,7 +177,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             {product.name}
           </h3>
           <span className="meta-text text-xs metallic-text">
-            ${typeof product.price === 'number' ? product.price.toLocaleString() : product.price}
+            {format(product.price)}
           </span>
 
           {/* Size selector */}
