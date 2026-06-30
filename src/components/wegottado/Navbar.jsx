@@ -140,6 +140,14 @@ export default function Navbar() {
                 {link.label}
               </motion.button>
             ))}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ delay: NAV_LINKS.length * 0.08, duration: 0.5 }}
+            >
+              <CurrencySelector />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
