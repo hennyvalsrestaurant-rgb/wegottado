@@ -5,18 +5,27 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    const { items, userId } = await req.json();
+    const { items, userId, currency, rate } = await req.json();
 
     if (!items || !items.length) {
       return Response.json({ error: 'No items provided' }, { status: 400 });
     }
 
     const origin = req.headers.get('Origin') || 'https://app.base44.com';
+    const fxRate = (typeof rate === 'number' && rate > 0) ? rate : 1;
+
+    // Validate no item falls below Wix's 0.50 minimum after conversion
+    for (const item of items) {
+      const converted = item.price * fxRate;
+      if (converted < 0.5) {
+        return Response.json({ error: `Item "${item.product_name}" price is below the minimum charge of 0.50 ${currency || 'USD'}.` }, { status: 400 });
+      }
+    }
 
     const wixItems = items.map(item => ({
       name: item.product_name,
       quantity: item.quantity,
-      price: (item.price).toFixed(2),
+      price: (item.price * fxRate).toFixed(2),
     }));
 
     const customerInfo = user ? {

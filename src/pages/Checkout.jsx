@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Zap } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
+import CurrencySelector, { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 const STEPS = ['BAG', 'SHIPPING', 'PAYMENT', 'CONFIRMED'];
 
@@ -75,9 +76,16 @@ export default function Checkout() {
     setCartItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: newQty } : i));
   };
 
-  const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
+  const { currency, rate, format } = useCurrency();
+
+  const subtotalUSD = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const taxUSD = subtotalUSD * 0.1;
+  const totalUSD = subtotalUSD + taxUSD;
+
+  // Display values in selected currency
+  const subtotal = subtotalUSD * rate;
+  const tax = taxUSD * rate;
+  const total = totalUSD * rate;
 
   const handlePayWithBase44 = async () => {
     setOrderError(null);
@@ -86,6 +94,8 @@ export default function Checkout() {
       const res = await base44.functions.invoke('create-checkout', {
         items: cartItems,
         userId: user?.id,
+        currency,
+        rate,
       });
       if (res.data.redirectUrl) {
         window.location.href = res.data.redirectUrl;
@@ -157,9 +167,12 @@ export default function Checkout() {
             alt="WEGOTTADO"
             className="h-9 w-auto object-contain"
           />
-          <Link to="/profile" className="flex items-center gap-2 cursor-hover" style={{ color: 'rgba(245,245,247,0.4)' }}>
-            <span className="meta-text text-[10px]">MY PROFILE</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <CurrencySelector />
+            <Link to="/profile" className="flex items-center gap-2 cursor-hover" style={{ color: 'rgba(245,245,247,0.4)' }}>
+              <span className="meta-text text-[10px] hidden sm:block">MY PROFILE</span>
+            </Link>
+          </div>
         </div>
 
         {/* Step indicators */}
@@ -221,7 +234,7 @@ export default function Checkout() {
                               <h4 className="heading-display text-lg sm:text-xl" style={{ color: 'var(--carrara)' }}>{item.product_name}</h4>
                               <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                                 <span className="meta-text text-[10px]" style={{ color: 'var(--gold)' }}>
-                                  ${item.price.toLocaleString()}
+                                  {format(item.price)}
                                 </span>
                                 {item.size && (
                                   <span className="meta-text text-[9px] px-2 py-0.5" style={{ border: '1px solid rgba(0,245,255,0.2)', color: 'var(--neon-cyan)' }}>
@@ -252,7 +265,7 @@ export default function Checkout() {
                               </button>
                             </div>
                             <span className="meta-text text-xs w-20 text-right metallic-text">
-                              ${(item.price * item.quantity).toLocaleString()}
+                              {format(item.price * item.quantity)}
                             </span>
                             {/* Delete — desktop only */}
                             <button onClick={() => removeItem(item)} className="cursor-hover p-2 flex items-center justify-center flex-shrink-0 hidden sm:flex"
@@ -267,17 +280,17 @@ export default function Checkout() {
                     {/* Summary */}
                     <div className="holo-card p-6 mb-6">
                       <div className="space-y-3 mb-4">
-                        {[['SUBTOTAL', subtotal], ['TAX (10%)', tax]].map(([l, v]) => (
+                        {[['SUBTOTAL', subtotalUSD], ['TAX (10%)', taxUSD]].map(([l, v]) => (
                           <div key={l} className="flex justify-between">
                             <span className="meta-text text-[10px]">{l}</span>
                             <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>
-                              ${v.toFixed(2)}
+                              {format(v)}
                             </span>
                           </div>
                         ))}
                         <div className="flex justify-between pt-3" style={{ borderTop: '1px solid rgba(0,245,255,0.1)' }}>
                           <span className="meta-text text-[10px]" style={{ color: 'var(--neon-cyan)' }}>TOTAL</span>
-                          <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
+                          <span className="heading-display text-2xl metallic-text">{format(totalUSD)}</span>
                         </div>
                       </div>
                     </div>
@@ -415,15 +428,15 @@ export default function Checkout() {
                 {/* Order summary */}
                 <div className="holo-card p-6 mb-6">
                   <div className="space-y-3">
-                    {[['SUBTOTAL', subtotal], ['TAX (10%)', tax]].map(([l, v]) => (
+                    {[['SUBTOTAL', subtotalUSD], ['TAX (10%)', taxUSD]].map(([l, v]) => (
                       <div key={l} className="flex justify-between">
                         <span className="meta-text text-[10px]">{l}</span>
-                        <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>${v.toFixed(2)}</span>
+                        <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>{format(v)}</span>
                       </div>
                     ))}
                     <div className="flex justify-between pt-3" style={{ borderTop: '1px solid rgba(0,245,255,0.1)' }}>
                       <span className="meta-text text-[10px]" style={{ color: 'var(--neon-cyan)' }}>TOTAL</span>
-                      <span className="heading-display text-2xl metallic-text">${total.toFixed(2)}</span>
+                      <span className="heading-display text-2xl metallic-text">{format(totalUSD)}</span>
                     </div>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag, User, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import CurrencySelector from '@/components/wegottado/CurrencySelector';
 
 const NAV_LINKS = [
   { label: 'COLLECTIONS', href: '#collections' },
@@ -71,7 +72,8 @@ export default function Navbar() {
           </div>
 
           {/* Action icons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="hidden md:block"><CurrencySelector /></div>
             {user && (
               <>
                 <Link to="/profile" className="relative cursor-hover" style={{ color: 'rgba(245,245,247,0.5)' }}>
