@@ -28,9 +28,9 @@ export default function Home() {
       <div id="manifesto"><ManifestoSection /></div>
       <div id="collections"><HoloShowroom /></div>
       <div id="featured"><FeaturedCollection /></div>
+      <div id="pre-orders-preview"><PreOrdersPreview /></div>
       <div id="craft"><CraftSection /></div>
       <div id="lookbook"><LookbookSection /></div>
-      <div id="pre-orders-preview"><PreOrdersPreview /></div>
       <div id="maison"><MaisonSection /></div>
       <Footer />
     </div>
