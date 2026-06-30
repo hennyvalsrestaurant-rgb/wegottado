@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const FOOTER_LINKS = {
   'THE HOUSE': ['Our Story', 'The Atelier', 'Sustainability', 'Careers'],
-  'COLLECTIONS': ['Autumn/Winter 2026', 'Spring/Summer 2026', 'The Archives', 'Made to Order'],
+  'COLLECTIONS': ['Autumn/Winter 2026', 'Spring/Summer 2026', 'The Archives', 'Made to Order', 'Pre-Orders'],
   'CLIENT CARE': ['Contact', 'Shipping', 'Returns', 'Size Guide'],
 };
 
@@ -31,13 +31,19 @@ export default function Footer() {
             <ul className="space-y-3">
               {links.map(link => (
                 <li key={link}>
-                  <a
-                    href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="text-xs gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]"
-                    style={{ color: 'rgba(245,245,247,0.4)' }}
-                  >
-                    {link}
-                  </a>
+                  {link === 'Pre-Orders' ? (
+                    <Link to="/pre-orders" className="text-xs gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]" style={{ color: 'rgba(245,245,247,0.4)' }}>
+                      {link}
+                    </Link>
+                  ) : (
+                    <a
+                      href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="text-xs gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]"
+                      style={{ color: 'rgba(245,245,247,0.4)' }}
+                    >
+                      {link}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

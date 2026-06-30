@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag, User, Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CurrencySelector from '@/components/wegottado/CurrencySelector';
 
@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: 'CRAFT', href: '#craft' },
   { label: 'LOOKBOOK', href: '#lookbook' },
   { label: 'MAISON', href: '#maison' },
+  { label: 'PRE-ORDERS', href: '/pre-orders', isPage: true },
 ];
 
 export default function Navbar() {
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [notifCount, setNotifCount] = useState(0);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -31,8 +33,9 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const scrollTo = (href) => {
+  const scrollTo = (href, isPage) => {
     setMobileOpen(false);
+    if (isPage) { navigate(href); return; }
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
@@ -63,8 +66,9 @@ export default function Navbar() {
             {NAV_LINKS.map(link => (
               <button
                 key={link.label}
-                onClick={() => scrollTo(link.href)}
+                onClick={() => scrollTo(link.href, link.isPage)}
                 className="meta-text gold-underline cursor-hover hover:text-[var(--gold)] transition-colors duration-500"
+                style={{ color: link.isPage ? 'var(--gold)' : undefined }}
               >
                 {link.label}
               </button>
@@ -133,7 +137,7 @@ export default function Navbar() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                onClick={() => scrollTo(link.href)}
+                onClick={() => scrollTo(link.href, link.isPage)}
                 className="heading-display text-4xl cursor-hover"
                 style={{ color: 'var(--carrara)' }}
               >
