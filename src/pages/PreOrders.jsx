@@ -8,8 +8,7 @@ import HoloCursor from '@/components/wegottado/HoloCursor';
 import Navbar from '@/components/wegottado/Navbar';
 import Footer from '@/components/wegottado/Footer';
 
-function FlipProductCard({ item, onSelect }) {
-  const [flipped, setFlipped] = useState(false);
+function ProductCard({ item, onSelect }) {
   const [imgIndex, setImgIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const { format } = useCurrency();
@@ -21,125 +20,87 @@ function FlipProductCard({ item, onSelect }) {
     else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
   };
 
-  const backImage = allImages[1] || allImages[0];
-
   return (
-    <div
-      className="cursor-hover"
-      style={{ perspective: '1000px', height: 380 }}
-      onMouseEnter={() => setFlipped(true)}
-      onMouseLeave={() => setFlipped(false)}
-    >
-      <motion.div
-        animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-        style={{ transformStyle: 'preserve-3d', width: '100%', height: '100%', position: 'relative' }}
-      >
-        {/* Front */}
-        <div
-          className="absolute inset-0 holo-card overflow-hidden"
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-        >
-          <div className="relative h-full overflow-hidden">
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={imgIndex}
-                custom={direction}
-                variants={{
-                  enter: (d) => ({ x: d * 60, opacity: 0 }),
-                  center: { x: 0, opacity: 1 },
-                  exit: (d) => ({ x: d * -60, opacity: 0 }),
-                }}
-                initial="enter" animate="center" exit="exit"
-                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-                drag={allImages.length > 1 ? "x" : false}
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.15}
-                onDragEnd={handleDragEnd}
-                className="absolute inset-0"
-              >
-                {allImages.length > 0 ? (
-                  <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
-                    <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-            {/* Dot indicators */}
-            {allImages.length > 1 && (
-              <div className="absolute bottom-[72px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
-                {allImages.map((_, i) => (
-                  <div key={i} className="rounded-full transition-all duration-300"
-                    style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
-                ))}
+    <div className="holo-card overflow-hidden cursor-hover" style={{ height: 380 }} onClick={() => onSelect(item)}>
+      <div className="relative h-full">
+        {/* Swipeable image */}
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={imgIndex}
+            custom={direction}
+            variants={{
+              enter: (d) => ({ x: d * 60, opacity: 0 }),
+              center: { x: 0, opacity: 1 },
+              exit: (d) => ({ x: d * -60, opacity: 0 }),
+            }}
+            initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+            drag={allImages.length > 1 ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.15}
+            onDragEnd={handleDragEnd}
+            onClick={e => allImages.length > 1 && e.stopPropagation()}
+            className="absolute inset-0"
+          >
+            {allImages.length > 0 ? (
+              <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
+                <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
               </div>
             )}
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.9) 0%, transparent 55%)' }} />
-            <div className="absolute top-4 left-4 px-3 py-1"
-              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', backdropFilter: 'blur(8px)' }}>
-              <span className="meta-text text-[9px]" style={{ color: 'var(--gold)' }}>COMING SOON</span>
-            </div>
-            {item.tag && (
-              <div className="absolute top-4 right-4 px-3 py-1"
-                style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', backdropFilter: 'blur(8px)' }}>
-                <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{item.tag}</span>
-              </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.95) 0%, transparent 55%)' }} />
+
+        {/* Dot indicators */}
+        {allImages.length > 1 && (
+          <div className="absolute bottom-[76px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+            {allImages.map((_, i) => (
+              <div key={i} className="rounded-full transition-all duration-300"
+                style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
+            ))}
+          </div>
+        )}
+
+        {/* Tags */}
+        <div className="absolute top-4 left-4 px-3 py-1 pointer-events-none"
+          style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', backdropFilter: 'blur(8px)' }}>
+          <span className="meta-text text-[9px]" style={{ color: 'var(--gold)' }}>COMING SOON</span>
+        </div>
+        {item.tag && (
+          <div className="absolute top-4 right-4 px-3 py-1 pointer-events-none"
+            style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', backdropFilter: 'blur(8px)' }}>
+            <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{item.tag}</span>
+          </div>
+        )}
+
+        {/* Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none">
+          <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>{item.category || 'COLLECTION'}</span>
+          <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>{item.name}</h3>
+          <div className="flex items-center justify-between">
+            {item.price ? (
+              <span className="meta-text text-xs metallic-text">{format(item.price)}</span>
+            ) : (
+              <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>PRICE TBA</span>
             )}
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>
-                {item.category || 'COLLECTION'}
+            {item.release_date && (
+              <span className="meta-text text-[9px] flex items-center gap-1" style={{ color: 'rgba(212,175,55,0.6)' }}>
+                <Clock size={10} /> {new Date(item.release_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </span>
-              <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>{item.name}</h3>
-              <div className="flex items-center justify-between">
-                {item.price ? (
-                  <span className="meta-text text-xs metallic-text">{format(item.price)}</span>
-                ) : (
-                  <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>PRICE TBA</span>
-                )}
-                {item.release_date && (
-                  <span className="meta-text text-[9px] flex items-center gap-1" style={{ color: 'rgba(212,175,55,0.6)' }}>
-                    <Clock size={10} /> {new Date(item.release_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
-            <div className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
-            <div className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
-            <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
+            )}
           </div>
         </div>
 
-        {/* Back */}
-        <div
-          className="absolute inset-0 holo-card overflow-hidden flex flex-col"
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-        >
-          {backImage ? (
-            <div className="flex-1 overflow-hidden">
-              <img src={backImage} alt={`${item.name} back`} className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="flex-1" style={{ background: 'var(--metal-mid)' }} />
-          )}
-          <div className="p-5" style={{ background: 'var(--metal-dark)', borderTop: '1px solid rgba(0,245,255,0.1)' }}>
-            {item.description ? (
-              <p className="text-xs mb-3 line-clamp-3" style={{ color: 'rgba(245,245,247,0.6)', lineHeight: 1.7 }}>{item.description}</p>
-            ) : (
-              <p className="text-xs mb-3" style={{ color: 'rgba(245,245,247,0.3)' }}>Limited edition. Strictly allocated.</p>
-            )}
-            <button onClick={() => onSelect(item)} className="meta-text text-[10px] cursor-hover" style={{ color: 'var(--neon-cyan)' }}>
-              VIEW DETAILS →
-            </button>
-          </div>
-          <div className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--gold)', borderLeft: '1px solid var(--gold)' }} />
-          <div className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--gold)', borderRight: '1px solid var(--gold)' }} />
-          <div className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--gold)', borderLeft: '1px solid var(--gold)' }} />
-          <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--gold)', borderRight: '1px solid var(--gold)' }} />
-        </div>
-      </motion.div>
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
+        <div className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
+        <div className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
+        <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
+      </div>
     </div>
   );
 }
@@ -257,7 +218,7 @@ export default function PreOrders() {
                 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07, duration: 0.6 }}
               >
-                <FlipProductCard item={item} onSelect={setSelected} />
+                <ProductCard item={item} onSelect={setSelected} />
               </motion.div>
             ))}
           </div>
