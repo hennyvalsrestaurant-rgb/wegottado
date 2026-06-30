@@ -77,8 +77,8 @@ export default function CurrencySelector({ compact = false }) {
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 z-50 min-w-[80px]"
-          style={{ background: 'var(--metal-mid)', border: '1px solid rgba(0,245,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+          className="absolute right-0 top-full mt-1 z-50 min-w-[80px] overflow-y-auto"
+          style={{ background: 'var(--metal-mid)', border: '1px solid rgba(0,245,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', maxHeight: '200px' }}
         >
           {currencies.map(c => (
             <button
