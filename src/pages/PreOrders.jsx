@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
@@ -11,6 +11,8 @@ import Footer from '@/components/wegottado/Footer';
 function ProductCard({ item, onSelect }) {
   const [imgIndex, setImgIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const cardRef = useRef(null);
   const { format } = useCurrency();
   const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
 
@@ -20,87 +22,103 @@ function ProductCard({ item, onSelect }) {
     else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
   };
 
+  const handleMouseMove = (e) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: -y * 10, y: x * 10 });
+  };
+
   return (
-    <div className="holo-card overflow-hidden cursor-hover" style={{ height: 380 }} onClick={() => onSelect(item)}>
-      <div className="relative h-full">
-        {/* Swipeable image */}
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={imgIndex}
-            custom={direction}
-            variants={{
-              enter: (d) => ({ x: d * 60, opacity: 0 }),
-              center: { x: 0, opacity: 1 },
-              exit: (d) => ({ x: d * -60, opacity: 0 }),
-            }}
-            initial="enter" animate="center" exit="exit"
-            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-            drag={allImages.length > 1 ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.15}
-            onDragEnd={handleDragEnd}
-            onClick={e => allImages.length > 1 && e.stopPropagation()}
-            className="absolute inset-0"
-          >
-            {allImages.length > 0 ? (
-              <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
-                <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+    <div ref={cardRef} onMouseMove={handleMouseMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })} style={{ perspective: '900px', height: 380 }}>
+      <motion.div
+        animate={{ rotateX: tilt.x, rotateY: tilt.y }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className="holo-card overflow-hidden cursor-hover w-full h-full"
+        style={{ transformStyle: 'preserve-3d' }}
+        onClick={() => onSelect(item)}
+      >
+        <div className="relative h-full">
+          {/* Swipeable image */}
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={imgIndex}
+              custom={direction}
+              variants={{
+                enter: (d) => ({ x: d * 60, opacity: 0 }),
+                center: { x: 0, opacity: 1 },
+                exit: (d) => ({ x: d * -60, opacity: 0 }),
+              }}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+              drag={allImages.length > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={handleDragEnd}
+              onClick={e => allImages.length > 1 && e.stopPropagation()}
+              className="absolute inset-0"
+            >
+              {allImages.length > 0 ? (
+                <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
+                  <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.95) 0%, transparent 55%)' }} />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.95) 0%, transparent 55%)' }} />
 
-        {/* Dot indicators */}
-        {allImages.length > 1 && (
-          <div className="absolute bottom-[76px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
-            {allImages.map((_, i) => (
-              <div key={i} className="rounded-full transition-all duration-300"
-                style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
-            ))}
+          {/* Dot indicators */}
+          {allImages.length > 1 && (
+            <div className="absolute bottom-[76px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+              {allImages.map((_, i) => (
+                <div key={i} className="rounded-full transition-all duration-300"
+                  style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
+              ))}
+            </div>
+          )}
+
+          {/* Tags */}
+          <div className="absolute top-4 left-4 px-3 py-1 pointer-events-none"
+            style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', backdropFilter: 'blur(8px)' }}>
+            <span className="meta-text text-[9px]" style={{ color: 'var(--gold)' }}>COMING SOON</span>
           </div>
-        )}
+          {item.tag && (
+            <div className="absolute top-4 right-4 px-3 py-1 pointer-events-none"
+              style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', backdropFilter: 'blur(8px)' }}>
+              <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{item.tag}</span>
+            </div>
+          )}
 
-        {/* Tags */}
-        <div className="absolute top-4 left-4 px-3 py-1 pointer-events-none"
-          style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', backdropFilter: 'blur(8px)' }}>
-          <span className="meta-text text-[9px]" style={{ color: 'var(--gold)' }}>COMING SOON</span>
+          {/* Info */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none">
+            <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>{item.category || 'COLLECTION'}</span>
+            <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>{item.name}</h3>
+            <div className="flex items-center justify-between">
+              {item.price ? (
+                <span className="meta-text text-xs metallic-text">{format(item.price)}</span>
+              ) : (
+                <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>PRICE TBA</span>
+              )}
+              {item.release_date && (
+                <span className="meta-text text-[9px] flex items-center gap-1" style={{ color: 'rgba(212,175,55,0.6)' }}>
+                  <Clock size={10} /> {new Date(item.release_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
+          <div className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
+          <div className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
+          <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
         </div>
-        {item.tag && (
-          <div className="absolute top-4 right-4 px-3 py-1 pointer-events-none"
-            style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', backdropFilter: 'blur(8px)' }}>
-            <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{item.tag}</span>
-          </div>
-        )}
-
-        {/* Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none">
-          <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>{item.category || 'COLLECTION'}</span>
-          <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>{item.name}</h3>
-          <div className="flex items-center justify-between">
-            {item.price ? (
-              <span className="meta-text text-xs metallic-text">{format(item.price)}</span>
-            ) : (
-              <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>PRICE TBA</span>
-            )}
-            {item.release_date && (
-              <span className="meta-text text-[9px] flex items-center gap-1" style={{ color: 'rgba(212,175,55,0.6)' }}>
-                <Clock size={10} /> {new Date(item.release_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
-        <div className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{ borderTop: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
-        <div className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderLeft: '1px solid var(--neon-cyan)' }} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--neon-cyan)', borderRight: '1px solid var(--neon-cyan)' }} />
-      </div>
+      </motion.div>
     </div>
   );
 }
