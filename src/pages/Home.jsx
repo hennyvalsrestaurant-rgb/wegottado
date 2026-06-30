@@ -11,6 +11,7 @@ import FeaturedCollection from '@/components/wegottado/FeaturedCollection';
 import CraftSection from '@/components/wegottado/CraftSection';
 import LookbookSection from '@/components/wegottado/LookbookSection';
 import MaisonSection from '@/components/wegottado/MaisonSection';
+import PreOrdersPreview from '@/components/wegottado/PreOrdersPreview';
 import Footer from '@/components/wegottado/Footer';
 
 export default function Home() {
@@ -27,6 +28,7 @@ export default function Home() {
       <FeaturedCollection />
       <CraftSection />
       <LookbookSection />
+      <PreOrdersPreview />
       <MaisonSection />
       <Footer />
     </div>
