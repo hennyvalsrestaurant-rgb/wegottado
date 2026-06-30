@@ -13,6 +13,7 @@ import LookbookSection from '@/components/wegottado/LookbookSection';
 import MaisonSection from '@/components/wegottado/MaisonSection';
 import PreOrdersPreview from '@/components/wegottado/PreOrdersPreview';
 import Footer from '@/components/wegottado/Footer';
+import SideNav from '@/components/wegottado/SideNav';
 
 export default function Home() {
   return (
@@ -21,15 +22,16 @@ export default function Home() {
       <HoloGrid />
       <GoldenParticles />
       <GoldenSeam />
+      <SideNav />
       <Navbar />
-      <HeroSection />
-      <ManifestoSection />
-      <HoloShowroom />
-      <FeaturedCollection />
-      <CraftSection />
-      <LookbookSection />
-      <PreOrdersPreview />
-      <MaisonSection />
+      <div id="hero"><HeroSection /></div>
+      <div id="manifesto"><ManifestoSection /></div>
+      <div id="collections"><HoloShowroom /></div>
+      <div id="featured"><FeaturedCollection /></div>
+      <div id="craft"><CraftSection /></div>
+      <div id="lookbook"><LookbookSection /></div>
+      <div id="pre-orders-preview"><PreOrdersPreview /></div>
+      <div id="maison"><MaisonSection /></div>
       <Footer />
     </div>
   );

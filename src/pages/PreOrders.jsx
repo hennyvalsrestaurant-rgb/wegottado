@@ -7,6 +7,7 @@ import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import Navbar from '@/components/wegottado/Navbar';
 import Footer from '@/components/wegottado/Footer';
+import SideNav from '@/components/wegottado/SideNav';
 
 function ProductCard({ item, onSelect }) {
   const [imgIndex, setImgIndex] = useState(0);
@@ -185,6 +186,7 @@ export default function PreOrders() {
     <div className="min-h-screen relative" style={{ background: 'var(--metal-dark)' }}>
       <HoloCursor />
       <HoloGrid />
+      <SideNav />
       <Navbar />
 
       <div className="relative z-10 pt-32 pb-24 px-6 md:px-[8vw]">
