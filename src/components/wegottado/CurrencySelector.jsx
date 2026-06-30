@@ -7,6 +7,8 @@ const CURRENCIES = [
   { code: 'GBP', symbol: '£', label: 'GBP' },
   { code: 'JPY', symbol: '¥', label: 'JPY' },
   { code: 'AED', symbol: 'د.إ', label: 'AED' },
+  { code: 'CAD', symbol: 'CA$', label: 'CAD' },
+  { code: 'GHS', symbol: '₵', label: 'GHS' },
 ];
 
 export const CurrencyContext = createContext({
