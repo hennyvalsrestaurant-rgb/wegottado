@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag, User, Bell } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CurrencySelector from '@/components/wegottado/CurrencySelector';
 
@@ -21,6 +21,8 @@ export default function Navbar() {
   const [notifCount, setNotifCount] = useState(0);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -36,8 +38,14 @@ export default function Navbar() {
   const scrollTo = (href, isPage) => {
     setMobileOpen(false);
     if (isPage) { navigate(href); return; }
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (!isHome) { navigate('/'); setTimeout(() => document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' }), 400); return; }
+    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const goHome = () => {
+    setMobileOpen(false);
+    if (isHome) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else { navigate('/'); }
   };
 
   return (
@@ -54,7 +62,7 @@ export default function Navbar() {
         }}
       >
         <div className="flex items-center justify-between px-6 md:px-12 py-5">
-          <button onClick={() => scrollTo('#hero')} className="cursor-hover">
+          <button onClick={goHome} className="cursor-hover">
             <img
               src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
               alt="WEGOTTADO"
