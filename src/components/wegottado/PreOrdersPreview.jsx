@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
@@ -78,7 +79,17 @@ export default function PreOrdersPreview() {
 
 function FlipCard({ item, format }) {
   const [flipped, setFlipped] = useState(false);
-  const backImage = item.images?.[0] || item.image_url;
+  const [imgIndex, setImgIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
+
+  const handleDragEnd = (e, info) => {
+    if (allImages.length < 2) return;
+    if (info.offset.x < -40) { setDirection(1); setImgIndex(i => (i + 1) % allImages.length); }
+    else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
+  };
+
+  const backImage = allImages[1] || allImages[0];
 
   return (
     <div
@@ -98,11 +109,38 @@ function FlipCard({ item, format }) {
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
           <div className="relative h-full">
-            {item.image_url ? (
-              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
-                <Clock size={48} style={{ color: 'rgba(212,175,55,0.2)' }} />
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={imgIndex}
+                custom={direction}
+                variants={{
+                  enter: (d) => ({ x: d * 60, opacity: 0 }),
+                  center: { x: 0, opacity: 1 },
+                  exit: (d) => ({ x: d * -60, opacity: 0 }),
+                }}
+                initial="enter" animate="center" exit="exit"
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                drag={allImages.length > 1 ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={handleDragEnd}
+                className="absolute inset-0"
+              >
+                {allImages.length > 0 ? (
+                  <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
+                    <Clock size={48} style={{ color: 'rgba(212,175,55,0.2)' }} />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+            {allImages.length > 1 && (
+              <div className="absolute bottom-[72px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+                {allImages.map((_, i) => (
+                  <div key={i} className="rounded-full transition-all duration-300"
+                    style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--gold)' : 'rgba(212,175,55,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--gold)' : 'none' }} />
+                ))}
               </div>
             )}
             <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.95) 0%, transparent 55%)' }} />

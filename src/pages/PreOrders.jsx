@@ -10,8 +10,18 @@ import Footer from '@/components/wegottado/Footer';
 
 function FlipProductCard({ item, onSelect }) {
   const [flipped, setFlipped] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
   const { format } = useCurrency();
-  const backImage = item.images?.[0] || item.image_url;
+  const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
+
+  const handleDragEnd = (e, info) => {
+    if (allImages.length < 2) return;
+    if (info.offset.x < -40) { setDirection(1); setImgIndex(i => (i + 1) % allImages.length); }
+    else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
+  };
+
+  const backImage = allImages[1] || allImages[0];
 
   return (
     <div
@@ -30,12 +40,40 @@ function FlipProductCard({ item, onSelect }) {
           className="absolute inset-0 holo-card overflow-hidden"
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
-          <div className="relative h-full">
-            {item.image_url ? (
-              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
-                <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
+          <div className="relative h-full overflow-hidden">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={imgIndex}
+                custom={direction}
+                variants={{
+                  enter: (d) => ({ x: d * 60, opacity: 0 }),
+                  center: { x: 0, opacity: 1 },
+                  exit: (d) => ({ x: d * -60, opacity: 0 }),
+                }}
+                initial="enter" animate="center" exit="exit"
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                drag={allImages.length > 1 ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={handleDragEnd}
+                className="absolute inset-0"
+              >
+                {allImages.length > 0 ? (
+                  <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
+                    <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+            {/* Dot indicators */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-[72px] left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+                {allImages.map((_, i) => (
+                  <div key={i} className="rounded-full transition-all duration-300"
+                    style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
+                ))}
               </div>
             )}
             <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(13,13,20,0.9) 0%, transparent 55%)' }} />
@@ -102,6 +140,53 @@ function FlipProductCard({ item, onSelect }) {
           <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{ borderBottom: '1px solid var(--gold)', borderRight: '1px solid var(--gold)' }} />
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+function ModalImageSwiper({ item }) {
+  const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
+  const [imgIndex, setImgIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  const handleDragEnd = (e, info) => {
+    if (allImages.length < 2) return;
+    if (info.offset.x < -40) { setDirection(1); setImgIndex(i => (i + 1) % allImages.length); }
+    else if (info.offset.x > 40) { setDirection(-1); setImgIndex(i => (i - 1 + allImages.length) % allImages.length); }
+  };
+
+  if (allImages.length === 0) return null;
+
+  return (
+    <div className="relative overflow-hidden" style={{ height: 256 }}>
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.div
+          key={imgIndex}
+          custom={direction}
+          variants={{
+            enter: (d) => ({ x: d * 60, opacity: 0 }),
+            center: { x: 0, opacity: 1 },
+            exit: (d) => ({ x: d * -60, opacity: 0 }),
+          }}
+          initial="enter" animate="center" exit="exit"
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+          drag={allImages.length > 1 ? "x" : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.15}
+          onDragEnd={handleDragEnd}
+          className="absolute inset-0"
+        >
+          <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+        </motion.div>
+      </AnimatePresence>
+      {allImages.length > 1 && (
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+          {allImages.map((_, i) => (
+            <div key={i} className="rounded-full transition-all duration-300"
+              style={{ width: i === imgIndex ? 14 : 4, height: 4, background: i === imgIndex ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.3)', boxShadow: i === imgIndex ? '0 0 6px var(--neon-cyan)' : 'none' }} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -202,9 +287,7 @@ export default function PreOrders() {
               >
                 ✕
               </button>
-              {selected.image_url && (
-                <img src={selected.image_url} alt={selected.name} className="w-full h-64 object-cover" />
-              )}
+              <ModalImageSwiper item={selected} />
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="meta-text text-[9px] px-3 py-1" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--gold)' }}>
@@ -230,13 +313,6 @@ export default function PreOrders() {
                     </span>
                   )}
                 </div>
-                {selected.images?.length > 0 && (
-                  <div className="mt-4 flex gap-2 flex-wrap">
-                    {selected.images.map((url, i) => (
-                      <img key={i} src={url} alt={`view-${i}`} className="w-16 h-16 object-cover" style={{ border: '1px solid rgba(0,245,255,0.15)' }} />
-                    ))}
-                  </div>
-                )}
               </div>
             </motion.div>
           </motion.div>
