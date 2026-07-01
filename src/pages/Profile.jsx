@@ -17,7 +17,8 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [tab, setTab] = useState('profile');
+  const initialTab = new URLSearchParams(window.location.search).get('tab');
+  const [tab, setTab] = useState(TABS.some(t => t.id === initialTab) ? initialTab : 'profile');
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [loading, setLoading] = useState(true);

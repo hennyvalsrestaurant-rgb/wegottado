@@ -4,6 +4,7 @@ import { Menu, X, ShoppingBag, User, Bell } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CurrencySelector from '@/components/wegottado/CurrencySelector';
+import NotificationBell from '@/components/wegottado/NotificationBell';
 
 const NAV_LINKS = [
   { label: 'COLLECTIONS', href: '#collections' },
@@ -18,7 +19,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [notifCount, setNotifCount] = useState(0);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +30,6 @@ export default function Navbar() {
     base44.auth.me().then(me => {
       setUser(me);
       base44.entities.CartItem.filter({ user_id: me.id }).then(items => setCartCount(items.reduce((s, i) => s + (i.quantity || 1), 0))).catch(() => {});
-      base44.entities.Notification.filter({ user_id: me.id, read: false }).then(n => setNotifCount(n.length)).catch(() => {});
     }).catch(() => {});
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -88,15 +87,7 @@ export default function Navbar() {
             <div className="hidden md:block"><CurrencySelector /></div>
             {user && (
               <>
-                <Link to="/profile" className="relative cursor-hover" style={{ color: 'rgba(245,245,247,0.5)' }}>
-                  <Bell size={18} />
-                  {notifCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full text-[8px] flex items-center justify-center"
-                      style={{ background: 'var(--neon-cyan)', color: 'var(--obsidian)' }}>
-                      {notifCount}
-                    </span>
-                  )}
-                </Link>
+                <NotificationBell user={user} />
                 <Link to="/checkout" className="relative cursor-hover" style={{ color: 'rgba(245,245,247,0.5)' }}>
                   <ShoppingBag size={18} />
                   {cartCount > 0 && (
