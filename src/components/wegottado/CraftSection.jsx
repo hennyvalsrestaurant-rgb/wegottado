@@ -56,7 +56,7 @@ export default function CraftSection() {
           </div>
           <motion.div className="relative" style={{ y: imgY }}>
             <div className="relative overflow-hidden">
-              <img src={craftImg} alt="Master craftsman" className="w-full h-[400px] md:h-[600px] object-cover" />
+              <img src={craftImg} alt="Master craftsman" className="w-full h-[400px] md:h-[600px] object-contain" />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(8,8,8,0.4), transparent 40%)' }} />
             </div>
             <div className="absolute top-6 right-6 w-16 h-16">

@@ -42,7 +42,7 @@ export default function LookbookSection() {
       {/* Wide cinematic image */}
       <motion.div className="relative mb-8 overflow-hidden" style={{ y: wideY }}>
         <div className="relative" style={{ paddingTop: '42%' }}>
-          <img src={images[0]} alt="Lookbook wide" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={images[0]} alt="Lookbook wide" className="absolute inset-0 w-full h-full object-contain" />
           <div className="absolute top-0 left-0 right-0 h-8 md:h-12" style={{ background: 'var(--obsidian)' }} />
           <div className="absolute bottom-0 left-0 right-0 h-8 md:h-12" style={{ background: 'var(--obsidian)' }} />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -54,7 +54,7 @@ export default function LookbookSection() {
       {/* Two column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: leftY }}>
-          <img src={images[1]} alt="Look 01" className="w-full h-[500px] md:h-[650px] object-cover transition-transform duration-1000 group-hover:scale-105" />
+          <img src={images[1]} alt="Look 01" className="w-full h-[500px] md:h-[650px] object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 transition-opacity duration-700" style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.8) 0%, transparent 50%)' }} />
           <div className="absolute bottom-8 left-8">
             <span className="meta-text text-[10px] block mb-2">LOOK 01</span>
@@ -62,7 +62,7 @@ export default function LookbookSection() {
           </div>
         </motion.div>
         <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: rightY }}>
-          <img src={images[2]} alt="Look 02" className="w-full h-[500px] md:h-[650px] object-cover transition-transform duration-1000 group-hover:scale-105" />
+          <img src={images[2]} alt="Look 02" className="w-full h-[500px] md:h-[650px] object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 transition-opacity duration-700" style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.8) 0%, transparent 50%)' }} />
           <div className="absolute bottom-8 left-8">
             <span className="meta-text text-[10px] block mb-2">LOOK 02</span>
