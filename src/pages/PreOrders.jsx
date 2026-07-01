@@ -112,6 +112,13 @@ function ProductCard({ item, onSelect }) {
                 </span>
               )}
             </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(item); }}
+              className="cursor-hover w-full mt-3 py-2 meta-text text-[10px]"
+              style={{ pointerEvents: 'auto', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--gold)' }}
+            >
+              INQUIRE
+            </button>
           </div>
 
           {/* Corner accents */}
