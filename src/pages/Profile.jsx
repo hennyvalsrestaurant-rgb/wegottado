@@ -124,6 +124,7 @@ export default function Profile() {
     <div className="min-h-screen page-enter relative" style={{ background: 'var(--metal-dark)' }}>
       <HoloCursor />
       <HoloGrid />
+      {showTopUp && <WalletTopUpModal onClose={() => setShowTopUp(false)} />}
       <div className="relative z-10">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 md:px-12 py-5"
@@ -510,7 +511,6 @@ export default function Profile() {
                       </div>
                     )}
                   </div>
-                  {showTopUp && <WalletTopUpModal onClose={() => setShowTopUp(false)} />}
                 </div>
               );
             })()}
