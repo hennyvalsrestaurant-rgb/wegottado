@@ -81,6 +81,7 @@ function FlipCard({ item, format }) {
   const [flipped, setFlipped] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const supportsHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
   const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
 
   const handleDragEnd = (e, info) => {
@@ -95,8 +96,9 @@ function FlipCard({ item, format }) {
     <div
       className="cursor-hover"
       style={{ perspective: '1000px', height: 380 }}
-      onMouseEnter={() => setFlipped(true)}
-      onMouseLeave={() => setFlipped(false)}
+      onMouseEnter={supportsHover ? () => setFlipped(true) : undefined}
+      onMouseLeave={supportsHover ? () => setFlipped(false) : undefined}
+      onClick={!supportsHover ? () => setFlipped(f => !f) : undefined}
     >
       <motion.div
         animate={{ rotateY: flipped ? 180 : 0 }}
