@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { MessageSquare, Save } from 'lucide-react';
+import { MessageSquare, Save, Trash2 } from 'lucide-react';
 
 const STATUSES = ['new', 'responded', 'reserved', 'processing', 'shipped', 'delivered'];
 
@@ -10,6 +10,7 @@ export default function AdminInquiries() {
   const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState({});
   const [savingId, setSavingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     base44.entities.Inquiry.list('-created_date', 100).then(data => { setItems(data); setLoading(false); });
@@ -27,6 +28,14 @@ export default function AdminInquiries() {
     const updated = await base44.entities.Inquiry.update(item.id, data);
     setItems(prev => prev.map(i => i.id === item.id ? updated : i));
     setSavingId(null);
+  };
+
+  const handleDelete = async (item) => {
+    if (!window.confirm(`Delete inquiry from ${item.name} for "${item.product_name}"?`)) return;
+    setDeletingId(item.id);
+    await base44.entities.Inquiry.delete(item.id);
+    setItems(prev => prev.filter(i => i.id !== item.id));
+    setDeletingId(null);
   };
 
   return (
@@ -82,6 +91,11 @@ export default function AdminInquiries() {
                     className="flex items-center justify-center gap-2 px-5 py-2 cursor-hover meta-text text-[10px]"
                     style={{ background: 'var(--gold)', color: 'var(--obsidian)', opacity: savingId === item.id ? 0.6 : 1 }}>
                     <Save size={13} /> {savingId === item.id ? 'SAVING...' : 'SAVE'}
+                  </button>
+                  <button onClick={() => handleDelete(item)} disabled={deletingId === item.id}
+                    className="flex items-center justify-center gap-2 px-5 py-2 cursor-hover meta-text text-[10px]"
+                    style={{ background: 'transparent', border: '1px solid rgba(255,80,80,0.4)', color: '#ff5050', opacity: deletingId === item.id ? 0.6 : 1 }}>
+                    <Trash2 size={13} /> {deletingId === item.id ? 'DELETING...' : 'DELETE'}
                   </button>
                 </div>
               </motion.div>
