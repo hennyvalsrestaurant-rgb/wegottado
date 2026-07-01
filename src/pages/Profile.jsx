@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle, Wallet, TrendingUp, CreditCard, ShoppingBag, Tag } from 'lucide-react';
+import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle, Wallet, TrendingUp, CreditCard, ShoppingBag, Tag, Plus, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
+import WalletTopUpModal from '@/components/wegottado/WalletTopUpModal';
 
 const TABS = [
   { id: 'profile', label: 'PROFILE', icon: User },
@@ -37,6 +38,8 @@ export default function Profile() {
   const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [preorderInquiries, setPreorderInquiries] = useState([]);
+  const [walletTransactions, setWalletTransactions] = useState([]);
+  const [showTopUp, setShowTopUp] = useState(false);
   const initialTab = new URLSearchParams(window.location.search).get('tab');
   const [tab, setTab] = useState(TABS.some(t => t.id === initialTab) ? initialTab : 'profile');
   const [editing, setEditing] = useState(false);
@@ -50,14 +53,16 @@ export default function Profile() {
         const me = await base44.auth.me();
         setUser(me);
         setEditData({ full_name: me.full_name || '', email: me.email || '' });
-        const [ords, notifs, inquiries] = await Promise.all([
+        const [ords, notifs, inquiries, walletTx] = await Promise.all([
           base44.entities.Order.filter({ user_id: me.id }, '-created_date', 20),
           base44.entities.Notification.filter({ user_id: me.id }, '-created_date', 30),
           me.email ? base44.entities.Inquiry.filter({ email: me.email }, '-created_date', 30) : Promise.resolve([]),
+          base44.entities.WalletTransaction.filter({ user_id: me.id }, '-created_date', 30),
         ]);
         setOrders(ords);
         setNotifications(notifs);
         setPreorderInquiries(inquiries);
+        setWalletTransactions(walletTx);
       } catch {
         navigate('/login');
       }
@@ -401,8 +406,8 @@ export default function Profile() {
                   <div className="relative h-44 overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #0D0D14, #1A1A2E)', border: '1px solid rgba(212,175,55,0.25)' }}>
                     <div className="holo-shimmer absolute inset-0 opacity-60 pointer-events-none" />
-                    <div className="absolute inset-6 pointer-events-none">
-                      <div className="flex justify-between items-start mb-6">
+                    <div className="absolute inset-6 flex flex-col justify-between">
+                      <div className="flex justify-between items-start pointer-events-none">
                         <div>
                           <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(212,175,55,0.6)' }}>WEGOTTADO MAISON</span>
                           <span className="heading-display text-lg" style={{ color: 'var(--gold)' }}>Digital Wallet</span>
@@ -410,18 +415,63 @@ export default function Profile() {
                         <Wallet size={24} style={{ color: 'var(--gold)', opacity: 0.7 }} />
                       </div>
                       <div className="flex items-end justify-between">
-                        <div>
-                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(245,245,247,0.3)' }}>CARDHOLDER</span>
-                          <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>{user?.full_name || user?.email || 'VALUED CLIENT'}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(245,245,247,0.3)' }}>MEMBER SINCE</span>
-                          <span className="meta-text text-xs" style={{ color: 'rgba(245,245,247,0.7)' }}>
-                            {user?.created_date ? new Date(user.created_date).getFullYear() : '2024'}
+                        <div className="pointer-events-none">
+                          <span className="meta-text text-[9px] block mb-1" style={{ color: 'rgba(245,245,247,0.3)' }}>AVAILABLE BALANCE</span>
+                          <span className="heading-display text-4xl" style={{ color: 'var(--gold)' }}>
+                            ${(user?.wallet_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </div>
+                        <button onClick={() => setShowTopUp(true)}
+                          className="flex items-center gap-2 px-5 py-3 cursor-hover meta-text text-[10px]"
+                          style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}>
+                          <Plus size={13} /> ADD FUNDS
+                        </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Wallet transaction history */}
+                  <div className="holo-card p-6">
+                    <span className="meta-text text-[10px] block mb-5" style={{ color: 'var(--neon-cyan)' }}>WALLET ACTIVITY</span>
+                    {walletTransactions.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Wallet size={32} className="mx-auto mb-3 opacity-20" />
+                        <p className="text-sm" style={{ color: 'rgba(245,245,247,0.3)' }}>No wallet activity yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {walletTransactions.map((txn) => {
+                          const isTopup = txn.type === 'topup';
+                          const Icon = isTopup ? ArrowDownCircle : ArrowUpCircle;
+                          const color = txn.status === 'pending' ? 'rgba(245,245,247,0.4)' : (isTopup ? '#00FF88' : '#FF6B6B');
+                          return (
+                            <div key={txn.id} className="flex items-center justify-between py-3"
+                              style={{ borderBottom: '1px solid rgba(0,245,255,0.06)' }}>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 flex items-center justify-center"
+                                  style={{ background: 'rgba(0,245,255,0.08)', border: '1px solid rgba(0,245,255,0.15)' }}>
+                                  <Icon size={13} style={{ color }} />
+                                </div>
+                                <div>
+                                  <p className="meta-text text-[10px]" style={{ color: 'var(--carrara)' }}>
+                                    {txn.description || (isTopup ? 'Wallet Top-Up' : 'Purchase')}
+                                  </p>
+                                  <p className="meta-text text-[9px] mt-0.5" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                                    {new Date(txn.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="meta-text text-xs" style={{ color }}>
+                                  {isTopup ? '+' : '−'}${txn.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </p>
+                                <p className="meta-text text-[9px] mt-0.5" style={{ color: 'rgba(245,245,247,0.3)' }}>{txn.status?.toUpperCase()}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Spending history */}
@@ -460,6 +510,7 @@ export default function Profile() {
                       </div>
                     )}
                   </div>
+                  {showTopUp && <WalletTopUpModal onClose={() => setShowTopUp(false)} />}
                 </div>
               );
             })()}

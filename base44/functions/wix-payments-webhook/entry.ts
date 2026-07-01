@@ -42,6 +42,28 @@ Deno.serve(async (req) => {
         `• ${item.productName?.original || 'Item'} × ${item.quantity}`
       ).join('\n');
 
+      // Check if this checkout was a wallet top-up
+      try {
+        const pendingTopups = await base44.asServiceRole.entities.WalletTransaction.filter({ status: 'pending', checkout_id: checkoutId });
+        if (pendingTopups.length > 0) {
+          const topup = pendingTopups[0];
+          const walletUser = await base44.asServiceRole.entities.User.get(topup.user_id);
+          const newBalance = Math.round(((walletUser.wallet_balance || 0) + topup.amount) * 100) / 100;
+          await base44.asServiceRole.entities.User.update(topup.user_id, { wallet_balance: newBalance });
+          await base44.asServiceRole.entities.WalletTransaction.update(topup.id, { status: 'completed' });
+          await base44.asServiceRole.entities.Notification.create({
+            user_id: topup.user_id,
+            title: 'Wallet Topped Up',
+            message: `$${topup.amount.toFixed(2)} was added to your wallet. New balance: $${newBalance.toFixed(2)}`,
+            type: 'system',
+            read: false,
+          });
+          return new Response('OK', { status: 200 });
+        }
+      } catch (walletErr) {
+        console.error('Wallet topup handling error:', walletErr.message);
+      }
+
       // Update our pending order to confirmed
       try {
         const orders = await base44.asServiceRole.entities.Order.filter({ status: 'pending' });

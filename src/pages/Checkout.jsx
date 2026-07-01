@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Zap } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Zap, Wallet } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import CurrencySelector, { useCurrency } from '@/components/wegottado/CurrencySelector';
@@ -125,6 +125,25 @@ export default function Checkout() {
     } catch (err) {
       console.error(err);
       setOrderError('Something went wrong. Please try again.');
+    }
+    setPlacing(false);
+  };
+
+  const handlePayWithWallet = async () => {
+    setOrderError(null);
+    setPlacing(true);
+    try {
+      const res = await base44.functions.invoke('pay-with-wallet', { items: cartItems });
+      if (res.data.orderId) {
+        setOrderId(res.data.orderId);
+        setCartItems([]);
+        setStep(3);
+      } else {
+        setOrderError(res.data.error || 'Payment failed. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setOrderError(err?.response?.data?.error || 'Something went wrong. Please try again.');
     }
     setPlacing(false);
   };
@@ -446,6 +465,33 @@ export default function Checkout() {
                 </p>
 
                 <div className="space-y-4 mb-6">
+                  {/* Wallet */}
+                  {(user?.wallet_balance || 0) >= totalUSD && (
+                    <button
+                      type="button"
+                      onClick={handlePayWithWallet}
+                      disabled={placing}
+                      className="w-full py-5 px-6 cursor-hover flex items-center justify-between transition-all duration-300 holo-card"
+                      style={{ border: '1px solid rgba(212,175,55,0.4)', opacity: placing ? 0.6 : 1 }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 flex items-center justify-center"
+                          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                          <Wallet size={18} style={{ color: 'var(--gold)' }} />
+                        </div>
+                        <div className="text-left">
+                          <p className="meta-text text-[11px]" style={{ color: 'var(--gold)' }}>PAY WITH WALLET</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'rgba(245,245,247,0.4)' }}>
+                            Balance: ${(user?.wallet_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                        {placing ? 'PROCESSING...' : '→'}
+                      </span>
+                    </button>
+                  )}
+
                   {/* Base44 Payments */}
                   <button
                     type="button"

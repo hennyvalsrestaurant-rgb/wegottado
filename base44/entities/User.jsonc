@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -7,11 +9,14 @@
         "admin",
         "user"
       ]
+    },
+    "wallet_balance": {
+      "type": "number",
+      "description": "Wallet balance in USD available for purchases",
+      "default": 0
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }
