@@ -5,6 +5,7 @@ import { useCurrency } from '@/components/wegottado/CurrencySelector';
 import { Clock, ChevronRight } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
+import InquiryForm from '@/components/wegottado/InquiryForm';
 import Navbar from '@/components/wegottado/Navbar';
 import Footer from '@/components/wegottado/Footer';
 import SideNav from '@/components/wegottado/SideNav';
@@ -293,6 +294,9 @@ export default function PreOrders() {
                       <Clock size={11} /> DROP: {new Date(selected.release_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </span>
                   )}
+                </div>
+                <div className="mt-6">
+                  <InquiryForm product={selected} />
                 </div>
               </div>
             </motion.div>

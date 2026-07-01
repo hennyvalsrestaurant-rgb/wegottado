@@ -1,0 +1,35 @@
+{
+  "name": "Inquiry",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "responded"
+      ],
+      "default": "new"
+    }
+  },
+  "required": [
+    "product_name",
+    "name",
+    "email",
+    "message"
+  ]
+}
