@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
-import { Clock } from 'lucide-react';
+import { Clock, RotateCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function PreOrdersPreview() {
@@ -155,6 +155,12 @@ function FlipCard({ item, format }) {
                 <span className="meta-text text-[9px]" style={{ color: 'var(--neon-cyan)' }}>{item.tag}</span>
               </div>
             )}
+            {/* Flip hint */}
+            <div className="absolute top-16 right-4 flex items-center gap-1.5 px-2.5 py-1 pulse-neon"
+              style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', backdropFilter: 'blur(8px)' }}>
+              <RotateCw size={10} style={{ color: 'var(--gold)' }} />
+              <span className="meta-text text-[8px]" style={{ color: 'var(--gold)', letterSpacing: '0.15em' }}>FLIP FOR DETAILS</span>
+            </div>
             {/* Info at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-5">
               <span className="meta-text text-[10px] block mb-1" style={{ color: 'rgba(0,245,255,0.5)' }}>
