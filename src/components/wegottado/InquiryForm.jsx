@@ -14,17 +14,12 @@ export default function InquiryForm({ product }) {
     setSubmitting(true);
     setError('');
     try {
-      await base44.entities.Inquiry.create({
+      await base44.functions.invoke('submitInquiry', {
         product_id: product.id,
         product_name: product.name,
         name: form.name,
         email: form.email,
         message: form.message,
-      });
-      await base44.integrations.Core.SendEmail({
-        to: form.email,
-        subject: `We received your inquiry about ${product.name}`,
-        body: `Hi ${form.name},\n\nThank you for your interest in ${product.name}. Our team has received your message and will get back to you shortly.\n\nYour message:\n"${form.message}"\n\n— WEGOTTADO`,
       });
       setSent(true);
     } catch {
