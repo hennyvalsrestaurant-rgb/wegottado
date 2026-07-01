@@ -17,6 +17,16 @@ Deno.serve(async (req) => {
       message,
     });
 
+    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+    for (const admin of admins) {
+      if (!admin.email) continue;
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: admin.email,
+        subject: `New Pre-Order Inquiry: ${product_name}`,
+        body: `You received a new pre-order inquiry.\n\nProduct: ${product_name}\nFrom: ${name} (${email})\n\nMessage:\n"${message}"\n\nReply directly to ${email} to respond.`,
+      });
+    }
+
     return Response.json({ success: true });
   } catch (error) {
     console.error('submitInquiry error:', error.message);
