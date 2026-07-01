@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Zap, Wallet } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard, Wallet } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import CurrencySelector, { useCurrency } from '@/components/wegottado/CurrencySelector';
@@ -86,28 +86,6 @@ export default function Checkout() {
   const subtotal = subtotalUSD * rate;
   const tax = taxUSD * rate;
   const total = totalUSD * rate;
-
-  const handlePayWithBase44 = async () => {
-    setOrderError(null);
-    setPlacing(true);
-    try {
-      const res = await base44.functions.invoke('create-checkout', {
-        items: cartItems,
-        userId: user?.id,
-        currency,
-        rate,
-      });
-      if (res.data.redirectUrl) {
-        window.location.href = res.data.redirectUrl;
-      } else {
-        setOrderError(res.data.error || 'Checkout failed. Please try again.');
-      }
-    } catch (err) {
-      console.error(err);
-      setOrderError('Something went wrong. Please try again.');
-    }
-    setPlacing(false);
-  };
 
   const handlePayWithStripe = async () => {
     setOrderError(null);
@@ -491,29 +469,6 @@ export default function Checkout() {
                       </span>
                     </button>
                   )}
-
-                  {/* Base44 Payments */}
-                  <button
-                    type="button"
-                    onClick={handlePayWithBase44}
-                    disabled={placing}
-                    className="w-full py-5 px-6 cursor-hover flex items-center justify-between transition-all duration-300 holo-card"
-                    style={{ border: '1px solid rgba(212,175,55,0.4)', opacity: placing ? 0.6 : 1 }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 flex items-center justify-center"
-                        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                        <Zap size={18} style={{ color: 'var(--gold)' }} />
-                      </div>
-                      <div className="text-left">
-                        <p className="meta-text text-[11px]" style={{ color: 'var(--gold)' }}>BASE44 PAYMENTS</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'rgba(245,245,247,0.4)' }}>Secure hosted checkout</p>
-                      </div>
-                    </div>
-                    <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
-                      {placing ? 'REDIRECTING...' : '→'}
-                    </span>
-                  </button>
 
                   {/* Stripe */}
                   <button
