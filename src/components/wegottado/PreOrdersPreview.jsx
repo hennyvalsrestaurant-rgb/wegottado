@@ -127,7 +127,7 @@ function FlipCard({ item, format }) {
                 className="absolute inset-0"
               >
                 {allImages.length > 0 ? (
-                  <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+                  <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-contain" draggable={false} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
                     <Clock size={48} style={{ color: 'rgba(212,175,55,0.2)' }} />
@@ -189,7 +189,7 @@ function FlipCard({ item, format }) {
         >
           {backImage ? (
             <div className="flex-1 overflow-hidden">
-              <img src={backImage} alt={`${item.name} back`} className="w-full h-full object-cover" />
+              <img src={backImage} alt={`${item.name} back`} className="w-full h-full object-contain" />
             </div>
           ) : (
             <div className="flex-1" style={{ background: 'var(--metal-mid)' }} />

@@ -61,7 +61,7 @@ function ProductCard({ item, onSelect }) {
               className="absolute inset-0"
             >
               {allImages.length > 0 ? (
-                <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+                <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-contain" draggable={false} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--metal-mid)' }}>
                   <Clock size={48} style={{ color: 'rgba(0,245,255,0.15)' }} />
@@ -156,7 +156,7 @@ function ModalImageSwiper({ item }) {
           onDragEnd={handleDragEnd}
           className="absolute inset-0"
         >
-          <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-cover" draggable={false} />
+          <img src={allImages[imgIndex]} alt={item.name} className="w-full h-full object-contain" draggable={false} />
         </motion.div>
       </AnimatePresence>
       {allImages.length > 1 && (
