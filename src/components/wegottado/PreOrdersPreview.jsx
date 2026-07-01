@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, useInView } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
@@ -78,11 +78,14 @@ export default function PreOrdersPreview() {
 }
 
 function FlipCard({ item, format }) {
-  const [flipped, setFlipped] = useState(false);
+  const [hoverFlipped, setHoverFlipped] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const supportsHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
   const allImages = [item.image_url, ...(item.images || [])].filter(Boolean);
+  const cardRef = useRef(null);
+  const inView = useInView(cardRef, { amount: 0.6 });
+  const flipped = supportsHover ? hoverFlipped : inView;
 
   const handleDragEnd = (e, info) => {
     if (allImages.length < 2) return;
@@ -94,11 +97,11 @@ function FlipCard({ item, format }) {
 
   return (
     <div
+      ref={cardRef}
       className="cursor-hover"
       style={{ perspective: '1000px', height: 380 }}
-      onMouseEnter={supportsHover ? () => setFlipped(true) : undefined}
-      onMouseLeave={supportsHover ? () => setFlipped(false) : undefined}
-      onClick={!supportsHover ? () => setFlipped(f => !f) : undefined}
+      onMouseEnter={supportsHover ? () => setHoverFlipped(true) : undefined}
+      onMouseLeave={supportsHover ? () => setHoverFlipped(false) : undefined}
     >
       <motion.div
         animate={{ rotateY: flipped ? 180 : 0 }}
