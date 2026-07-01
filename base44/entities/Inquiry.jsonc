@@ -21,9 +21,16 @@
       "type": "string",
       "enum": [
         "new",
-        "responded"
+        "responded",
+        "reserved",
+        "processing",
+        "shipped",
+        "delivered"
       ],
       "default": "new"
+    },
+    "tracking_number": {
+      "type": "string"
     }
   },
   "required": [

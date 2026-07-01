@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Plus, Trash2, Edit2, Save, X, Package, Upload, ImageIcon, Layout, Clock } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, Package, Upload, ImageIcon, Layout, Clock, MessageSquare } from 'lucide-react';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import AdminSiteContent from '@/components/wegottado/AdminSiteContent';
 import AdminPreOrders from '@/components/wegottado/AdminPreOrders';
+import AdminInquiries from '@/components/wegottado/AdminInquiries';
 import { Link } from 'react-router-dom';
 
 const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', images: [], tag: '', in_stock: true };
@@ -106,7 +107,7 @@ export default function Admin() {
         <div className="flex items-center justify-between px-6 md:px-12 py-5" style={{ borderBottom: '1px solid rgba(0,245,255,0.1)' }}>
           <Link to="/" className="heading-display text-xl cursor-hover" style={{ color: 'var(--gold)' }}>WEGOTTADO</Link>
           <div className="flex items-center gap-1">
-            {[{ key: 'products', label: 'PRODUCTS', icon: Package }, { key: 'preorders', label: 'PRE-ORDERS', icon: Clock }, { key: 'content', label: 'SITE IMAGES', icon: Layout }].map(tab => (
+            {[{ key: 'products', label: 'PRODUCTS', icon: Package }, { key: 'preorders', label: 'PRE-ORDERS', icon: Clock }, { key: 'inquiries', label: 'INQUIRIES', icon: MessageSquare }, { key: 'content', label: 'SITE IMAGES', icon: Layout }].map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className="flex items-center gap-2 px-4 py-2 cursor-hover meta-text text-[10px] transition-all"
                 style={{
@@ -124,6 +125,7 @@ export default function Admin() {
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-12">
           {activeTab === 'content' && <AdminSiteContent />}
           {activeTab === 'preorders' && <AdminPreOrders />}
+          {activeTab === 'inquiries' && <AdminInquiries />}
           {activeTab === 'products' && <>
           {/* Title + Add button */}
           <div className="flex items-center justify-between mb-10">

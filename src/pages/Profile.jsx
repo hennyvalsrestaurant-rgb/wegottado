@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle, Wallet, TrendingUp, CreditCard, ShoppingBag } from 'lucide-react';
+import { User, Package, Bell, LogOut, Edit2, Save, X, ChevronRight, Truck, CheckCircle2, Clock, RotateCcw, XCircle, Wallet, TrendingUp, CreditCard, ShoppingBag, Tag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
@@ -10,13 +10,33 @@ const TABS = [
   { id: 'profile', label: 'PROFILE', icon: User },
   { id: 'orders', label: 'ORDERS', icon: Package },
   { id: 'wallet', label: 'WALLET', icon: Wallet },
+  { id: 'preorders', label: 'PRE-ORDERS', icon: Tag },
   { id: 'notifications', label: 'ALERTS', icon: Bell },
 ];
+
+const PREORDER_STATUS_COLORS = {
+  new: '#D4AF37',
+  responded: '#00F5FF',
+  reserved: '#7B2FFF',
+  processing: '#30D5C8',
+  shipped: '#0A84FF',
+  delivered: '#00FF88',
+};
+
+const PREORDER_STATUS_LABELS = {
+  new: 'Inquiry Received',
+  responded: 'We Replied',
+  reserved: 'Reserved',
+  processing: 'In Production',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+};
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [preorderInquiries, setPreorderInquiries] = useState([]);
   const initialTab = new URLSearchParams(window.location.search).get('tab');
   const [tab, setTab] = useState(TABS.some(t => t.id === initialTab) ? initialTab : 'profile');
   const [editing, setEditing] = useState(false);
@@ -30,12 +50,14 @@ export default function Profile() {
         const me = await base44.auth.me();
         setUser(me);
         setEditData({ full_name: me.full_name || '', email: me.email || '' });
-        const [ords, notifs] = await Promise.all([
+        const [ords, notifs, inquiries] = await Promise.all([
           base44.entities.Order.filter({ user_id: me.id }, '-created_date', 20),
           base44.entities.Notification.filter({ user_id: me.id }, '-created_date', 30),
+          me.email ? base44.entities.Inquiry.filter({ email: me.email }, '-created_date', 30) : Promise.resolve([]),
         ]);
         setOrders(ords);
         setNotifications(notifs);
+        setPreorderInquiries(inquiries);
       } catch {
         navigate('/login');
       }
@@ -441,6 +463,52 @@ export default function Profile() {
                 </div>
               );
             })()}
+
+            {/* PRE-ORDERS TAB */}
+            {tab === 'preorders' && (
+              <div className="space-y-4">
+                {preorderInquiries.length === 0 ? (
+                  <div className="holo-card p-12 text-center">
+                    <Tag size={40} className="mx-auto mb-4 opacity-20" />
+                    <p className="heading-display text-2xl mb-2" style={{ color: 'rgba(245,245,247,0.4)' }}>No pre-order inquiries yet</p>
+                    <p className="text-sm mb-6" style={{ color: 'rgba(245,245,247,0.3)' }}>Inquire about an upcoming drop to track it here</p>
+                    <Link to="/pre-orders" className="meta-text text-[10px] cursor-hover py-3 px-8 inline-block"
+                      style={{ border: '1px solid var(--gold)', color: 'var(--gold)' }}>
+                      VIEW PRE-ORDERS
+                    </Link>
+                  </div>
+                ) : preorderInquiries.map((inq, i) => {
+                  const status = inq.status || 'new';
+                  const color = PREORDER_STATUS_COLORS[status] || '#D4AF37';
+                  return (
+                    <motion.div key={inq.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                      className="holo-card p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="heading-display text-xl" style={{ color: 'var(--carrara)' }}>{inq.product_name}</h3>
+                          <p className="meta-text text-[9px] mt-1" style={{ color: 'rgba(245,245,247,0.3)' }}>
+                            Inquired on {new Date(inq.created_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 self-start sm:self-center px-3 py-2"
+                          style={{ border: `1px solid ${color}40`, background: `${color}0d` }}>
+                          <div className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+                          <span className="meta-text text-[10px]" style={{ color }}>
+                            {(PREORDER_STATUS_LABELS[status] || status).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      {inq.tracking_number && (
+                        <div className="flex items-center justify-between py-3 mt-2" style={{ borderTop: '1px solid rgba(0,245,255,0.08)' }}>
+                          <span className="meta-text text-[10px]" style={{ color: 'rgba(0,245,255,0.5)' }}>TRACKING NUMBER</span>
+                          <span className="meta-text text-xs" style={{ color: 'var(--neon-cyan)' }}>{inq.tracking_number}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* NOTIFICATIONS TAB */}
             {tab === 'notifications' && (
