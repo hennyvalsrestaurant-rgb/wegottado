@@ -15,23 +15,10 @@ export default function OrderConfirmed() {
     const oid = params.get('order_id');
     if (oid) {
       setOrderId(oid);
-      // Mark order confirmed & clear cart
+      // Mark order confirmed & clear cart via backend (service role required)
       (async () => {
         try {
-          await base44.asServiceRole.entities.Order.update(oid, { status: 'confirmed' });
-          const me = await base44.auth.me().catch(() => null);
-          if (me) {
-            const cartItems = await base44.entities.CartItem.filter({ user_id: me.id });
-            await Promise.all(cartItems.map(i => base44.entities.CartItem.delete(i.id)));
-            await base44.entities.Notification.create({
-              user_id: me.id,
-              title: 'Order Confirmed',
-              message: `Your order #${oid.slice(-8).toUpperCase()} has been confirmed.`,
-              type: 'order',
-              order_id: oid,
-              read: false,
-            });
-          }
+          await base44.functions.invoke('confirm-order', { order_id: oid });
         } catch (e) {
           console.error('OrderConfirmed cleanup error:', e);
         }
