@@ -3,22 +3,34 @@ import { X, Plus } from 'lucide-react';
 
 const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-export default function ProductSizesEditor({ sizes = [], onChange }) {
+export default function ProductSizesEditor({ sizes = [], soldOutSizes = [], onSizesChange, onSoldOutSizesChange }) {
   const [customInput, setCustomInput] = useState('');
 
   const toggleStandard = (sz) => {
-    if (sizes.includes(sz)) onChange(sizes.filter(s => s !== sz));
-    else onChange([...sizes, sz]);
+    if (sizes.includes(sz)) {
+      onSizesChange(sizes.filter(s => s !== sz));
+      onSoldOutSizesChange(soldOutSizes.filter(s => s !== sz));
+    } else {
+      onSizesChange([...sizes, sz]);
+    }
   };
 
   const addCustom = () => {
     const val = customInput.trim();
     if (!val || sizes.includes(val)) return;
-    onChange([...sizes, val]);
+    onSizesChange([...sizes, val]);
     setCustomInput('');
   };
 
-  const removeSize = (sz) => onChange(sizes.filter(s => s !== sz));
+  const removeSize = (sz) => {
+    onSizesChange(sizes.filter(s => s !== sz));
+    onSoldOutSizesChange(soldOutSizes.filter(s => s !== sz));
+  };
+
+  const toggleSoldOut = (sz) => {
+    if (soldOutSizes.includes(sz)) onSoldOutSizesChange(soldOutSizes.filter(s => s !== sz));
+    else onSoldOutSizesChange([...soldOutSizes, sz]);
+  };
 
   const customSizes = sizes.filter(s => !STANDARD_SIZES.includes(s));
 
@@ -58,7 +70,7 @@ export default function ProductSizesEditor({ sizes = [], onChange }) {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-4">
         <input
           value={customInput}
           onChange={e => setCustomInput(e.target.value)}
@@ -72,10 +84,37 @@ export default function ProductSizesEditor({ sizes = [], onChange }) {
         </button>
       </div>
 
-      {sizes.length === 0 && (
-        <p className="text-[10px] mt-2" style={{ color: 'rgba(245,245,247,0.3)' }}>
+      {sizes.length === 0 ? (
+        <p className="text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
           No sizes selected — all standard sizes (XS–XXL) will be shown by default.
         </p>
+      ) : (
+        <div>
+          <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,0.5)' }}>AVAILABILITY PER SIZE</label>
+          <div className="space-y-2">
+            {sizes.map(sz => {
+              const soldOut = soldOutSizes.includes(sz);
+              return (
+                <div key={sz} className="flex items-center justify-between px-3 py-2"
+                  style={{ border: '1px solid rgba(0,245,255,0.1)', background: 'rgba(0,245,255,0.02)' }}>
+                  <span className="meta-text text-[10px]" style={{ color: 'var(--carrara)' }}>{sz}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleSoldOut(sz)}
+                    className="cursor-hover meta-text text-[9px] px-3 py-1 transition-all duration-200"
+                    style={{
+                      border: `1px solid ${soldOut ? 'rgba(255,90,90,0.4)' : 'rgba(0,245,255,0.2)'}`,
+                      color: soldOut ? 'rgba(255,120,120,0.9)' : 'var(--neon-cyan)',
+                      background: soldOut ? 'rgba(255,90,90,0.08)' : 'rgba(0,245,255,0.06)',
+                    }}
+                  >
+                    {soldOut ? 'SOLD OUT' : 'AVAILABLE'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );

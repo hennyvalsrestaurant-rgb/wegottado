@@ -13,7 +13,6 @@ export default function HoloShowroom() {
   const [modalSize, setModalSize] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
   const MODAL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const SOLD_OUT_SIZES = ['XS', 'S', 'XXL'];
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
@@ -343,7 +342,7 @@ export default function HoloShowroom() {
                   <span className="meta-text text-[9px] block mb-3" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SELECT SIZE</span>
                   <div className="flex flex-wrap gap-2">
                     {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).map(sz => {
-                      const soldOut = SOLD_OUT_SIZES.includes(sz);
+                      const soldOut = (selectedProduct.sold_out_sizes || []).includes(sz);
                       return (
                         <button
                           key={sz}
@@ -369,11 +368,12 @@ export default function HoloShowroom() {
                 <button
                   onClick={() => {
                     const sizePool = selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES;
-                    const fallbackSize = sizePool.find(sz => !SOLD_OUT_SIZES.includes(sz)) || 'M';
+                    const soldOutSizes = selectedProduct.sold_out_sizes || [];
+                    const fallbackSize = sizePool.find(sz => !soldOutSizes.includes(sz)) || 'M';
                     handleAddToCart(selectedProduct, modalSize || fallbackSize);
                     setSelectedProduct(null); setModalSize(null);
                   }}
-                  disabled={cartLoading || (modalSize ? SOLD_OUT_SIZES.includes(modalSize) : false)}
+                  disabled={cartLoading || (modalSize ? (selectedProduct.sold_out_sizes || []).includes(modalSize) : false)}
                   className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-40"
                   style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
                 >

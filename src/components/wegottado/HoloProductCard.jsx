@@ -4,7 +4,6 @@ import { ShoppingBag, Eye } from 'lucide-react';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-const SOLD_OUT_SIZES = ['XS', 'S', 'XXL'];
 
 export default function HoloProductCard({ product, onAddToCart, onView }) {
   const [hovered, setHovered] = useState(false);
@@ -36,6 +35,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
   };
 
   const availableSizes = product.sizes?.length ? product.sizes : SIZES;
+  const soldOutSizes = product.sold_out_sizes || [];
   const { format } = useCurrency();
 
   const onMouseMove = (e) => {
@@ -154,8 +154,8 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             className="absolute bottom-4 left-4 right-4 flex gap-3 z-10"
           >
             <button
-              onClick={() => onAddToCart(product, selectedSize || availableSizes.find(sz => !SOLD_OUT_SIZES.includes(sz)) || availableSizes[0])}
-              disabled={selectedSize ? SOLD_OUT_SIZES.includes(selectedSize) : false}
+              onClick={() => onAddToCart(product, selectedSize || availableSizes.find(sz => !soldOutSizes.includes(sz)) || availableSizes[0])}
+              disabled={selectedSize ? soldOutSizes.includes(selectedSize) : false}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover disabled:opacity-40"
               style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
             >
@@ -189,7 +189,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             <span className="meta-text text-[9px] block mb-2" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SIZE</span>
             <div className="flex flex-wrap gap-1.5">
               {availableSizes.map(sz => {
-                const soldOut = SOLD_OUT_SIZES.includes(sz);
+                const soldOut = soldOutSizes.includes(sz);
                 return (
                   <button
                     key={sz}

@@ -37,6 +37,13 @@
         "type": "string"
       },
       "description": "Available sizes e.g. XS, S, M, L, XL, XXL"
+    },
+    "sold_out_sizes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sizes from the sizes list that are sold out and cannot be added to cart"
     }
   },
   "required": [
