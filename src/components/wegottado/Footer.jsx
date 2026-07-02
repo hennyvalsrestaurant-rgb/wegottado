@@ -35,6 +35,14 @@ export default function Footer() {
                     <Link to="/pre-orders" className="text-xs gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]" style={{ color: 'rgba(245,245,247,0.4)' }}>
                       {link}
                     </Link>
+                  ) : ['Contact', 'Shipping', 'Returns', 'Size Guide'].includes(link) ? (
+                    <Link
+                      to={`/client-care?section=${link.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="text-xs gold-underline cursor-hover transition-colors duration-500 hover:text-[var(--gold)]"
+                      style={{ color: 'rgba(245,245,247,0.4)' }}
+                    >
+                      {link}
+                    </Link>
                   ) : (
                     <a
                       href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
