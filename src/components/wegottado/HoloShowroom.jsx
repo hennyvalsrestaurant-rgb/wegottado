@@ -346,10 +346,9 @@ export default function HoloShowroom() {
                       return (
                         <button
                           key={sz}
-                          onClick={() => { if (!soldOut) setModalSize(sz === modalSize ? null : sz); }}
-                          disabled={soldOut}
+                          onClick={() => setModalSize(sz === modalSize ? null : sz)}
                           title={soldOut ? 'Sold out' : undefined}
-                          className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                          className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200"
                           style={{
                             border: `1px solid ${soldOut ? 'rgba(255,90,90,0.4)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)')}`,
                             color: soldOut ? 'rgba(255,120,120,0.9)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)'),

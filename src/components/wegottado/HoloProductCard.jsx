@@ -193,10 +193,9 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
                 return (
                   <button
                     key={sz}
-                    onClick={(e) => { e.stopPropagation(); if (!soldOut) setSelectedSize(sz === selectedSize ? null : sz); }}
-                    disabled={soldOut}
+                    onClick={(e) => { e.stopPropagation(); setSelectedSize(sz === selectedSize ? null : sz); }}
                     title={soldOut ? 'Sold out' : undefined}
-                    className="cursor-hover w-9 h-9 meta-text text-[9px] flex items-center justify-center transition-all duration-200 relative disabled:cursor-not-allowed"
+                    className="cursor-hover w-9 h-9 meta-text text-[9px] flex items-center justify-center transition-all duration-200 relative"
                     style={{
                       border: `1px solid ${soldOut ? 'rgba(255,90,90,0.4)' : (selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.12)')}`,
                       color: soldOut ? 'rgba(255,120,120,0.9)' : (selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.35)'),
