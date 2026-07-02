@@ -36,6 +36,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
 
   const availableSizes = product.sizes?.length ? product.sizes : SIZES;
   const soldOutSizes = product.sold_out_sizes || [];
+  const allSoldOut = availableSizes.length > 0 && availableSizes.every(sz => soldOutSizes.includes(sz));
   const { format } = useCurrency();
 
   const onMouseMove = (e) => {
@@ -140,28 +141,42 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
           )}
 
           {/* Tag */}
-          {product.tag && (
+          {product.tag && !allSoldOut && (
             <div className="absolute top-4 left-4 px-3 py-1 z-10"
               style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', backdropFilter: 'blur(8px)' }}>
               <span className="meta-text text-[10px]" style={{ color: 'var(--neon-cyan)' }}>{product.tag}</span>
             </div>
           )}
 
-          {/* Action buttons */}
-          <motion.div
-            animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 12 }}
-            transition={{ duration: 0.4 }}
-            className="absolute bottom-4 left-4 right-4 flex gap-3 z-10"
-          >
-            <button
-              onClick={() => onAddToCart(product, selectedSize || availableSizes.find(sz => !soldOutSizes.includes(sz)) || availableSizes[0])}
-              disabled={selectedSize ? soldOutSizes.includes(selectedSize) : false}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover disabled:opacity-40"
-              style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
-            >
-              <ShoppingBag size={14} />
-              <span className="meta-text text-[10px]">{selectedSize ? `ADD — ${selectedSize}` : 'ADD TO BAG'}</span>
-            </button>
+          {/* Sold out badge — always visible, clearest signal on mobile */}
+          {allSoldOut && (
+            <div className="absolute top-4 left-4 px-3 py-1 z-10"
+              style={{ background: 'rgba(255,90,90,0.12)', border: '1px solid rgba(255,90,90,0.5)', backdropFilter: 'blur(8px)' }}>
+              <span className="meta-text text-[10px]" style={{ color: '#FF6B6B' }}>SOLD OUT</span>
+            </div>
+          )}
+
+          {/* Action buttons — always visible on mobile, hover-reveal on desktop */}
+          <div className="absolute bottom-4 left-4 right-4 flex gap-3 z-10 opacity-100 translate-y-0 md:opacity-0 md:translate-y-3 md:group-hover:opacity-100 md:group-hover:translate-y-0 transition-all duration-400">
+            {allSoldOut ? (
+              <button
+                disabled
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 opacity-50 cursor-not-allowed"
+                style={{ background: 'rgba(245,245,247,0.1)', color: 'rgba(245,245,247,0.5)' }}
+              >
+                <span className="meta-text text-[10px]">SOLD OUT</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onAddToCart(product, selectedSize || availableSizes.find(sz => !soldOutSizes.includes(sz)) || availableSizes[0])}
+                disabled={selectedSize ? soldOutSizes.includes(selectedSize) : false}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover disabled:opacity-40"
+                style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
+              >
+                <ShoppingBag size={14} />
+                <span className="meta-text text-[10px]">{selectedSize ? `ADD — ${selectedSize}` : 'ADD TO BAG'}</span>
+              </button>
+            )}
             <button
               onClick={() => onView(product)}
               className="px-4 py-2.5 cursor-hover"
@@ -169,7 +184,7 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             >
               <Eye size={14} />
             </button>
-          </motion.div>
+          </div>
         </div>
 
         {/* Info */}

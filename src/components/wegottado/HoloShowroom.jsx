@@ -339,7 +339,12 @@ export default function HoloShowroom() {
 
                 {/* Size selector */}
                 <div className="mb-6">
-                  <span className="meta-text text-[9px] block mb-3" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SELECT SIZE</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="meta-text text-[9px]" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SELECT SIZE</span>
+                    {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).every(sz => (selectedProduct.sold_out_sizes || []).includes(sz)) && (
+                      <span className="meta-text text-[9px]" style={{ color: '#FF6B6B' }}>ALL SIZES SOLD OUT</span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).map(sz => {
                       const soldOut = (selectedProduct.sold_out_sizes || []).includes(sz);
@@ -364,21 +369,26 @@ export default function HoloShowroom() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    const sizePool = selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES;
-                    const soldOutSizes = selectedProduct.sold_out_sizes || [];
-                    const fallbackSize = sizePool.find(sz => !soldOutSizes.includes(sz)) || 'M';
-                    handleAddToCart(selectedProduct, modalSize || fallbackSize);
-                    setSelectedProduct(null); setModalSize(null);
-                  }}
-                  disabled={cartLoading || (modalSize ? (selectedProduct.sold_out_sizes || []).includes(modalSize) : false)}
-                  className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-40"
-                  style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
-                >
-                  <ShoppingBag size={14} />
-                  {cartLoading ? 'ADDING...' : 'ADD TO BAG & CHECKOUT'}
-                </button>
+                {(() => {
+                  const sizePool = selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES;
+                  const soldOutSizes = selectedProduct.sold_out_sizes || [];
+                  const modalAllSoldOut = sizePool.every(sz => soldOutSizes.includes(sz));
+                  return (
+                    <button
+                      onClick={() => {
+                        const fallbackSize = sizePool.find(sz => !soldOutSizes.includes(sz)) || 'M';
+                        handleAddToCart(selectedProduct, modalSize || fallbackSize);
+                        setSelectedProduct(null); setModalSize(null);
+                      }}
+                      disabled={modalAllSoldOut || cartLoading || (modalSize ? soldOutSizes.includes(modalSize) : false)}
+                      className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-40"
+                      style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
+                    >
+                      <ShoppingBag size={14} />
+                      {modalAllSoldOut ? 'SOLD OUT' : cartLoading ? 'ADDING...' : 'ADD TO BAG & CHECKOUT'}
+                    </button>
+                  );
+                })()}
               </div>
             </motion.div>
           </motion.div>
