@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import SizeGuideTable from '@/components/wegottado/SizeGuideTable';
-import { Mail, Clock, MessageCircle } from 'lucide-react';
+import { Mail, Clock, MessageCircle, Phone } from 'lucide-react';
 
 const TABS = [
   { key: 'contact', label: 'Contact' },
@@ -70,6 +70,13 @@ export default function ClientCare() {
                   <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>Email</h3>
                   <p className="text-sm" style={{ color: 'rgba(245,245,247,0.55)' }}>care@wegottado.com</p>
                   <p className="text-xs mt-1" style={{ color: 'rgba(245,245,247,0.35)' }}>We respond within 24 hours.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Phone size={18} style={{ color: 'var(--gold)' }} className="mt-1" />
+                <div>
+                  <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>Phone</h3>
+                  <p className="text-sm" style={{ color: 'rgba(245,245,247,0.55)' }}>+1 (929) 353-0741</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
