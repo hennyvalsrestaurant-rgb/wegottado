@@ -352,9 +352,9 @@ export default function HoloShowroom() {
                           title={soldOut ? 'Sold out' : undefined}
                           className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
                           style={{
-                            border: `1px solid ${soldOut ? 'rgba(245,245,247,0.08)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)')}`,
-                            color: soldOut ? 'rgba(245,245,247,0.15)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)'),
-                            background: soldOut ? 'rgba(245,245,247,0.02)' : (modalSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent'),
+                            border: `1px solid ${soldOut ? 'rgba(255,90,90,0.4)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)')}`,
+                            color: soldOut ? 'rgba(255,120,120,0.9)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)'),
+                            background: soldOut ? 'rgba(255,90,90,0.08)' : (modalSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent'),
                             boxShadow: modalSize === sz && !soldOut ? '0 0 10px rgba(0,245,255,0.2)' : 'none',
                             textDecoration: soldOut ? 'line-through' : 'none',
                           }}
