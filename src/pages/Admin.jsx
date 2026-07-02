@@ -8,9 +8,10 @@ import AdminSiteContent from '@/components/wegottado/AdminSiteContent';
 import AdminPreOrders from '@/components/wegottado/AdminPreOrders';
 import AdminInquiries from '@/components/wegottado/AdminInquiries';
 import AdminOrders from '@/components/wegottado/AdminOrders';
+import ProductSizesEditor from '@/components/wegottado/ProductSizesEditor';
 import { Link } from 'react-router-dom';
 
-const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', images: [], tag: '', in_stock: true };
+const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', images: [], tag: '', in_stock: true, sizes: [] };
 const MAX_IMAGES = 5;
 const CATEGORIES = ['OUTERWEAR', 'SUITING', 'EVENING WEAR', 'ACCESSORIES', 'JEWELRY', 'TOPS', 'BOTTOMS'];
 const TAGS = ['', 'NEW', 'LIMITED', 'EXCLUSIVE', 'COUTURE', 'SOLD OUT'];
@@ -43,7 +44,7 @@ export default function Admin() {
   };
 
   const openNew = () => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); };
-  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '', images: p.images || [] }); setEditId(p.id); setShowForm(true); };
+  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '', images: p.images || [], sizes: p.sizes || [] }); setEditId(p.id); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditId(null); setForm(EMPTY_FORM); };
 
   const handleImageUpload = async (e) => {
@@ -300,6 +301,8 @@ export default function Admin() {
                     </select>
                   </div>
                 </div>
+
+                <ProductSizesEditor sizes={form.sizes || []} onChange={(sizes) => setForm(p => ({ ...p, sizes }))} />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
