@@ -80,6 +80,21 @@ export default function ClientCare() {
                 </div>
               </div>
               <div className="flex items-start gap-4">
+                <MessageCircle size={18} style={{ color: 'var(--gold)' }} className="mt-1" />
+                <div>
+                  <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>WhatsApp</h3>
+                  <a
+                    href="https://wa.me/19293530741"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm gold-underline cursor-hover"
+                    style={{ color: 'rgba(245,245,247,0.55)' }}
+                  >
+                    +1 (929) 353-0741
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
                 <Clock size={18} style={{ color: 'var(--gold)' }} className="mt-1" />
                 <div>
                   <h3 className="heading-display text-xl mb-2" style={{ color: 'var(--carrara)' }}>Hours</h3>
