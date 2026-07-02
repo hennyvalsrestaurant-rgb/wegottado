@@ -4,6 +4,7 @@ import { ShoppingBag, Eye } from 'lucide-react';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const SOLD_OUT_SIZES = ['XS', 'S', 'XXL'];
 
 export default function HoloProductCard({ product, onAddToCart, onView }) {
   const [hovered, setHovered] = useState(false);
@@ -153,8 +154,9 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
             className="absolute bottom-4 left-4 right-4 flex gap-3 z-10"
           >
             <button
-              onClick={() => onAddToCart(product, selectedSize || availableSizes[0])}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover"
+              onClick={() => onAddToCart(product, selectedSize || availableSizes.find(sz => !SOLD_OUT_SIZES.includes(sz)) || availableSizes[0])}
+              disabled={selectedSize ? SOLD_OUT_SIZES.includes(selectedSize) : false}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-hover disabled:opacity-40"
               style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
             >
               <ShoppingBag size={14} />
@@ -186,21 +188,27 @@ export default function HoloProductCard({ product, onAddToCart, onView }) {
           <div className="mt-4">
             <span className="meta-text text-[9px] block mb-2" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SIZE</span>
             <div className="flex flex-wrap gap-1.5">
-              {availableSizes.map(sz => (
-                <button
-                  key={sz}
-                  onClick={(e) => { e.stopPropagation(); setSelectedSize(sz === selectedSize ? null : sz); }}
-                  className="cursor-hover w-9 h-9 meta-text text-[9px] flex items-center justify-center transition-all duration-200"
-                  style={{
-                    border: `1px solid ${selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.12)'}`,
-                    color: selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.35)',
-                    background: selectedSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent',
-                    boxShadow: selectedSize === sz ? '0 0 8px rgba(0,245,255,0.2)' : 'none',
-                  }}
-                >
-                  {sz}
-                </button>
-              ))}
+              {availableSizes.map(sz => {
+                const soldOut = SOLD_OUT_SIZES.includes(sz);
+                return (
+                  <button
+                    key={sz}
+                    onClick={(e) => { e.stopPropagation(); if (!soldOut) setSelectedSize(sz === selectedSize ? null : sz); }}
+                    disabled={soldOut}
+                    title={soldOut ? 'Sold out' : undefined}
+                    className="cursor-hover w-9 h-9 meta-text text-[9px] flex items-center justify-center transition-all duration-200 relative disabled:cursor-not-allowed"
+                    style={{
+                      border: `1px solid ${soldOut ? 'rgba(245,245,247,0.08)' : (selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.12)')}`,
+                      color: soldOut ? 'rgba(245,245,247,0.15)' : (selectedSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.35)'),
+                      background: soldOut ? 'rgba(245,245,247,0.02)' : (selectedSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent'),
+                      boxShadow: selectedSize === sz && !soldOut ? '0 0 8px rgba(0,245,255,0.2)' : 'none',
+                      textDecoration: soldOut ? 'line-through' : 'none',
+                    }}
+                  >
+                    {sz}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ export default function HoloShowroom() {
   const [modalSize, setModalSize] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
   const MODAL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const SOLD_OUT_SIZES = ['XS', 'S', 'XXL'];
   const [cartLoading, setCartLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [filter, setFilter] = useState('ALL');
@@ -341,28 +342,39 @@ export default function HoloShowroom() {
                 <div className="mb-6">
                   <span className="meta-text text-[9px] block mb-3" style={{ color: 'rgba(245,245,247,0.3)', letterSpacing: '0.2em' }}>SELECT SIZE</span>
                   <div className="flex flex-wrap gap-2">
-                    {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).map(sz => (
-                      <button
-                        key={sz}
-                        onClick={() => setModalSize(sz === modalSize ? null : sz)}
-                        className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200"
-                        style={{
-                          border: `1px solid ${modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)'}`,
-                          color: modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)',
-                          background: modalSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent',
-                          boxShadow: modalSize === sz ? '0 0 10px rgba(0,245,255,0.2)' : 'none',
-                        }}
-                      >
-                        {sz}
-                      </button>
-                    ))}
+                    {(selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES).map(sz => {
+                      const soldOut = SOLD_OUT_SIZES.includes(sz);
+                      return (
+                        <button
+                          key={sz}
+                          onClick={() => { if (!soldOut) setModalSize(sz === modalSize ? null : sz); }}
+                          disabled={soldOut}
+                          title={soldOut ? 'Sold out' : undefined}
+                          className="cursor-hover w-12 h-12 meta-text text-[10px] flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                          style={{
+                            border: `1px solid ${soldOut ? 'rgba(245,245,247,0.08)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(0,245,255,0.15)')}`,
+                            color: soldOut ? 'rgba(245,245,247,0.15)' : (modalSize === sz ? 'var(--neon-cyan)' : 'rgba(245,245,247,0.4)'),
+                            background: soldOut ? 'rgba(245,245,247,0.02)' : (modalSize === sz ? 'rgba(0,245,255,0.08)' : 'transparent'),
+                            boxShadow: modalSize === sz && !soldOut ? '0 0 10px rgba(0,245,255,0.2)' : 'none',
+                            textDecoration: soldOut ? 'line-through' : 'none',
+                          }}
+                        >
+                          {sz}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <button
-                  onClick={() => { handleAddToCart(selectedProduct, modalSize || (selectedProduct.sizes?.[0] || 'M')); setSelectedProduct(null); setModalSize(null); }}
-                  disabled={cartLoading}
-                  className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2"
+                  onClick={() => {
+                    const sizePool = selectedProduct.sizes?.length ? selectedProduct.sizes : MODAL_SIZES;
+                    const fallbackSize = sizePool.find(sz => !SOLD_OUT_SIZES.includes(sz)) || 'M';
+                    handleAddToCart(selectedProduct, modalSize || fallbackSize);
+                    setSelectedProduct(null); setModalSize(null);
+                  }}
+                  disabled={cartLoading || (modalSize ? SOLD_OUT_SIZES.includes(modalSize) : false)}
+                  className="w-full py-4 cursor-hover meta-text text-xs transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-40"
                   style={{ background: 'var(--gold)', color: 'var(--obsidian)' }}
                 >
                   <ShoppingBag size={14} />
