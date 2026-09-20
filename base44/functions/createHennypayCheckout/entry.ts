@@ -14,7 +14,10 @@ async function callHennypay(secretKey, body, idempotencyKey) {
     body: JSON.stringify(body),
   });
   const payload = await response.json();
-  if (!response.ok) throw new Error(payload?.error?.message || payload?.error || 'Hennypay request failed');
+  if (!response.ok) {
+    const details = payload?.error?.message || payload?.error?.code || payload?.error;
+    throw new Error(typeof details === 'string' ? details : JSON.stringify(details || payload));
+  }
   return payload;
 }
 
@@ -40,17 +43,13 @@ export default async function(req) {
       payment_method: 'hennypay',
     });
 
-    const appUrl = req.headers.get('X-Base44-App-Url') || 'https://victorious-the-atelier-edit.base44.app';
     const secretKey = secrets.get('HENNYPAY_SECRET_KEY');
     const link = await callHennypay(secretKey, {
       operation: 'links.create',
-      name: `WEGOTTADO Order ${order.id.slice(-8).toUpperCase()}`,
-      description: items.map((item) => `${item.quantity}× ${item.product_name}`).join(', '),
+      title: `WEGOTTADO Order ${order.id.slice(-8).toUpperCase()}`,
       amount: Math.round(total * 100),
       currency: 'USD',
-      success_url: `${appUrl}/order-confirmed?order_id=${order.id}&provider=hennypay`,
-      cancel_url: `${appUrl}/checkout`,
-      metadata: { order_id: order.id },
+      country: 'US',
     }, `${order.id}-link`);
 
     const linkId = link?.data?.id || link?.id;
