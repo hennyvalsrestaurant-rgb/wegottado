@@ -21,7 +21,7 @@ export default function HennypayOption({ onPay, disabled }) {
         </div>
       </div>
       <span className="meta-text text-[10px]" style={{ color: 'rgba(245,245,247,0.3)' }}>
-        {disabled ? 'REDIRECTING...' : '→'}
+        {disabled ? 'OPENING...' : '→'}
       </span>
     </button>
   );

@@ -7,6 +7,7 @@ import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import CurrencySelector, { useCurrency } from '@/components/wegottado/CurrencySelector';
 import HennypayOption from '@/components/wegottado/HennypayOption';
+import HennypayCheckoutModal from '@/components/wegottado/HennypayCheckoutModal';
 
 const STEPS = ['BAG', 'SHIPPING', 'PAYMENT', 'CONFIRMED'];
 
@@ -18,6 +19,7 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [orderError, setOrderError] = useState(null);
+  const [hennypayCheckout, setHennypayCheckout] = useState(null);
   const navigate = useNavigate();
 
   const [shipping, setShipping] = useState({ name: '', address: '', city: '', country: 'US', zip: '' });
@@ -133,16 +135,33 @@ export default function Checkout() {
     try {
       const res = await base44.functions.invoke('createHennypayCheckout', { items: cartItems, shipping });
       if (res.data.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
-        return;
+        setHennypayCheckout({ checkoutUrl: res.data.checkoutUrl, orderId: res.data.orderId });
+      } else {
+        setOrderError(res.data.error || 'Hennypay checkout failed. Please try again.');
       }
-      setOrderError(res.data.error || 'Hennypay checkout failed. Please try again.');
     } catch (err) {
       console.error(err);
       setOrderError(err?.response?.data?.error || 'Hennypay checkout failed. Please try again.');
     }
     setPlacing(false);
   };
+
+  useEffect(() => {
+    if (!hennypayCheckout?.orderId) return;
+    const interval = setInterval(async () => {
+      const order = await base44.entities.Order.get(hennypayCheckout.orderId);
+      if (order.status === 'confirmed') {
+        setOrderId(order.id);
+        setCartItems([]);
+        setHennypayCheckout(null);
+        setStep(3);
+      } else if (order.status === 'cancelled') {
+        setHennypayCheckout(null);
+        setOrderError('Hennypay payment was not completed.');
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [hennypayCheckout?.orderId]);
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -159,6 +178,10 @@ export default function Checkout() {
     <div className="min-h-screen page-enter relative" style={{ background: 'var(--metal-dark)' }}>
       <HoloCursor />
       <HoloGrid />
+      <HennypayCheckoutModal
+        checkoutUrl={hennypayCheckout?.checkoutUrl}
+        onClose={() => setHennypayCheckout(null)}
+      />
       <div className="relative z-10">
         {/* Progress bar */}
         <div className="fixed top-0 left-0 right-0 h-0.5 z-50" style={{ background: 'rgba(0,245,255,0.1)' }}>
