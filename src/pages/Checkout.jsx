@@ -6,6 +6,7 @@ import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Check, MapPin, CreditCard,
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import CurrencySelector, { useCurrency } from '@/components/wegottado/CurrencySelector';
+import HennypayOption from '@/components/wegottado/HennypayOption';
 
 const STEPS = ['BAG', 'SHIPPING', 'PAYMENT', 'CONFIRMED'];
 
@@ -122,6 +123,23 @@ export default function Checkout() {
     } catch (err) {
       console.error(err);
       setOrderError(err?.response?.data?.error || 'Something went wrong. Please try again.');
+    }
+    setPlacing(false);
+  };
+
+  const handlePayWithHennypay = async () => {
+    setOrderError(null);
+    setPlacing(true);
+    try {
+      const res = await base44.functions.invoke('createHennypayCheckout', { items: cartItems, shipping });
+      if (res.data.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl;
+        return;
+      }
+      setOrderError(res.data.error || 'Hennypay checkout failed. Please try again.');
+    } catch (err) {
+      console.error(err);
+      setOrderError(err?.response?.data?.error || 'Hennypay checkout failed. Please try again.');
     }
     setPlacing(false);
   };
@@ -469,6 +487,8 @@ export default function Checkout() {
                       </span>
                     </button>
                   )}
+
+                  <HennypayOption onPay={handlePayWithHennypay} disabled={placing} />
 
                   {/* Stripe */}
                   <button
