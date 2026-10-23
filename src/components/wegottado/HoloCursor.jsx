@@ -1,116 +1,51 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
+/**
+ * Decorative hover halo that supplements (never replaces) the system cursor.
+ * Event delegation avoids duplicated listeners and MutationObserver work.
+ */
 export default function HoloCursor() {
-  const [pos, setPos] = useState({ x: -100, y: -100 });
-  const [trail, setTrail] = useState([]);
-  const [hovering, setHovering] = useState(false);
-  const [clicking, setClicking] = useState(false);
-  const targetRef = useRef({ x: -100, y: -100 });
-  const rafRef = useRef(null);
+  const haloRef = useRef(null);
 
   useEffect(() => {
-    const onMove = (e) => {
-      targetRef.current = { x: e.clientX, y: e.clientY };
-      setTrail(prev => [...prev.slice(-6), { x: e.clientX, y: e.clientY, id: Date.now() }]);
-    };
-    const onDown = () => setClicking(true);
-    const onUp = () => setClicking(false);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mousedown', onDown);
-    window.addEventListener('mouseup', onUp);
+    const halo = haloRef.current;
+    if (!halo || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return undefined;
 
-    const animate = () => {
-      setPos(prev => ({
-        x: prev.x + (targetRef.current.x - prev.x) * 0.12,
-        y: prev.y + (targetRef.current.y - prev.y) * 0.12,
-      }));
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
+    const hide = () => { halo.style.opacity = '0'; };
+    const onMove = (event) => {
+      if (event.pointerType !== 'mouse') { hide(); return; }
+      const target = event.target;
+      const interactive = target instanceof Element &&
+        target.closest('a[href], button:not(:disabled), [role="button"], .cursor-hover, input, select, textarea');
+      if (!interactive) { hide(); return; }
 
-    const addHoverListeners = () => {
-      document.querySelectorAll('a,button,[role="button"],.cursor-hover').forEach(el => {
-        el.addEventListener('mouseenter', () => setHovering(true));
-        el.addEventListener('mouseleave', () => setHovering(false));
-      });
+      const onLight = Boolean(target.closest('.rack-experience, .bg-white'));
+      halo.style.left = event.clientX + 'px';
+      halo.style.top = event.clientY + 'px';
+      halo.style.borderColor = onLight ? 'rgba(25,25,25,.76)' : 'rgba(212,175,55,.85)';
+      halo.style.boxShadow = onLight ? '0 0 0 2px rgba(255,255,255,.55)' : '0 0 12px rgba(212,175,55,.26)';
+      halo.style.opacity = '1';
     };
-    addHoverListeners();
-    const obs = new MutationObserver(addHoverListeners);
-    obs.observe(document.body, { childList: true, subtree: true });
 
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('blur', hide);
+    document.addEventListener('pointerleave', hide);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mousedown', onDown);
-      window.removeEventListener('mouseup', onUp);
-      cancelAnimationFrame(rafRef.current);
-      obs.disconnect();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('blur', hide);
+      document.removeEventListener('pointerleave', hide);
     };
   }, []);
 
   return (
-    <>
-      {/* Trail dots */}
-      {trail.map((t, i) => (
-        <div
-          key={t.id}
-          className="fixed pointer-events-none rounded-full"
-          style={{
-            left: t.x,
-            top: t.y,
-            width: 4,
-            height: 4,
-            transform: 'translate(-50%,-50%)',
-            background: 'var(--neon-cyan)',
-            opacity: (i / trail.length) * 0.3,
-            zIndex: 9997,
-            transition: 'opacity 0.5s',
-          }}
-        />
-      ))}
-
-      {/* Main ring */}
-      <motion.div
-        className="fixed pointer-events-none"
-        style={{ left: pos.x, top: pos.y, transform: 'translate(-50%,-50%)', zIndex: 9999 }}
-        animate={{
-          width: clicking ? 14 : hovering ? 52 : 24,
-          height: clicking ? 14 : hovering ? 52 : 24,
-        }}
-        transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-      >
-        <div
-          className="w-full h-full rounded-full border"
-          style={{
-            borderColor: hovering ? 'rgba(0,245,255,0.9)' : 'rgba(212,175,55,0.6)',
-            boxShadow: hovering
-              ? '0 0 12px rgba(0,245,255,0.6), inset 0 0 8px rgba(0,245,255,0.1)'
-              : '0 0 8px rgba(212,175,55,0.3)',
-            transition: 'border-color 0.3s, box-shadow 0.3s',
-          }}
-        />
-        {hovering && (
-          <div
-            className="absolute inset-2 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(0,245,255,0.15), transparent)' }}
-          />
-        )}
-      </motion.div>
-
-      {/* Dot center */}
-      <div
-        className="fixed pointer-events-none rounded-full"
-        style={{
-          left: targetRef.current.x,
-          top: targetRef.current.y,
-          width: 4,
-          height: 4,
-          transform: 'translate(-50%,-50%)',
-          background: 'var(--neon-cyan)',
-          zIndex: 9999,
-          boxShadow: '0 0 6px var(--neon-cyan)',
-        }}
-      />
-    </>
+    <div
+      ref={haloRef}
+      aria-hidden="true"
+      className="pointer-events-none fixed z-[9999] h-9 w-9 rounded-full border-2"
+      style={{
+        left: -100, top: -100, opacity: 0, transform: 'translate(-50%, -50%)',
+        transition: 'opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease',
+      }}
+    />
   );
 }
