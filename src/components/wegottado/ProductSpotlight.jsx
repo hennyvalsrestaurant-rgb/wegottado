@@ -78,7 +78,7 @@ export default function ProductSpotlight() {
   const eased = reducedMotion ? { duration: 0.01 } : spring;
   const productActive = chosen != null;
   const preview = hover != null ? products[hover] : null;
-  return <section id="interactive-rack" ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
+  return <section ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
     <header className="rack-topbar">
       <a href="#manifesto" className="rack-toplink">ABOUT</a>
       <button type="button" onClick={close} className="rack-wordmark" aria-label="Return to WEGOTTADO rack">WEGOTTADO<span aria-hidden="true">®</span></button>
