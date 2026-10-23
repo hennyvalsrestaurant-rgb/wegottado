@@ -16,7 +16,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > 80);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [user, setUser] = useState(null);
