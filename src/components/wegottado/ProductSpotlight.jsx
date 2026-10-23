@@ -1,53 +1,191 @@
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion, LayoutGroup } from 'framer-motion';
-import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, ArrowUpRight, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from './CurrencySelector';
+import './ProductSpotlight.css';
+
+const fallbackSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const faceImages = (product) => {
+  const images = [product?.front_image_url, product?.image_url, ...(Array.isArray(product?.images) ? product.images : [])].filter(Boolean);
+  const unique = [...new Set(images)];
+  return { front: unique[0], back: product?.back_image_url || unique[1] || null, side: product?.side_image_url || null };
+};
+const familyName = name => String(name || '').split(/\s*[-–]\s*/)[0].trim().toLowerCase();
+const colorName = product => product.color_label || (product.name?.split(/\s*[-–]\s*/).slice(1).join(' - ').trim()) || product.category || 'Original';
+const formatMoney = (format, amount) => format(Number(amount) || 0);
+const spring = { type: 'spring', stiffness: 170, damping: 28, mass: 1.05 };
+const getSizes = p => Array.isArray(p?.sizes) && p.sizes.length ? p.sizes : fallbackSizes;
+
+function Hanger({ large = false }) {
+  return <svg aria-hidden="true" className={large ? 'rack-hanger rack-hanger--large' : 'rack-hanger'} viewBox="0 0 144 58" fill="none">
+    <path d="M69 16c-4-3-4-10 2-13 8-4 17 3 12 11-2 4-6 6-8 9" stroke="#484039" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M75 23 6 51q-7 5 3 5h126q10 0 3-5L75 23Z" fill="#3e2920" stroke="#322118" strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M23 48h104" stroke="#765143" strokeWidth="2" strokeLinecap="round"/>
+  </svg>;
+}
 
 export default function ProductSpotlight() {
- const [products,setProducts]=useState([]), [active,setActive]=useState(0), [view,setView]=useState('rack'), [detail,setDetail]=useState(false), [size,setSize]=useState(''), [busy,setBusy]=useState(false), [message,setMessage]=useState(''), [loading,setLoading]=useState(true);
- const {format}=useCurrency();
- const reduceMotion=useReducedMotion();
- const [touchStart,setTouchStart]=useState(null);
- const motionTiming=reduceMotion?{duration:0}:{type:'spring',stiffness:180,damping:27,mass:1.05};
- useEffect(()=>{let live=true; base44.entities.Product.filter({in_stock:true}).then(data=>{if(live)setProducts((Array.isArray(data)?data:data?.items||[]).filter(p=>p.name&&p.image_url).slice(0,12))}).catch(()=>{}).finally(()=>{if(live)setLoading(false)});return()=>{live=false}},[]);
- const select=i=>{setActive(i);setView('single');setDetail(false);setSize('');setMessage('')};
- const move=d=>select((active+d+products.length)%products.length);
- const p=products[active];
- async function add(){if(!size){setMessage('Choose a size.');return} if(busy)return;setBusy(true);setMessage('');try{const user=await base44.auth.me();if(!user?.id)throw Error('Please sign in first.');await base44.entities.CartItem.create({user_id:user.id,product_id:p.id,product_name:p.name,product_image:p.image_url,price:p.price,quantity:1,size});setMessage('Added to bag!')}catch(e){setMessage(e?.message||'Could not add to bag.')}finally{setBusy(false)}}
- if(!loading&&!products.length)return null;
- return <section className="bg-[#fafaf8] px-4 py-12 text-[#151515] sm:px-8" aria-label="WEGOTTADO interactive clothing collection">
-  <div className="mx-auto max-w-7xl">
-   <div className="flex items-center justify-between border-b border-black/10 pb-4 text-xs uppercase tracking-[.2em]"><span>WEGOTTADO — The Collection</span>{view==='single'&&<button onClick={()=>setView('rack')} className="flex min-h-11 items-center gap-2"><X size={16}/> Back to rack</button>}</div>
-   {loading?<div className="h-[410px] animate-pulse bg-gray-100" role="status"/>:<LayoutGroup><AnimatePresence mode="sync">
-    {view==='rack'?<motion.div key="rack" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,scale:.94,filter:'blur(5px)'}} transition={motionTiming} className="flex min-h-[390px] flex-col items-center justify-center py-12 sm:min-h-[580px]">
-     <div className="relative flex w-full max-w-5xl items-end justify-center overflow-x-auto pt-10 pb-6"><div className="pointer-events-none absolute left-0 right-0 top-10 h-[3px] bg-gray-500"/>{products.map((item,i)=><button key={item.id} type="button" onClick={()=>select(i)} aria-label={`Select ${item.name}`} className="-mx-1 flex min-w-[75px] max-w-40 flex-1 flex-col items-center transition-transform duration-300 hover:-translate-y-4 focus-visible:-translate-y-4"><svg className="relative z-10 -mb-1 h-9 w-10 text-neutral-600" viewBox="0 0 40 36" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M18 9c-4-5 5-10 7-3 1 4-5 7-5 11M20 17 3 31q-3 3 2 3h30q5 0 2-3L20 17Z"/></svg><motion.img layoutId={`garment-${item.id}`} transition={motionTiming} src={item.image_url} loading="lazy" decoding="async" alt={item.name} className="h-40 w-full object-contain drop-shadow-lg sm:h-72"/></button>)}</div>
-     <p className="mt-5 text-center text-xs uppercase tracking-widest">Select a garment to see it up close</p>
-    </motion.div>:<motion.div key="single" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={motionTiming} onTouchStart={e=>setTouchStart(e.touches[0]?.clientX??null)} onTouchEnd={e=>{if(touchStart===null)return;const dx=e.changedTouches[0].clientX-touchStart;if(Math.abs(dx)>65)move(dx<0?1:-1);setTouchStart(null)}} className="relative flex min-h-[450px] flex-col justify-center py-8 sm:min-h-[620px]">
-      <div className="relative flex items-center justify-between gap-1">
-       <button onClick={()=>move(-1)} aria-label="Previous garment" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300"><ArrowLeft/></button>
-       <div className="flex min-w-0 flex-1 flex-col items-center">
-        <AnimatePresence mode="sync"><motion.img key={p.id} layoutId={`garment-${p.id}`} src={p.image_url} alt={p.name} initial={{x:reduceMotion?0:50,opacity:0}} animate={{x:0,opacity:1}} exit={{x:reduceMotion?0:-50,opacity:0}} transition={motionTiming} className="h-[270px] w-full object-contain sm:h-[440px]"/></AnimatePresence>
-        <motion.h2 key={p.id+'-name'} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:reduceMotion?0:.35,delay:reduceMotion?0:.15}} className="mt-5 text-center text-lg font-semibold uppercase tracking-wider">{p.name}</motion.h2>
-        <p className="mt-2 text-sm">{format(p.price||0)}</p>
-        <button type="button" onClick={()=>setDetail(true)} className="mt-4 min-h-11 rounded-full bg-black px-7 text-xs font-semibold uppercase tracking-widest text-white">View details / Shop</button>
-       </div>
-       <button onClick={()=>move(1)} aria-label="Next garment" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300"><ArrowRight/></button>
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [hover, setHover] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [face, setFace] = useState('front');
+  const [direction, setDirection] = useState(1);
+  const [showAvailability, setShowAvailability] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  const touchRef = useRef(null);
+  const navigate = useNavigate();
+  const { format } = useCurrency();
+  useEffect(() => {
+    let active = true;
+    base44.entities.Product.filter({ in_stock: true })
+      .then(result => {
+        if (!active) return;
+        const rows = Array.isArray(result) ? result : result?.items || [];
+        setProducts(rows.filter(p => p.id && p.name && p.image_url).slice(0, 12));
+      })
+      .catch(() => { if (active) setError('Collection could not be loaded right now.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const activeIndex = useMemo(() => products.findIndex(p => p.id === selected), [products, selected]);
+  const chosen = activeIndex < 0 ? null : products[activeIndex];
+  const chosenFaces = faceImages(chosen);
+  const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
+  const variants = useMemo(() => chosen ? products.filter(p => familyName(p.name) === familyName(chosen.name)) : [], [chosen, products]);
+  const open = useCallback((id) => { setSelected(id); setFace('front'); setShowAvailability(false); }, []);
+  const close = useCallback(() => { setSelected(null); setFace('front'); setShowAvailability(false); setHover(null); }, []);
+  const step = useCallback(delta => {
+    if (!products.length || activeIndex === -1) return;
+    setDirection(delta >= 0 ? 1 : -1);
+    open(products[(activeIndex + delta + products.length) % products.length].id);
+  }, [activeIndex, open, products]);
+  useEffect(() => {
+    if (!selected) return undefined;
+    const keydown = e => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    };
+    window.addEventListener('keydown', keydown);
+    return () => window.removeEventListener('keydown', keydown);
+  }, [selected, step, close]);
+
+  const eased = reducedMotion ? { duration: 0.01 } : spring;
+  const productActive = chosen != null;
+  const preview = hover != null ? products[hover] : null;
+  return <section id="interactive-rack" ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
+    <header className="rack-topbar">
+      <a href="#manifesto" className="rack-toplink">ABOUT</a>
+      <button type="button" onClick={close} className="rack-wordmark" aria-label="Return to WEGOTTADO rack">WEGOTTADO<span aria-hidden="true">®</span></button>
+      <a href="#maison" className="rack-toplink">CONTACT</a>
+    </header>
+    <AnimatePresence initial={false} mode="sync">
+      {!productActive ? (
+        <motion.div key="rack-scene" className="rack-scene"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          exit={{ opacity: 0, filter: reducedMotion ? 'none' : 'blur(7px)', scale: 1.03 }}
+          transition={{ duration: reducedMotion ? 0 : .36 }}>
+          {loading ? <div role="status" className="rack-loading">Preparing the collection…</div> :
+           error ? <div role="alert" className="rack-loading">{error}</div> : products.length === 0 ?
+            <div className="rack-loading">New pieces coming soon.</div> :
+            <>
+              <div className="rack-display" onMouseLeave={() => setHover(null)}>
+                <div className="rack-rail" aria-hidden="true"/>
+                <div className="rack-garments">
+                  {products.map((product, index) => {
+                    const hovered = hover === index;
+                    const hasHover = hover != null;
+                    const distance = hasHover ? Math.abs(index - hover) : 9;
+                    const shift = hasHover && !hovered ? (index < hover ? -14 : 14) : 0;
+                    const faces = faceImages(product);
+                    return <motion.button type="button" key={product.id}
+                      aria-label={'Inspect ' + product.name}
+                      className={'rack-item' + (hovered ? ' is-expanded' : '')}
+                      onMouseEnter={() => setHover(index)} onFocus={() => setHover(index)}
+                      onClick={() => open(product.id)}
+                      layout transition={eased}
+                      animate={{ zIndex: hovered ? 20 : 10 - distance,
+                        x: shift, y: hovered ? -3 : 0,
+                        flexGrow: hovered ? 1.65 : 1, opacity: hasHover && distance > 2 ? .75 : 1 }}
+                    >
+                      <Hanger/>
+                      <motion.div className="rack-garment-art" layoutId={'rack-product-' + product.id}
+                        transition={eased} style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
+                        animate={{ rotateY: hovered ? 0 : (index % 2 === 0 ? 73 : -72),
+                          scale: hovered ? 1.18 : 1 }}
+                      >
+                        <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
+                      </motion.div>
+                    </motion.button>;
+                  })}
+                </div>
+              </div>
+              <div className="rack-caption" aria-live="polite">
+                <AnimatePresence mode="wait">
+                  <motion.p key={preview?.id || 'prompt'} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: reducedMotion ? 0 : .22 }}>
+                    {preview ? preview.name : 'MOVE THROUGH THE RACK · SELECT A PIECE'}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+              <button className="rack-availability" type="button" onClick={() => open(products[hover ?? 0].id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
+            </>
+          }
+        </motion.div>
+      ) : (
+        <motion.div key="focus-scene" className="rack-focus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: reducedMotion ? 0 : .35 }}
+          onTouchStart={e => { touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+          onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
+          <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
+          <div className="rack-ghost rack-ghost--left" aria-hidden="true"><img src={products[(activeIndex - 1 + products.length) % products.length]?.image_url} alt=""/></div>
+          <div className="rack-ghost rack-ghost--right" aria-hidden="true"><img src={products[(activeIndex + 1) % products.length]?.image_url} alt=""/></div>
+          <button type="button" className="rack-arrow rack-arrow--left" onClick={() => step(-1)} aria-label="Previous garment"><ArrowLeft size={24}/></button>
+          <button type="button" className="rack-arrow rack-arrow--right" onClick={() => step(1)} aria-label="Next garment"><ArrowRight size={24}/></button>
+          <div className="rack-focus-center">
+            <Hanger large/>
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
+                initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? 35 : -20, scale: .96 }}
+                animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? -35 : 20, scale: .97 }}
+                transition={{ duration: reducedMotion ? 0 : .42, ease: [.22, 1, .36, 1] }}
+              >
+                <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
+              </motion.div>
+            </AnimatePresence>
+            <motion.h2 key={chosen.id} className="rack-product-name"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
+            <p className="rack-product-price">{formatMoney(format, chosen.price)}</p>
+            <div className="rack-face-switch" role="group" aria-label="Product views">
+              <button type="button" className={face === 'front' ? 'is-current' : ''} onClick={() => setFace('front')}>FRONT</button>
+              <button type="button" className={face === 'back' ? 'is-current' : ''} disabled={!chosenFaces.back}
+                title={!chosenFaces.back ? 'Second product view not available' : undefined}
+                onClick={() => { if (chosenFaces.back) setFace('back'); }}>BACK</button>
+            </div>
+            {variants.length > 1 && <div className="rack-variants" aria-label="Color variants">
+              {variants.map(item => <button type="button" key={item.id}
+                className={'rack-variant' + (item.id === chosen.id ? ' selected' : '')}
+                onClick={() => { setDirection(item.id === chosen.id ? direction : 1); open(item.id); }}
+                aria-label={'See color ' + colorName(item)} title={colorName(item)}>
+                <img src={item.image_url} alt=""/><span>{colorName(item)}</span>
+              </button>)}
+            </div>}
+            <button type="button" className="rack-availability rack-availability--focus" onClick={() => navigate('/product/' + chosen.id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
+            <p className="rack-count">{String(activeIndex + 1).padStart(2, '0')} / {String(products.length).padStart(2, '0')}</p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    <div className="rack-ticker" aria-label="New drops. WEGOTTADO. It's us, never them.">
+      <div className="rack-ticker-track">
+        {Array.from({ length: 8 }, (_, i) => <span key={i}>NEW DROPS&nbsp; • &nbsp;WEGOTTADO&nbsp; • &nbsp;IT’S US, NEVER THEM&nbsp; • &nbsp;</span>)}
       </div>
-      <div className="mt-5 flex justify-center gap-2">{products.slice(0,7).map((item,i)=><button key={item.id} onClick={()=>select(i)} aria-label={`Select ${item.name}`} className={`h-14 w-12 border p-1 ${active===i?'border-black':'border-transparent'}`}><img src={item.image_url} alt="" className="h-full w-full object-contain"/></button>)}</div>
-      <p className="mt-3 text-center text-xs tracking-widest">{active+1} / {products.length} · Swipe to browse</p>
-     </motion.div>}
-   </AnimatePresence></LayoutGroup>}
-  </div>
-  {detail&&p&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4" onMouseDown={e=>{if(e.target===e.currentTarget)setDetail(false)}}>
-   <div role="dialog" aria-modal="true" aria-labelledby="spotlight-title" className="relative grid max-h-[90dvh] w-full max-w-4xl overflow-y-auto bg-white p-5 sm:grid-cols-2 sm:p-9">
-    <button onClick={()=>setDetail(false)} aria-label="Close details" className="absolute right-3 top-3 p-2"><X/></button>
-    <img src={p.image_url} alt={p.name} className="h-64 w-full object-contain sm:h-[440px]"/>
-    <div className="flex flex-col justify-center gap-4 p-4"><h3 id="spotlight-title" className="text-2xl font-semibold uppercase">{p.name}</h3><p>{format(p.price||0)}</p><p className="text-sm text-gray-600">{p.description}</p><p className="text-xs font-semibold uppercase">Select size</p>
-     <div className="flex flex-wrap gap-2">{(Array.isArray(p.sizes)&&p.sizes.length?p.sizes:['XS','S','M','L','XL']).map(s=><button key={s} type="button" onClick={()=>setSize(s)} className={`min-h-11 min-w-11 border px-2 ${size===s?'bg-black text-white':'border-gray-300'}`}>{s}</button>)}</div>
-     <button onClick={add} disabled={busy} className="min-h-12 bg-black px-5 text-white disabled:opacity-50">{busy?'Adding…':'Add to bag'}</button>{message&&<p role="status" className="text-sm">{message}</p>}<a className="text-sm underline" href="/checkout">View bag</a>
     </div>
-   </div>
-  </div>}
- </section>
+  </section>;
 }
