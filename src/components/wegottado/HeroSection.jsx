@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
 
-const HERO_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png";
+const HERO_IMG = "/images/wegottado-hero.webp";
 
 export default function HeroSection() {
   const sectionRef = useRef(null);
