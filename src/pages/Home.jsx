@@ -5,6 +5,7 @@ import GoldenParticles from '@/components/wegottado/GoldenParticles';
 import GoldenSeam from '@/components/wegottado/GoldenSeam';
 import Navbar from '@/components/wegottado/Navbar';
 import HeroSection from '@/components/wegottado/HeroSection';
+import ProductSpotlight from '@/components/wegottado/ProductSpotlight';
 import ManifestoSection from '@/components/wegottado/ManifestoSection';
 import HoloShowroom from '@/components/wegottado/HoloShowroom';
 import FeaturedCollection from '@/components/wegottado/FeaturedCollection';
@@ -25,6 +26,7 @@ export default function Home() {
       <SideNav />
       <Navbar />
       <div id="hero"><HeroSection /></div>
+      <ProductSpotlight />
       <div id="manifesto"><ManifestoSection /></div>
       <div id="collections"><HoloShowroom /></div>
       <div id="featured"><FeaturedCollection /></div>
