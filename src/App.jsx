@@ -10,6 +10,7 @@ import { CurrencyProvider } from '@/components/wegottado/CurrencySelector';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
+import ProductDetail from './pages/ProductDetail';
 import Admin from './pages/Admin';
 import OrderConfirmed from './pages/OrderConfirmed';
 import Privacy from './pages/Privacy';
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/product/:productId" element={<ProductDetail />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/order-confirmed" element={<OrderConfirmed />} />
       <Route path="/privacy" element={<Privacy />} />
