@@ -278,7 +278,7 @@ export default function HeroSection() {
       
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-3 pt-16 text-center">
         {/* Meta label */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -295,7 +295,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="relative px-8 py-4 md:px-12 md:py-6 opacity-70"
+          className="relative max-w-[95vw] px-4 py-4 sm:px-8 md:px-12 md:py-6 opacity-70"
           style={{
             background: 'rgba(3,3,12,0.92)',
             borderRadius: '32px',
@@ -311,7 +311,7 @@ export default function HeroSection() {
             style={{
               fontFamily: 'var(--font-heading)',
               fontWeight: 700,
-              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              fontSize: 'clamp(1.75rem, 7.8vw, 7rem)',
               letterSpacing: '-0.02em',
               color: 'transparent',
               WebkitTextStroke: '2px rgba(0,245,255,0.7)',
@@ -330,7 +330,7 @@ export default function HeroSection() {
             style={{
               fontFamily: 'var(--font-heading)',
               fontWeight: 700,
-              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              fontSize: 'clamp(1.75rem, 7.8vw, 7rem)',
               letterSpacing: '-0.02em',
               color: 'transparent',
               WebkitTextStroke: '2px rgba(255,0,255,0.6)',
@@ -354,7 +354,7 @@ export default function HeroSection() {
             style={{
               fontFamily: 'var(--font-heading)',
               fontWeight: 700,
-              fontSize: 'clamp(2.5rem, 8vw, 7rem)',
+              fontSize: 'clamp(1.75rem, 7.8vw, 7rem)',
               letterSpacing: '-0.02em',
               color: 'rgba(200,235,255,0.98)',
               WebkitTextStroke: '1.5px rgba(0,245,255,0.8)',
