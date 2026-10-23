@@ -44,6 +44,18 @@
         "type": "string"
       },
       "description": "Sizes from the sizes list that are sold out and cannot be added to cart"
+    },
+    "side_image_url": {
+      "type": "string",
+      "description": "Optional transparent side-view garment cutout for the animated showroom rail"
+    },
+    "back_image_url": {
+      "type": "string",
+      "description": "Optional authentic back-view garment photo for FRONT / BACK controls"
+    },
+    "color_label": {
+      "type": "string",
+      "description": "Colorway name for the interactive rack and product page"
     }
   },
   "required": [
