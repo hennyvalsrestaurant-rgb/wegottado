@@ -27,7 +27,7 @@ export default function ProductSpotlight() {
       <div className="relative flex items-center justify-between gap-1">
        <button onClick={()=>move(-1)} aria-label="Previous garment" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300"><ArrowLeft/></button>
        <div className="flex min-w-0 flex-1 flex-col items-center">
-        <LayoutGroup><AnimatePresence mode="sync"><motion.img key={p.id} layoutId={`garment-${p.id}`} src={p.image_url} alt={p.name} initial={{x:reduceMotion?0:50,opacity:0}} animate={{x:0,opacity:1}} exit={{x:reduceMotion?0:-50,opacity:0}} transition={motionTiming} className="h-[270px] w-full object-contain sm:h-[440px]"/></AnimatePresence>
+        <AnimatePresence mode="sync"><motion.img key={p.id} layoutId={`garment-${p.id}`} src={p.image_url} alt={p.name} initial={{x:reduceMotion?0:50,opacity:0}} animate={{x:0,opacity:1}} exit={{x:reduceMotion?0:-50,opacity:0}} transition={motionTiming} className="h-[270px] w-full object-contain sm:h-[440px]"/></AnimatePresence>
         <motion.h2 key={p.id+'-name'} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:reduceMotion?0:.35,delay:reduceMotion?0:.15}} className="mt-5 text-center text-lg font-semibold uppercase tracking-wider">{p.name}</motion.h2>
         <p className="mt-2 text-sm">{format(p.price||0)}</p>
         <button type="button" onClick={()=>setDetail(true)} className="mt-4 min-h-11 rounded-full bg-black px-7 text-xs font-semibold uppercase tracking-widest text-white">View details / Shop</button>
