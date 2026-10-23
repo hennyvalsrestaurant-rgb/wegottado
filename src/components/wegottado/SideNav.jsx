@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const SECTIONS = [
   { label: 'HERO', id: 'hero' },
+  { label: 'SHOWROOM', id: 'interactive-rack' },
   { label: 'MANIFESTO', id: 'manifesto' },
   { label: 'COLLECTIONS', id: 'collections' },
   { label: 'FEATURED', id: 'featured' },
