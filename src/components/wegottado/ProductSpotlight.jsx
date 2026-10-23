@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion, LayoutGroup } from 'framer-motion';
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from './CurrencySelector';
@@ -7,6 +7,9 @@ import { useCurrency } from './CurrencySelector';
 export default function ProductSpotlight() {
  const [products,setProducts]=useState([]), [active,setActive]=useState(0), [view,setView]=useState('rack'), [detail,setDetail]=useState(false), [size,setSize]=useState(''), [busy,setBusy]=useState(false), [message,setMessage]=useState(''), [loading,setLoading]=useState(true);
  const {format}=useCurrency();
+ const reduceMotion=useReducedMotion();
+ const [touchStart,setTouchStart]=useState(null);
+ const motionTiming=reduceMotion?{duration:0}:{type:'spring',stiffness:180,damping:27,mass:1.05};
  useEffect(()=>{let live=true; base44.entities.Product.filter({in_stock:true}).then(data=>{if(live)setProducts((Array.isArray(data)?data:data?.items||[]).filter(p=>p.name&&p.image_url).slice(0,12))}).catch(()=>{}).finally(()=>{if(live)setLoading(false)});return()=>{live=false}},[]);
  const select=i=>{setActive(i);setView('single');setDetail(false);setSize('');setMessage('')};
  const move=d=>select((active+d+products.length)%products.length);
@@ -16,25 +19,25 @@ export default function ProductSpotlight() {
  return <section className="bg-[#fafaf8] px-4 py-12 text-[#151515] sm:px-8" aria-label="WEGOTTADO interactive clothing collection">
   <div className="mx-auto max-w-7xl">
    <div className="flex items-center justify-between border-b border-black/10 pb-4 text-xs uppercase tracking-[.2em]"><span>WEGOTTADO — The Collection</span>{view==='single'&&<button onClick={()=>setView('rack')} className="flex min-h-11 items-center gap-2"><X size={16}/> Back to rack</button>}</div>
-   {loading?<div className="h-[410px] animate-pulse bg-gray-100" role="status"/>:<AnimatePresence mode="wait">
-    {view==='rack'?<motion.div key="rack" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,scale:1.1}} transition={{duration:.45}} className="flex min-h-[390px] flex-col items-center justify-center py-12 sm:min-h-[580px]">
-     <div className="relative flex w-full max-w-5xl items-end justify-center overflow-x-auto pt-10 pb-6"><div className="pointer-events-none absolute left-0 right-0 top-10 h-[3px] bg-gray-500"/>{products.map((item,i)=><button key={item.id} type="button" onClick={()=>select(i)} aria-label={`Select ${item.name}`} className="-mx-1 flex min-w-[75px] max-w-40 flex-1 flex-col items-center transition-transform duration-300 hover:-translate-y-4 focus-visible:-translate-y-4"><span className="mb-1 text-2xl text-gray-500">⌃</span><img src={item.image_url} loading="lazy" decoding="async" alt={item.name} className="h-40 w-full object-contain drop-shadow-lg sm:h-72"/></button>)}</div>
+   {loading?<div className="h-[410px] animate-pulse bg-gray-100" role="status"/>:<LayoutGroup><AnimatePresence mode="sync">
+    {view==='rack'?<motion.div key="rack" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,scale:.94,filter:'blur(5px)'}} transition={motionTiming} className="flex min-h-[390px] flex-col items-center justify-center py-12 sm:min-h-[580px]">
+     <div className="relative flex w-full max-w-5xl items-end justify-center overflow-x-auto pt-10 pb-6"><div className="pointer-events-none absolute left-0 right-0 top-10 h-[3px] bg-gray-500"/>{products.map((item,i)=><button key={item.id} type="button" onClick={()=>select(i)} aria-label={`Select ${item.name}`} className="-mx-1 flex min-w-[75px] max-w-40 flex-1 flex-col items-center transition-transform duration-300 hover:-translate-y-4 focus-visible:-translate-y-4"><svg className="relative z-10 -mb-1 h-9 w-10 text-neutral-600" viewBox="0 0 40 36" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M18 9c-4-5 5-10 7-3 1 4-5 7-5 11M20 17 3 31q-3 3 2 3h30q5 0 2-3L20 17Z"/></svg><motion.img layoutId={`garment-${item.id}`} transition={motionTiming} src={item.image_url} loading="lazy" decoding="async" alt={item.name} className="h-40 w-full object-contain drop-shadow-lg sm:h-72"/></button>)}</div>
      <p className="mt-5 text-center text-xs uppercase tracking-widest">Select a garment to see it up close</p>
-    </motion.div>:<motion.div key="single" initial={{opacity:0,scale:.9}} animate={{opacity:1,scale:1}} exit={{opacity:0}} transition={{duration:.45}} className="relative flex min-h-[450px] flex-col justify-center py-8 sm:min-h-[620px]">
+    </motion.div>:<motion.div key="single" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={motionTiming} onTouchStart={e=>setTouchStart(e.touches[0]?.clientX??null)} onTouchEnd={e=>{if(touchStart===null)return;const dx=e.changedTouches[0].clientX-touchStart;if(Math.abs(dx)>65)move(dx<0?1:-1);setTouchStart(null)}} className="relative flex min-h-[450px] flex-col justify-center py-8 sm:min-h-[620px]">
       <div className="relative flex items-center justify-between gap-1">
        <button onClick={()=>move(-1)} aria-label="Previous garment" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300"><ArrowLeft/></button>
        <div className="flex min-w-0 flex-1 flex-col items-center">
-        <AnimatePresence mode="wait"><motion.img key={p.id} src={p.image_url} alt={p.name} initial={{x:50,opacity:0}} animate={{x:0,opacity:1}} exit={{x:-50,opacity:0}} transition={{duration:.3}} className="h-[270px] w-full object-contain sm:h-[440px]"/></AnimatePresence>
-        <h2 className="mt-5 text-center text-lg font-semibold uppercase tracking-wider">{p.name}</h2>
+        <LayoutGroup><AnimatePresence mode="sync"><motion.img key={p.id} layoutId={`garment-${p.id}`} src={p.image_url} alt={p.name} initial={{x:reduceMotion?0:50,opacity:0}} animate={{x:0,opacity:1}} exit={{x:reduceMotion?0:-50,opacity:0}} transition={motionTiming} className="h-[270px] w-full object-contain sm:h-[440px]"/></AnimatePresence>
+        <motion.h2 key={p.id+'-name'} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:reduceMotion?0:.35,delay:reduceMotion?0:.15}} className="mt-5 text-center text-lg font-semibold uppercase tracking-wider">{p.name}</motion.h2>
         <p className="mt-2 text-sm">{format(p.price||0)}</p>
         <button type="button" onClick={()=>setDetail(true)} className="mt-4 min-h-11 rounded-full bg-black px-7 text-xs font-semibold uppercase tracking-widest text-white">View details / Shop</button>
        </div>
        <button onClick={()=>move(1)} aria-label="Next garment" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-300"><ArrowRight/></button>
       </div>
       <div className="mt-5 flex justify-center gap-2">{products.slice(0,7).map((item,i)=><button key={item.id} onClick={()=>select(i)} aria-label={`Select ${item.name}`} className={`h-14 w-12 border p-1 ${active===i?'border-black':'border-transparent'}`}><img src={item.image_url} alt="" className="h-full w-full object-contain"/></button>)}</div>
-      <p className="mt-3 text-center text-xs tracking-widest">{active+1} / {products.length}</p>
+      <p className="mt-3 text-center text-xs tracking-widest">{active+1} / {products.length} · Swipe to browse</p>
      </motion.div>}
-   </AnimatePresence>}
+   </AnimatePresence></LayoutGroup>}
   </div>
   {detail&&p&&<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4" onMouseDown={e=>{if(e.target===e.currentTarget)setDetail(false)}}>
    <div role="dialog" aria-modal="true" aria-labelledby="spotlight-title" className="relative grid max-h-[90dvh] w-full max-w-4xl overflow-y-auto bg-white p-5 sm:grid-cols-2 sm:p-9">
