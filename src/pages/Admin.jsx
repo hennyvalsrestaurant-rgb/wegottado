@@ -11,7 +11,7 @@ import AdminOrders from '@/components/wegottado/AdminOrders';
 import ProductSizesEditor from '@/components/wegottado/ProductSizesEditor';
 import { Link } from 'react-router-dom';
 
-const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', images: [], tag: '', in_stock: true, sizes: [], sold_out_sizes: [] };
+const EMPTY_FORM = { name: '', category: '', price: '', description: '', image_url: '', side_image_url: '', back_image_url: '', color_label: '', images: [], tag: '', in_stock: true, sizes: [], sold_out_sizes: [] };
 const MAX_IMAGES = 5;
 const CATEGORIES = ['OUTERWEAR', 'SUITING', 'EVENING WEAR', 'ACCESSORIES', 'JEWELRY', 'TOPS', 'BOTTOMS'];
 const TAGS = ['', 'NEW', 'LIMITED', 'EXCLUSIVE', 'COUTURE', 'SOLD OUT'];
@@ -44,7 +44,7 @@ export default function Admin() {
   };
 
   const openNew = () => { setForm(EMPTY_FORM); setEditId(null); setShowForm(true); };
-  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '', images: p.images || [], sizes: p.sizes || [], sold_out_sizes: p.sold_out_sizes || [] }); setEditId(p.id); setShowForm(true); };
+  const openEdit = (p) => { setForm({ ...p, price: String(p.price), tag: p.tag || '', side_image_url: p.side_image_url || '', back_image_url: p.back_image_url || '', color_label: p.color_label || '', images: p.images || [], sizes: p.sizes || [], sold_out_sizes: p.sold_out_sizes || [] }); setEditId(p.id); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditId(null); setForm(EMPTY_FORM); };
 
   const handleImageUpload = async (e) => {
@@ -65,6 +65,19 @@ export default function Admin() {
     setForm(prev => ({ ...prev, images: [...(prev.images || []), file_url] }));
     setUploading(false);
     e.target.value = '';
+  };
+
+  const uploadShowroomView = async (e, field) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm(prev => ({ ...prev, [field]: file_url }));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   const removeAdditionalImage = (idx) => {
@@ -276,6 +289,38 @@ export default function Admin() {
                         <input type="file" accept="image/*" className="hidden" onChange={handleAdditionalImageUpload} disabled={uploading} />
                       </label>
                     )}
+                  </div>
+                </div>
+
+                {/* Exact-reference garment assets: real photographs, not synthetic views */}
+                <div className="space-y-4 border-t pt-5" style={{ borderColor: 'rgba(0,245,255,0.18)' }}>
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'var(--neon-cyan)' }}>INTERACTIVE RACK PHOTOS</label>
+                    <p className="text-xs leading-5" style={{ color: 'rgba(245,245,247,0.5)' }}>
+                      Primary product photo above is the FRONT view. Upload actual transparent side and back views for the reference-style rack and rotating garment.
+                    </p>
+                  </div>
+                  {[
+                    ['side_image_url', 'SIDE VIEW (TRANSPARENT PNG RECOMMENDED)'],
+                    ['back_image_url', 'BACK VIEW (SHOWS REAL BACK DESIGN)'],
+                  ].map(([field, label]) => (
+                    <div key={field} className="flex items-start gap-3">
+                      <div className="flex h-24 w-20 shrink-0 items-center justify-center border" style={{ borderColor: 'rgba(0,245,255,.2)' }}>
+                        {form[field] ? <img src={form[field]} alt={label} className="h-full w-full object-contain" /> : <ImageIcon size={20} className="opacity-30" />}
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <label className="meta-text text-[9px] block" style={{ color: 'rgba(0,245,255,0.6)' }}>{label}</label>
+                        <label className="inline-flex cursor-pointer items-center gap-2 border px-3 py-2 text-xs" style={{ borderColor: 'rgba(0,245,255,.3)', color: 'var(--neon-cyan)' }}>
+                          <Upload size={13} /> {uploading ? 'Uploading…' : 'Upload photo'}
+                          <input type="file" accept="image/png,image/webp,image/jpeg" className="hidden" disabled={uploading} onChange={e => uploadShowroomView(e, field)} />
+                        </label>
+                        <input type="url" placeholder="or paste image URL" value={form[field] || ''} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} className="holo-input w-full px-2 py-2 text-[10px]" />
+                      </div>
+                    </div>
+                  ))}
+                  <div>
+                    <label className="meta-text text-[10px] block mb-2" style={{ color: 'rgba(0,245,255,.5)' }}>COLORWAY NAME (OPTIONAL)</label>
+                    <input className="holo-input w-full px-4 py-3" value={form.color_label || ''} placeholder="e.g. Black & White" onChange={e => setForm(p => ({ ...p, color_label: e.target.value }))}/>
                   </div>
                 </div>
 
