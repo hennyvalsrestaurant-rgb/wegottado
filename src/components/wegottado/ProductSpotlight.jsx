@@ -84,7 +84,7 @@ export default function ProductSpotlight() {
       <button type="button" onClick={close} className="rack-wordmark" aria-label="Return to WEGOTTADO rack">WEGOTTADO<span aria-hidden="true">®</span></button>
       <a href="#maison" className="rack-toplink">CONTACT</a>
     </header>
-    <AnimatePresence initial={false} mode="sync">
+    <LayoutGroup><AnimatePresence initial={false} mode="sync">
       {!productActive ? (
         <motion.div key="rack-scene" className="rack-scene"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -181,7 +181,7 @@ export default function ProductSpotlight() {
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence></LayoutGroup>
     <div className="rack-ticker" aria-label="New drops. WEGOTTADO. It's us, never them.">
       <div className="rack-ticker-track">
         {Array.from({ length: 8 }, (_, i) => <span key={i}>NEW DROPS&nbsp; • &nbsp;WEGOTTADO&nbsp; • &nbsp;IT’S US, NEVER THEM&nbsp; • &nbsp;</span>)}
