@@ -73,9 +73,13 @@
   }
 }
 
-/* Custom cursor */
-* { cursor: none !important; }
-input, textarea, select { cursor: text !important; pointer-events: auto !important; }
+/* Keep the native pointer visible on all pages and before animations load. */
+html, body { cursor: auto; }
+a[href], button:not(:disabled), [role="button"], .cursor-hover, label[for], summary { cursor: pointer; }
+button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]), textarea { cursor: text; }
+select { cursor: pointer; }
+/* Do not override touch interaction or hide the system cursor. */
 
 /* Film grain overlay */
 .film-grain::after {
