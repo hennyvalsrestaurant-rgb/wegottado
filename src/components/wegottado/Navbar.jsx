@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, User, Bell } from 'lucide-react';
+import { Menu, X, ShoppingBag, User } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CurrencySelector from '@/components/wegottado/CurrencySelector';
