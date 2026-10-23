@@ -1,11 +1,22 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, useScroll, useTransform, useSpring, animate } from 'framer-motion';
+import { useEffect, useRef, useCallback } from 'react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
 
 const HERO_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png";
 
 export default function HeroSection() {
   const sectionRef = useRef(null);
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  // Motion values keep the 3D pointer effect off React's render path.
+  const rawX = useMotionValue(0.5);
+  const rawY = useMotionValue(0.5);
+  const mouseX = useSpring(rawX, { stiffness: 85, damping: 25 });
+  const mouseY = useSpring(rawY, { stiffness: 85, damping: 25 });
+  const rotateX = useTransform(mouseY, [0, 1], [9, -9]);
+  const rotateY = useTransform(mouseX, [0, 1], [-11, 11]);
+  const imgTranslateX = useTransform(mouseX, [0, 1], [10, -10]);
+  const imgTranslateY = useTransform(mouseY, [0, 1], [7.5, -7.5]);
+  const highlightX = useTransform(mouseX, v => (v * 100).toFixed(1) + '%');
+  const highlightY = useTransform(mouseY, v => (v * 100).toFixed(1) + '%');
+  const highlight = useMotionTemplate`radial-gradient(ellipse 60% 50% at ${highlightX} ${highlightY}, rgba(255,255,255,0.08) 0%, transparent 70%)`;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
 
   const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.2]);
@@ -15,18 +26,16 @@ export default function HeroSection() {
   const overlayOpacity = useTransform(scrollYProgress, [0, 0.6], [0.45, 0.85]);
 
   useEffect(() => {
-    const onMove = (e) => {
-      setMousePos({
-        x: e.clientX / window.innerWidth,
-        y: e.clientY / window.innerHeight
-      });
+    if (!window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) return undefined;
+    const section = sectionRef.current;
+    if (!section) return undefined;
+    const onMove = e => {
+      rawX.set(Math.max(0, Math.min(1, e.clientX / window.innerWidth)));
+      rawY.set(Math.max(0, Math.min(1, e.clientY / window.innerHeight)));
     };
-    window.addEventListener('mousemove', onMove);
-    return () => window.removeEventListener('mousemove', onMove);
-  }, []);
-
-  const rotateX = (mousePos.y - 0.5) * -18;
-  const rotateY = (mousePos.x - 0.5) * 22;
+    section.addEventListener('pointermove', onMove, { passive: true });
+    return () => section.removeEventListener('pointermove', onMove);
+  }, [rawX, rawY]);
 
   // ── Fireworks canvas ──────────────────────────────────────────────────
   const fwCanvasRef = useRef(null);
@@ -146,6 +155,8 @@ export default function HeroSection() {
     let scrollTimer = null;
     let hasScrolled = false;
     const onScroll = () => {
+      const bounds = section.getBoundingClientRect();
+      if (document.hidden || bounds.bottom <= 0 || bounds.top >= window.innerHeight || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       if (!hasScrolled) {
         hasScrolled = true;
         launchFireworks();
@@ -161,6 +172,7 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener('resize', resize);
       window.removeEventListener('scroll', onScroll);
+      clearTimeout(scrollTimer);
       cancelAnimationFrame(fwRafRef.current);
     };
   }, [launchFireworks]);
@@ -181,20 +193,18 @@ export default function HeroSection() {
       }
     }
   };
-  const imgTranslateX = (mousePos.x - 0.5) * -20;
-  const imgTranslateY = (mousePos.y - 0.5) * -15;
 
   return (
-    <section id="hero" ref={sectionRef} className="relative h-screen overflow-hidden" style={{ perspective: '1200px' }}>
+    <section id="hero" ref={sectionRef} className="relative h-[100svh] min-h-[580px] overflow-hidden" style={{ perspective: '1200px' }}>
       {/* 3D Magical background image — outer wrapper for scroll parallax + mouse 3D tilt */}
       <motion.div
         className="absolute inset-0"
         style={{
           scale: imgScale,
           y: imgY,
-          transformStyle: 'preserve-3d',
-          transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-          transition: 'transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1)'
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d'
         }}>
         
         {/* Inner wrapper drives the autonomous pop/rotate/drift loop */}
@@ -204,13 +214,17 @@ export default function HeroSection() {
           animate="animate"
           style={{ transformOrigin: 'center center', willChange: 'transform' }}>
           
-          <img
+          <motion.img
             src={HERO_IMG}
             alt="WEGOTTADO hero"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="w-full h-full object-cover"
             style={{
-              transform: `translate(${imgTranslateX}px, ${imgTranslateY}px) scale(1.12)`,
-              transition: 'transform 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
+              x: imgTranslateX,
+              y: imgTranslateY,
+              scale: 1.12,
               transformOrigin: 'center center',
               filter: 'brightness(0.85) saturate(1.4)'
             }} />
@@ -233,12 +247,7 @@ export default function HeroSection() {
         
 
         {/* Specular highlight follows mouse */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 60% 50% at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.08) 0%, transparent 70%)`,
-            transition: 'background 0.3s ease'
-          }} />
+        <motion.div className="absolute inset-0 pointer-events-none" style={{ background: highlight }} />
         
 
         {/* Pulsing vignette pop */}
