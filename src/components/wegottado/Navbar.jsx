@@ -63,7 +63,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 xl:px-10 sm:py-4">
           <button onClick={goHome} className="cursor-hover">
             <img
-              src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
+              src="/images/wegottado-mark.webp"
               alt="WEGOTTADO"
               className="h-10 w-auto object-contain"
             />
