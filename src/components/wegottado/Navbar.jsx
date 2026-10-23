@@ -8,7 +8,7 @@ import NotificationBell from '@/components/wegottado/NotificationBell';
 
 const NAV_LINKS = [
   { label: 'COLLECTIONS', href: '#collections' },
-  { label: 'SHOWROOM', href: '#showroom' },
+  { label: 'SHOWROOM', href: '#interactive-rack' },
   { label: 'CRAFT', href: '#craft' },
   { label: 'LOOKBOOK', href: '#lookbook' },
   { label: 'MAISON', href: '#maison' },
@@ -50,9 +50,9 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        initial={{ y: -100, opacity: 0 }}
+        initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.32, ease: [0.25, 0.1, 0.25, 1] }}
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-700"
         style={{
           background: scrolled ? 'rgba(8,8,8,0.9)' : 'transparent',
@@ -60,7 +60,7 @@ export default function Navbar() {
           borderBottom: scrolled ? '1px solid rgba(212,175,55,0.1)' : 'none',
         }}
       >
-        <div className="flex items-center justify-between px-6 md:px-12 py-5">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 xl:px-10 sm:py-4">
           <button onClick={goHome} className="cursor-hover">
             <img
               src="https://media.base44.com/images/public/6a401981c451758a55e9b4f5/b4cbae21f_generated_image.png"
@@ -69,12 +69,12 @@ export default function Navbar() {
             />
           </button>
 
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden xl:flex flex-1 items-center justify-center gap-4 2xl:gap-8">
             {NAV_LINKS.map(link => (
               <button
                 key={link.label}
                 onClick={() => scrollTo(link.href, link.isPage)}
-                className="meta-text gold-underline cursor-hover hover:text-[var(--gold)] transition-colors duration-500"
+                className="meta-text gold-underline cursor-hover text-[10px] whitespace-nowrap hover:text-[var(--gold)] transition-colors duration-500"
                 style={{ color: link.isPage ? 'var(--gold)' : undefined }}
               >
                 {link.label}
@@ -83,8 +83,8 @@ export default function Navbar() {
           </div>
 
           {/* Action icons */}
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="hidden md:block"><CurrencySelector /></div>
+          <div className="flex shrink-0 items-center gap-3 xl:gap-4">
+            <div className="hidden xl:block"><CurrencySelector /></div>
             {user && (
               <>
                 <NotificationBell user={user} />
@@ -110,7 +110,7 @@ export default function Navbar() {
             )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden cursor-hover"
+              className="xl:hidden cursor-hover"
               style={{ color: 'var(--gold)' }}
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
