@@ -133,7 +133,7 @@ export default function ProductSpotlight() {
                   </motion.p>
                 </AnimatePresence>
               </div>
-              <button className="rack-availability" type="button" onClick={() => open(products[hover ?? 0].id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
+              <button className="rack-availability" type="button" onClick={() => navigate('/product/' + products[hover ?? 0].id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
             </>
           }
         </motion.div>
@@ -151,10 +151,10 @@ export default function ProductSpotlight() {
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={face === 'front' ? 'rack-product-' + chosen.id : undefined}
-                initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? 35 : -20, scale: .96 }}
+                initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? -88 : 88, scale: .96 }}
                 animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? -35 : 20, scale: .97 }}
-                transition={{ duration: reducedMotion ? 0 : .42, ease: [.22, 1, .36, 1] }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? 88 : -88, scale: .97 }}
+                transition={{ duration: reducedMotion ? 0 : .52, ease: [.22, 1, .36, 1] }}
               >
                 <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
               </motion.div>
