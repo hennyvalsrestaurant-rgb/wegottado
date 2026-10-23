@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, ArrowUpRight, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from './CurrencySelector';
 import './ProductSpotlight.css';
 
-const fallbackSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
 const faceImages = (product) => {
   const images = [product?.front_image_url, product?.image_url, ...(Array.isArray(product?.images) ? product.images : [])].filter(Boolean);
   const unique = [...new Set(images)];
@@ -16,7 +16,7 @@ const familyName = name => String(name || '').split(/\s*[-–]\s*/)[0].trim().to
 const colorName = product => product.color_label || (product.name?.split(/\s*[-–]\s*/).slice(1).join(' - ').trim()) || product.category || 'Original';
 const formatMoney = (format, amount) => format(Number(amount) || 0);
 const spring = { type: 'spring', stiffness: 170, damping: 28, mass: 1.05 };
-const getSizes = p => Array.isArray(p?.sizes) && p.sizes.length ? p.sizes : fallbackSizes;
+
 
 function Hanger({ large = false }) {
   return <svg aria-hidden="true" className={large ? 'rack-hanger rack-hanger--large' : 'rack-hanger'} viewBox="0 0 144 58" fill="none">
@@ -34,7 +34,7 @@ export default function ProductSpotlight() {
   const [selected, setSelected] = useState(null);
   const [face, setFace] = useState('front');
   const [direction, setDirection] = useState(1);
-  const [showAvailability, setShowAvailability] = useState(false);
+
   const reducedMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const touchRef = useRef(null);
@@ -57,8 +57,8 @@ export default function ProductSpotlight() {
   const chosenFaces = faceImages(chosen);
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
   const variants = useMemo(() => chosen ? products.filter(p => familyName(p.name) === familyName(chosen.name)) : [], [chosen, products]);
-  const open = useCallback((id) => { setSelected(id); setFace('front'); setShowAvailability(false); }, []);
-  const close = useCallback(() => { setSelected(null); setFace('front'); setShowAvailability(false); setHover(null); }, []);
+  const open = useCallback((id) => { setSelected(id); setFace('front'); }, []);
+  const close = useCallback(() => { setSelected(null); setFace('front'); setHover(null); }, []);
   const step = useCallback(delta => {
     if (!products.length || activeIndex === -1) return;
     setDirection(delta >= 0 ? 1 : -1);
@@ -150,7 +150,7 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={face === 'front' ? 'rack-product-' + chosen.id : undefined}
                 initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? 35 : -20, scale: .96 }}
                 animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
                 exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? -35 : 20, scale: .97 }}
