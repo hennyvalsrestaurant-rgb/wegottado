@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HoloCursor from '@/components/wegottado/HoloCursor';
 import HoloGrid from '@/components/wegottado/HoloGrid';
 import GoldenParticles from '@/components/wegottado/GoldenParticles';
@@ -17,16 +17,18 @@ import Footer from '@/components/wegottado/Footer';
 import SideNav from '@/components/wegottado/SideNav';
 
 export default function Home() {
+  const [showOriginalNavigation, setShowOriginalNavigation] = useState(false);
+  useEffect(() => {
+    const check = () => setShowOriginalNavigation(window.scrollY > Math.max(420, window.innerHeight * 0.75));
+    check();
+    window.addEventListener('scroll', check, { passive: true });
+    return () => window.removeEventListener('scroll', check);
+  }, []);
   return (
     <div className="film-grain relative" style={{ background: 'var(--metal-dark)' }}>
-      <HoloCursor />
-      <HoloGrid />
-      <GoldenParticles />
-      <GoldenSeam />
-      <SideNav />
-      <Navbar />
-      <div id="hero"><HeroSection /></div>
-      <ProductSpotlight />
+      {showOriginalNavigation && <><HoloCursor /><HoloGrid /><GoldenParticles /><GoldenSeam /><SideNav /><Navbar /></>}
+      <div id="hero"><ProductSpotlight /></div>
+      <div id="campaign"><HeroSection /></div>
       <div id="manifesto"><ManifestoSection /></div>
       <div id="collections"><HoloShowroom /></div>
       <div id="featured"><FeaturedCollection /></div>
