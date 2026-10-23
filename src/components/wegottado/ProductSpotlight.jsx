@@ -110,7 +110,7 @@ export default function ProductSpotlight() {
                       onClick={() => open(product.id)}
                       layout transition={eased}
                       animate={{ zIndex: hovered ? 20 : 10 - distance,
-                        x: shift, y: hovered ? -3 : 0,
+                        x: shift, y: 0,
                         flexGrow: hovered ? 1.65 : 1, opacity: hasHover && distance > 2 ? .75 : 1 }}
                     >
                       <Hanger/>
