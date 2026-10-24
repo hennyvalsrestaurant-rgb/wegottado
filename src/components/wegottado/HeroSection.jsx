@@ -228,8 +228,8 @@ export default function HeroSection() {
           className="absolute inset-0"
           variants={bgVariants}
           initial={compactMotion && !prefersReducedMotion ? { opacity: .94, scale: 1.025 } : false}
-          animate={compactMotion ? { opacity: 1, scale: 1, y: 0 } : heroVisible ? "animate" : false}
-          transition={compactMotion ? { duration: prefersReducedMotion ? 0 : .7, ease: 'easeOut' } : undefined}
+          animate={heroVisible && !prefersReducedMotion ? "animate" : false}
+          transition={undefined}
           style={{ transformOrigin: 'center center', willChange: 'transform' }}>
           
           <motion.img
@@ -323,7 +323,7 @@ export default function HeroSection() {
           
           {/* Glitch layer 1 — cyan offset */}
           <motion.span
-            animate={compactMotion ? false : { x: [-2, 2, -1, 3, -2], opacity: [0.6, 0.8, 0.5, 0.7, 0.6] }}
+            animate={heroVisible && !prefersReducedMotion ? { x: [-2, 2, -1, 3, -2], opacity: [0.6, 0.8, 0.5, 0.7, 0.6] } : false}
             transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
             style={{
@@ -342,7 +342,7 @@ export default function HeroSection() {
 
           {/* Glitch layer 2 — magenta offset */}
           <motion.span
-            animate={compactMotion ? false : { x: [2, -3, 1, -2, 2], opacity: [0.5, 0.7, 0.4, 0.6, 0.5] }}
+            animate={heroVisible && !prefersReducedMotion ? { x: [2, -3, 1, -2, 2], opacity: [0.5, 0.7, 0.4, 0.6, 0.5] } : false}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
             style={{
@@ -361,7 +361,7 @@ export default function HeroSection() {
 
           {/* Main neon text */}
           <motion.span
-            animate={compactMotion ? false : {
+            animate={heroVisible && !prefersReducedMotion ? {
               textShadow: [
               '0 0 10px #00F5FF, 0 0 30px #00F5FF, 0 0 60px rgba(0,245,255,0.5), 4px 0 0 rgba(255,0,255,0.4)',
               '0 0 14px #FF00FF, 0 0 40px #FF00FF, 0 0 80px rgba(255,0,255,0.5), -4px 0 0 rgba(0,245,255,0.4)',
@@ -395,7 +395,7 @@ export default function HeroSection() {
             key={i}
             className="absolute pointer-events-none"
             style={{ left: pos.left, top: pos.top, width: 2, height: 2 }}
-            animate={compactMotion ? false : {
+            animate={heroVisible && !prefersReducedMotion ? {
               opacity: [0, 1, 0, 0.8, 0],
               scale: [0.5, 2, 0.3, 1.5, 0],
               boxShadow: [
@@ -440,7 +440,7 @@ export default function HeroSection() {
           
           <span className="meta-text text-[10px]">SCROLL TO DISCOVER</span>
           <motion.div
-            animate={compactMotion ? false : { y: [0, 8, 0] }}
+            animate={heroVisible && !prefersReducedMotion ? { y: [0, 8, 0] } : false}
             transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
             className="w-px h-10"
             style={{ background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
