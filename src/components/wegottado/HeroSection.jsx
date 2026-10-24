@@ -216,10 +216,10 @@ export default function HeroSection() {
       <motion.div
         className="absolute inset-0"
         style={{
-          scale: imgScale,
-          y: imgY,
-          rotateX,
-          rotateY,
+          scale: compactMotion ? 1.05 : imgScale,
+          y: compactMotion ? 0 : imgY,
+          rotateX: compactMotion ? 0 : rotateX,
+          rotateY: compactMotion ? 0 : rotateY,
           transformStyle: 'preserve-3d'
         }}>
         
@@ -227,8 +227,9 @@ export default function HeroSection() {
         <motion.div
           className="absolute inset-0"
           variants={bgVariants}
-          animate={compactMotion ? (heroVisible && !prefersReducedMotion ? { y: [0, -6, 0], scale: [1, 1.013, 1] } : false) : heroVisible ? "animate" : false}
-          transition={compactMotion ? { duration: 11, repeat: Infinity, ease: "easeInOut" } : undefined}
+          initial={compactMotion && !prefersReducedMotion ? { opacity: .94, scale: 1.025 } : false}
+          animate={compactMotion ? { opacity: 1, scale: 1, y: 0 } : heroVisible ? "animate" : false}
+          transition={compactMotion ? { duration: prefersReducedMotion ? 0 : .7, ease: 'easeOut' } : undefined}
           style={{ transformOrigin: 'center center', willChange: 'transform' }}>
           
           <motion.img
@@ -239,8 +240,8 @@ export default function HeroSection() {
             decoding="async"
             className="w-full h-full object-cover"
             style={{
-              x: imgTranslateX,
-              y: imgTranslateY,
+              x: compactMotion ? 0 : imgTranslateX,
+              y: compactMotion ? 0 : imgTranslateY,
               scale: 1.12,
               transformOrigin: 'center center',
               filter: 'brightness(0.85) saturate(1.4)'
@@ -277,7 +278,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Dark overlay */}
-      <motion.div className="absolute inset-0" style={{ background: '#080808', opacity: overlayOpacity }} />
+      <motion.div className="absolute inset-0" style={{ background: '#080808', opacity: compactMotion ? .55 : overlayOpacity }} />
 
       {/* Vignette */}
       <div
