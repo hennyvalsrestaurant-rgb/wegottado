@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getAvailableColorways, productColorLabel } from '@/lib/productVariants';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from './CurrencySelector';
 import './ProductSpotlight.css';
@@ -12,8 +14,7 @@ const faceImages = (product) => {
   const unique = [...new Set(images)];
   return { front: unique[0], back: product?.back_image_url || unique[1] || null, side: product?.side_image_url || null };
 };
-const familyName = name => String(name || '').split(/\s*[-–]\s*/)[0].trim().toLowerCase();
-const colorName = product => product.color_label || (product.name?.split(/\s*[-–]\s*/).slice(1).join(' - ').trim()) || product.category || 'Original';
+const colorName = productColorLabel;
 // Hanging tags use real product color names. Never offer a color without a catalog variant.
 const COLOR_INKS = { black: '#202123', white: '#f3f1ed', green: '#43bd61', blue: '#48a8e4', pink: '#eaa5c4', yellow: '#f4db3b', red: '#cd3a45', cream: '#eadbbf', gray: '#92959b', grey: '#92959b', orange: '#d9813d', purple: '#8461b7', brown: '#76513f' };
 const colorTagFill = (label) => {
@@ -35,9 +36,18 @@ function Hanger({ large = false }) {
 }
 
 export default function ProductSpotlight() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: products = [], isPending: loading, isError } = useQuery({
+    queryKey: ['wegottado', 'available-products'],
+    queryFn: async () => {
+      const result = await base44.entities.Product.filter({ in_stock: true });
+      const rows = Array.isArray(result) ? result : result?.items || [];
+      return rows.filter(p => p.id && p.name && p.image_url).slice(0, 12);
+    },
+    staleTime: 5 * 60_000,
+    gcTime: 15 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
   const [hover, setHover] = useState(null);
   const [selected, setSelected] = useState(null);
   const [face, setFace] = useState('front');
@@ -85,23 +95,11 @@ export default function ProductSpotlight() {
   }, [centerIndex, products.length, reducedMotion]);
   useEffect(() => () => { if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current); }, []);
   const { format } = useCurrency();
-  useEffect(() => {
-    let active = true;
-    base44.entities.Product.filter({ in_stock: true })
-      .then(result => {
-        if (!active) return;
-        const rows = Array.isArray(result) ? result : result?.items || [];
-        setProducts(rows.filter(p => p.id && p.name && p.image_url).slice(0, 12));
-      })
-      .catch(() => { if (active) setError('Collection could not be loaded right now.'); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
   const activeIndex = useMemo(() => products.findIndex(p => p.id === selected), [products, selected]);
   const chosen = activeIndex < 0 ? null : products[activeIndex];
   const chosenFaces = faceImages(chosen);
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
-  const variants = useMemo(() => chosen ? products.filter(p => familyName(p.name) === familyName(chosen.name)) : [], [chosen, products]);
+  const variants = useMemo(() => getAvailableColorways(products, chosen), [chosen, products]);
   const open = useCallback((id) => {
     const index = products.findIndex(product => product.id === id);
     if (index >= 0) setCenterIndex(index);
@@ -149,7 +147,7 @@ export default function ProductSpotlight() {
           exit={{ opacity: 0, filter: (reducedMotion || compact) ? 'none' : 'blur(7px)', scale: compact ? 1 : 1.03 }}
           transition={{ duration: reducedMotion ? 0 : .36 }}>
           {loading ? <div role="status" className="rack-loading">Preparing the collection…</div> :
-           error ? <div role="alert" className="rack-loading">{error}</div> : products.length === 0 ?
+           isError ? <div role="alert" className="rack-loading">Collection could not be loaded right now.</div> : products.length === 0 ?
             <div className="rack-loading">New pieces coming soon.</div> :
             <>
               <div ref={rackScrollRef} className="rack-display" role="region" aria-label="Browse hanging garments. Swipe sideways to explore on touch devices." tabIndex={compact ? 0 : undefined} onScroll={updateRackCenter} onMouseLeave={() => { if (!compact) setHover(null); }}>
