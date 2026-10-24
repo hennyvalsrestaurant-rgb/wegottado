@@ -14,6 +14,14 @@ const faceImages = (product) => {
 };
 const familyName = name => String(name || '').split(/\s*[-–]\s*/)[0].trim().toLowerCase();
 const colorName = product => product.color_label || (product.name?.split(/\s*[-–]\s*/).slice(1).join(' - ').trim()) || product.category || 'Original';
+// Hanging tags use real product color names. Never offer a color without a catalog variant.
+const COLOR_INKS = { black: '#202123', white: '#f3f1ed', green: '#43bd61', blue: '#48a8e4', pink: '#eaa5c4', yellow: '#f4db3b', red: '#cd3a45', cream: '#eadbbf', gray: '#92959b', grey: '#92959b', orange: '#d9813d', purple: '#8461b7', brown: '#76513f' };
+const colorTagFill = (label) => {
+  const colors = (String(label).toLowerCase().match(/black|white|green|blue|pink|yellow|red|cream|gray|grey|orange|purple|brown/g) || []).slice(0, 2);
+  if (!colors.length) return '#55585e';
+  if (colors.length === 1) return COLOR_INKS[colors[0]];
+  return `linear-gradient(115deg, ${COLOR_INKS[colors[0]]} 0%, ${COLOR_INKS[colors[0]]} 48%, ${COLOR_INKS[colors[1]]} 52%, ${COLOR_INKS[colors[1]]} 100%)`;
+};
 const formatMoney = (format, amount) => format(Number(amount) || 0);
 const spring = { type: 'spring', stiffness: 170, damping: 28, mass: 1.05 };
 
@@ -223,14 +231,29 @@ export default function ProductSpotlight() {
                 title={!chosenFaces.back ? 'Second product view not available' : undefined}
                 onClick={() => { if (chosenFaces.back) setFace('back'); }}>BACK</button>
             </div>
-            {variants.length > 1 && <div className="rack-variants" aria-label="Color variants">
-              {variants.map(item => <button type="button" key={item.id}
-                className={'rack-variant' + (item.id === chosen.id ? ' selected' : '')}
-                onClick={() => { setDirection(item.id === chosen.id ? direction : 1); open(item.id); }}
-                aria-label={'See color ' + colorName(item)} title={colorName(item)}>
-                <img src={item.image_url} alt=""/><span>{colorName(item)}</span>
-              </button>)}
-            </div>}
+            {variants.length > 1 && (
+              <div className="rack-color-tags" role="group" aria-label="Available garment colors">
+                {variants.map((item, index) => {
+                  const label = colorName(item);
+                  const current = item.id === chosen.id;
+                  return (
+                    <motion.button type="button" key={item.id}
+                      className={'rack-color-choice' + (current ? ' is-selected' : '')}
+                      style={{ '--tag-fill': colorTagFill(label) }}
+                      aria-label={'Select ' + label + ' color'} aria-pressed={current}
+                      title={label}
+                      onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id); } }}
+                      initial={reducedMotion ? false : { opacity: 0, y: -15, rotate: -7 }}
+                      animate={{ opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
+                      whileTap={reducedMotion ? undefined : { scale: .94 }}
+                      transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
+                      <span className="rack-tag-cord" aria-hidden="true" />
+                      <span className="rack-tag-card"><span className="rack-tag-text">{label}</span></span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
             <button type="button" className="rack-availability rack-availability--focus" onClick={() => navigate('/product/' + chosen.id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
             <p className="rack-count">{String(activeIndex + 1).padStart(2, '0')} / {String(products.length).padStart(2, '0')}</p>
           </div>
