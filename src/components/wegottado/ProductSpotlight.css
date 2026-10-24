@@ -23,7 +23,7 @@
 .rack-availability:hover,.rack-availability:focus-visible{background:#222;color:#fff}
 .rack-scene>.rack-availability{margin-top:18px}
 .rack-ticker{position:absolute;bottom:0;left:0;right:0;z-index:28;min-height:28px;display:flex;align-items:center;overflow:hidden;white-space:nowrap;background:#46fa18;border-top:1px solid #30c320;color:#171717}
-.rack-ticker-track{display:flex;white-space:nowrap;width:max-content;animation:rack-marquee 28s linear infinite}
+.rack-ticker-track{display:flex;white-space:nowrap;width:max-content;animation:rack-marquee 28s linear infinite;will-change:transform;backface-visibility:hidden}
 .rack-ticker-track span{font-size:11px;font-weight:900;letter-spacing:.1em;line-height:28px}
 @keyframes rack-marquee{to{transform:translateX(-50%)}}
 .rack-focus{min-height:calc(100svh - 90px);padding-top:15px;justify-content:center}
@@ -108,7 +108,11 @@
     flex:0 0 var(--rack-item-width) !important;
     width:var(--rack-item-width); min-width:0; max-width:none;
     scroll-snap-align:center; touch-action:pan-x pan-y;
+    contain:layout style;
   }
+  .rack-garment-art { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .rack-hanger-motion { backface-visibility:hidden; }
+  .rack-color-choice.is-selected .rack-tag-cord { height:30px; }
   .rack-hanger { width:clamp(48px,7vw,70px); height:auto; margin-top:-4px; margin-bottom:-2px; }
   .rack-garment-art { width:100%; max-width:none; height:clamp(230px,38svh,395px); filter:drop-shadow(0 7px 6px #00000017); }
   .rack-mobile-controls{display:flex;justify-content:center;align-items:center;gap:20px;margin-top:8px;min-height:46px}
@@ -160,6 +164,7 @@
   .rack-arrow--right { right:4px; }
   .rack-color-tags{right:-26px;top:23px;gap:2px}
   .rack-color-choice{flex-basis:35px;width:35px;min-height:99px}
+  .rack-color-choice.is-selected .rack-tag-cord{height:23px}
   .rack-tag-cord{height:23px}
   .rack-tag-card{width:25px;height:70px;padding:10px 2px 3px}
   .rack-tag-text{font-size:6.2px;letter-spacing:0}
