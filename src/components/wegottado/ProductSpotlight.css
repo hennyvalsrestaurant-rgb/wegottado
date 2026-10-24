@@ -12,6 +12,7 @@
 .rack-garments{position:absolute;z-index:3;top:var(--rack-rail-y);left:var(--rack-rail-inset);right:var(--rack-rail-inset);display:flex;align-items:flex-start;justify-content:center;height:calc(100% - var(--rack-rail-y));padding:0}
 .rack-item{display:flex;flex-direction:column;align-items:center;position:relative;min-width:0;max-width:230px;flex-basis:0;gap:0;padding:0;border:0;background:none;outline-offset:6px;perspective:1000px}
 .rack-hanger{display:block;width:clamp(36px,5.8vw,72px);height:auto;aspect-ratio:144/58;flex-shrink:0;position:relative;z-index:4;margin-top:-4px;margin-bottom:-1px;overflow:visible}
+.rack-hanger-motion{position:relative;z-index:4;display:flex;align-items:flex-start;justify-content:center;transform-origin:50% 2px;flex-shrink:0}
 .rack-hanger--large{width:95px;height:52px;margin-bottom:-12px}
 .rack-garment-art{position:relative;width:100%;max-width:205px;height:clamp(205px,37vh,410px);filter:drop-shadow(1px 9px 8px #00000015)}
 .rack-garment-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:top center;mix-blend-mode:multiply;user-select:none}
@@ -67,6 +68,7 @@
   .rack-scene { min-height:calc(100svh - 70px); padding:24px 10px 55px; }
   .rack-display {
     --rack-rail-y:24px; --rack-rail-inset:0px;
+    --rack-item-width:clamp(150px,24vw,192px);
     display:block; width:100%; max-width:100vw;
     height:clamp(290px,49svh,470px);
     overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain;
@@ -82,17 +84,22 @@
   .rack-garments {
     position:relative; top:auto; left:auto; right:auto;
     width:max-content; min-width:100%; height:calc(100% - 3px);
-    margin-top:-2px; padding:0 10px; justify-content:flex-start;
+    margin-top:-2px; padding:0 max(10px,calc((100vw - var(--rack-item-width))/2)); justify-content:flex-start;
     gap:0; z-index:3;
   }
   .rack-item {
-    flex:0 0 clamp(150px,24vw,192px) !important;
-    width:clamp(150px,24vw,192px); min-width:0; max-width:none;
+    flex:0 0 var(--rack-item-width) !important;
+    width:var(--rack-item-width); min-width:0; max-width:none;
     scroll-snap-align:center; touch-action:pan-x pan-y;
   }
   .rack-hanger { width:clamp(48px,7vw,70px); height:auto; margin-top:-4px; margin-bottom:-2px; }
   .rack-garment-art { width:100%; max-width:none; height:clamp(230px,38svh,395px); filter:drop-shadow(0 7px 6px #00000017); }
-  .rack-caption { height:auto; min-height:44px; margin-top:10px; font-size:10px; }
+  .rack-mobile-controls{display:flex;justify-content:center;align-items:center;gap:20px;margin-top:8px;min-height:46px}
+  .rack-browse-arrow{display:flex;justify-content:center;align-items:center;width:44px;height:44px;border:1px solid #bfc0bd;border-radius:50%;background:#fafaf8;color:#222;touch-action:manipulation;transition:background .18s ease,transform .18s ease}
+  .rack-browse-arrow:active:not(:disabled){background:#e6e6e2;transform:scale(.95)}
+  .rack-browse-arrow:disabled{opacity:.28;cursor:not-allowed}
+  .rack-mobile-counter{font-size:11px;letter-spacing:.14em;color:#505050;font-variant-numeric:tabular-nums}
+  .rack-caption { height:auto; min-height:44px; margin-top:4px; font-size:10px; }
   .rack-availability { min-height:44px; }
   .rack-focus {
     min-height:calc(100svh - 70px); height:auto;
@@ -116,12 +123,13 @@
   .rack-toplink { font-size:9px; }
   .rack-wordmark { font-size:17px; }
   .rack-scene { min-height:calc(100svh - 64px); padding:16px 0 52px; }
-  .rack-display { --rack-rail-y:22px; height:clamp(260px,46svh,355px); }
-  .rack-garments { padding:0 8px; }
-  .rack-item { flex-basis:clamp(130px,38vw,160px) !important; width:clamp(130px,38vw,160px); }
+  .rack-display { --rack-rail-y:22px; --rack-item-width:clamp(130px,38vw,160px); height:clamp(260px,46svh,355px); }
+  .rack-garments { padding:0 max(8px,calc((100vw - var(--rack-item-width))/2)); }
+  .rack-item { flex-basis:var(--rack-item-width) !important; width:var(--rack-item-width); }
   .rack-hanger { width:49px; margin-top:-4px; }
   .rack-garment-art { height:clamp(225px,35svh,310px); }
-  .rack-caption { max-width:100%; padding:0 15px; margin-top:3px; font-size:9px; }
+  .rack-mobile-controls{margin-top:2px;min-height:44px}
+  .rack-caption { max-width:100%; padding:0 15px; margin-top:0; font-size:9px; }
   .rack-scene > .rack-availability { margin-top:8px; }
   .rack-focus { min-height:calc(100svh - 64px); padding:60px 0 50px; }
   .rack-focus-center { width:calc(100vw - 104px); }
