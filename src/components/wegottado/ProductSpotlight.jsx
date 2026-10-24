@@ -34,6 +34,9 @@ export default function ProductSpotlight() {
   const [selected, setSelected] = useState(null);
   const [face, setFace] = useState('front');
   const [direction, setDirection] = useState(1);
+  const [centerIndex, setCenterIndex] = useState(0);
+  const rackScrollRef = useRef(null);
+  const scrollFrameRef = useRef(null);
   const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), (hover: none)').matches);
 
   useEffect(() => {
@@ -46,6 +49,32 @@ export default function ProductSpotlight() {
   const sectionRef = useRef(null);
   const touchRef = useRef(null);
   const navigate = useNavigate();
+  const updateRackCenter = useCallback(() => {
+    const rail = rackScrollRef.current;
+    if (!rail || !compact) return;
+    if (scrollFrameRef.current != null) return;
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      const midpoint = rail.scrollLeft + rail.clientWidth / 2;
+      const items = rail.querySelectorAll('.rack-item');
+      let best = 0;
+      let closest = Infinity;
+      items.forEach((item, index) => {
+        const x = item.offsetLeft + item.offsetWidth / 2;
+        const distance = Math.abs(x - midpoint);
+        if (distance < closest) { closest = distance; best = index; }
+      });
+      setCenterIndex(previous => previous === best ? previous : best);
+    });
+  }, [compact]);
+  const browseRack = useCallback(delta => {
+    if (!products.length) return;
+    const next = Math.max(0, Math.min(products.length - 1, centerIndex + delta));
+    setCenterIndex(next);
+    const item = rackScrollRef.current?.querySelectorAll('.rack-item')[next];
+    item?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', inline: 'center', block: 'nearest' });
+  }, [centerIndex, products.length, reducedMotion]);
+  useEffect(() => () => { if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current); }, []);
   const { format } = useCurrency();
   useEffect(() => {
     let active = true;
@@ -84,7 +113,8 @@ export default function ProductSpotlight() {
 
   const eased = reducedMotion ? { duration: 0.01 } : compact ? { duration: .28, ease: 'easeOut' } : spring;
   const productActive = chosen != null;
-  const preview = hover != null ? products[hover] : null;
+  const highlightedIndex = compact ? centerIndex : hover;
+  const preview = highlightedIndex != null ? products[highlightedIndex] : null;
   return <section ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
     <header className="rack-topbar">
       <a href="#manifesto" className="rack-toplink">ABOUT</a>
@@ -101,14 +131,14 @@ export default function ProductSpotlight() {
            error ? <div role="alert" className="rack-loading">{error}</div> : products.length === 0 ?
             <div className="rack-loading">New pieces coming soon.</div> :
             <>
-              <div className="rack-display" role="region" aria-label="Browse hanging garments. Swipe sideways to explore on touch devices." tabIndex={compact ? 0 : undefined} onMouseLeave={() => { if (!compact) setHover(null); }}>
+              <div ref={rackScrollRef} className="rack-display" role="region" aria-label="Browse hanging garments. Swipe sideways to explore on touch devices." tabIndex={compact ? 0 : undefined} onScroll={updateRackCenter} onMouseLeave={() => { if (!compact) setHover(null); }}>
                 <div className="rack-rail" aria-hidden="true"/>
                 <div className="rack-garments">
                   {products.map((product, index) => {
-                    const hovered = hover === index;
-                    const hasHover = hover != null;
-                    const distance = hasHover ? Math.abs(index - hover) : 9;
-                    const shift = hasHover && !hovered ? (index < hover ? -14 : 14) : 0;
+                    const hovered = highlightedIndex === index;
+                    const hasHover = highlightedIndex != null;
+                    const distance = hasHover ? Math.abs(index - highlightedIndex) : 9;
+                    const shift = hasHover && !hovered ? (index < highlightedIndex ? -14 : 14) : 0;
                     const faces = faceImages(product);
                     return <motion.button type="button" key={product.id}
                       aria-label={'Inspect ' + product.name}
@@ -116,22 +146,27 @@ export default function ProductSpotlight() {
                       onMouseEnter={() => { if (!compact) setHover(index); }} onFocus={() => { if (!compact) setHover(index); }}
                       onClick={() => open(product.id)}
                       layout={!compact} transition={eased}
-                      animate={{ zIndex: hovered && !compact ? 20 : 10 - distance,
+                      animate={{ zIndex: hovered ? 20 : 10 - distance,
                         x: compact ? 0 : shift, y: 0,
                         flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
-                      <Hanger/>
-                      <motion.div className="rack-garment-art" layoutId={compact ? undefined : 'rack-product-' + product.id}
+                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: compact && hovered ? -3 : 0 }} transition={eased}><Hanger/></motion.div>
+                      <motion.div className="rack-garment-art" layoutId={'rack-product-' + product.id}
                         transition={eased} style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
-                        animate={{ rotateY: compact ? 0 : hovered ? 0 : (index % 2 === 0 ? 73 : -72),
-                          scale: compact ? 1 : hovered ? 1.18 : 1 }}
+                        animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 62 : -62) : (index % 2 === 0 ? 73 : -72),
+                          scale: hovered ? (compact ? 1.15 : 1.18) : 1 }}
                       >
-                        <img src={faces.side && !hovered && !compact ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
+                        <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
                       </motion.div>
                     </motion.button>;
                   })}
                 </div>
               </div>
+              {compact && <div className="rack-mobile-controls" aria-label="Browse the clothes rack">
+                <button type="button" className="rack-browse-arrow" aria-label="Previous hanging garment" disabled={centerIndex === 0} onClick={() => browseRack(-1)}><ArrowLeft size={18}/></button>
+                <span className="rack-mobile-counter" aria-live="polite">{String(centerIndex + 1).padStart(2,'0')} / {String(products.length).padStart(2,'0')}</span>
+                <button type="button" className="rack-browse-arrow" aria-label="Next hanging garment" disabled={centerIndex === products.length - 1} onClick={() => browseRack(1)}><ArrowRight size={18}/></button>
+              </div>}
               <div className="rack-caption" aria-live="polite">
                 <AnimatePresence mode="wait">
                   <motion.p key={preview?.id || 'prompt'} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
@@ -140,7 +175,7 @@ export default function ProductSpotlight() {
                   </motion.p>
                 </AnimatePresence>
               </div>
-              <button className="rack-availability" type="button" onClick={() => navigate('/product/' + products[hover ?? 0].id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
+              <button className="rack-availability" type="button" onClick={() => navigate('/product/' + products[highlightedIndex ?? 0].id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
             </>
           }
         </motion.div>
@@ -157,10 +192,10 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={!compact && face === 'front' ? 'rack-product-' + chosen.id : undefined}
-                initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 22 : 38), rotateY: compact ? 0 : face === 'back' ? -88 : 88, scale: compact ? 1 : .96 }}
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={face === 'front' ? 'rack-product-' + chosen.id : undefined}
+                initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? -68 : -88) : (compact ? 68 : 88), scale: .96 }}
                 animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 22 : 38), rotateY: compact ? 0 : face === 'back' ? 88 : -88, scale: compact ? 1 : .97 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? 68 : 88) : (compact ? -68 : -88), scale: .97 }}
                 transition={{ duration: reducedMotion ? 0 : compact ? .25 : .52, ease: [.22, 1, .36, 1] }}
               >
                 <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
