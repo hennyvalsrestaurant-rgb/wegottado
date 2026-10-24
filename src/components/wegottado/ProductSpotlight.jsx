@@ -4,13 +4,14 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAvailableColorways, productColorLabel } from '@/lib/productVariants';
+import { showroomImage } from '@/lib/showroomImages';
 import { base44 } from '@/api/base44Client';
 import { useCurrency } from './CurrencySelector';
 import './ProductSpotlight.css';
 
 
 const faceImages = (product) => {
-  const images = [product?.front_image_url, product?.image_url, ...(Array.isArray(product?.images) ? product.images : [])].filter(Boolean);
+  const images = [product?.front_image_url, showroomImage(product), ...(Array.isArray(product?.images) ? product.images : [])].filter(Boolean);
   const unique = [...new Set(images)];
   return { front: unique[0], back: product?.back_image_url || unique[1] || null, side: product?.side_image_url || null };
 };
@@ -204,8 +205,8 @@ export default function ProductSpotlight() {
           onTouchStart={e => { touchRef.current = null; if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
           onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
           <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
-          <div className="rack-ghost rack-ghost--left" aria-hidden="true"><img src={products[(activeIndex - 1 + products.length) % products.length]?.image_url} alt=""/></div>
-          <div className="rack-ghost rack-ghost--right" aria-hidden="true"><img src={products[(activeIndex + 1) % products.length]?.image_url} alt=""/></div>
+          <div className="rack-ghost rack-ghost--left" aria-hidden="true"><img src={showroomImage(products[(activeIndex - 1 + products.length) % products.length])} alt="" loading="lazy" decoding="async"/></div>
+          <div className="rack-ghost rack-ghost--right" aria-hidden="true"><img src={showroomImage(products[(activeIndex + 1) % products.length])} alt="" loading="lazy" decoding="async"/></div>
           <button type="button" className="rack-arrow rack-arrow--left" onClick={() => step(-1)} aria-label="Previous garment"><ArrowLeft size={24}/></button>
           <button type="button" className="rack-arrow rack-arrow--right" onClick={() => step(1)} aria-label="Next garment"><ArrowRight size={24}/></button>
           <div className="rack-focus-center">
@@ -236,7 +237,7 @@ export default function ProductSpotlight() {
                   const current = item.id === chosen.id;
                   return (
                     <motion.button type="button" key={item.id}
-                      className={'rack-color-choice' + (current ? ' is-selected' : '')}
+                      className={'rack-color-choice' + (current ? ' is-selected' : '') + (/^(white|cream|yellow)$/i.test(label.trim()) ? ' is-light' : '')}
                       style={{ '--tag-fill': colorTagFill(label) }}
                       aria-label={'Select ' + label + ' color'} aria-pressed={current}
                       title={label}
