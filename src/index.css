@@ -94,6 +94,11 @@ select { cursor: pointer; }
   mix-blend-mode: overlay;
 }
 
+/* Avoid a full-screen fixed SVG noise layer that can shimmer while touch-scrolling on mobile Safari. */
+@media (max-width: 1023px), (pointer: coarse) {
+  .film-grain::after { display: none; }
+}
+
 /* Golden seam line */
 .golden-seam {
   position: fixed;
