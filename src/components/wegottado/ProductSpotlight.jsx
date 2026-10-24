@@ -179,12 +179,12 @@ export default function ProductSpotlight() {
                         flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
                       <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: 0 }} transition={eased}><Hanger/></motion.div>
-                      <motion.div className="rack-garment-art" layoutId={!compact ? 'rack-product-' + product.id : undefined}
-                        transition={eased} style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
-                        animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 48 : -48) : (index % 2 === 0 ? 73 : -72),
-                          scale: hovered ? (compact ? 1.06 : 1.18) : 1 }}
-                      >
-                        <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
+                      <motion.div className="rack-garment-art" layoutId={!reducedMotion ? 'rack-product-' + product.id : undefined} transition={eased}>
+                        <motion.div className="rack-garment-inner" style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
+                          animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 48 : -48) : (index % 2 === 0 ? 73 : -72), scale: hovered ? (compact ? 1.06 : 1.18) : 1 }}
+                          transition={eased}>
+                          <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
+                        </motion.div>
                       </motion.div>
                     </motion.button>;
                   })}
@@ -221,13 +221,16 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={!compact && face === 'front' ? 'rack-product-' + chosen.id : undefined}
-                initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? -68 : -88) : (compact ? 68 : 88), scale: .96 }}
-                animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? 68 : 88) : (compact ? -68 : -88), scale: .97 }}
-                transition={{ duration: reducedMotion ? 0 : compact ? .25 : .52, ease: [.22, 1, .36, 1] }}
-              >
-                <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
+                layoutId={!reducedMotion && face === 'front' ? 'rack-product-' + chosen.id : undefined}
+                transition={eased}>
+                <motion.div className="rack-focus-inner"
+                  initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 20 : 38), rotateY: face === 'back' ? (compact ? -55 : -88) : (compact ? 55 : 88), scale: .96 }}
+                  animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 20 : 38), rotateY: face === 'back' ? (compact ? 55 : 88) : (compact ? -55 : -88), scale: .97 }}
+                  transition={{ duration: reducedMotion ? 0 : compact ? .3 : .52, ease: [.22, 1, .36, 1] }}>
+                  <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
+                </motion.div>
               </motion.div>
             </AnimatePresence>
             <motion.h2 key={chosen.id} className="rack-product-name"
