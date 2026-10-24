@@ -184,6 +184,8 @@
   .rack-garment-art { height:218px; }
   .rack-focus { min-height:530px; }
   .rack-focus-image { height:235px; }
+  /* Keep the exit action reachable when the product view exceeds a short landscape screen. */
+  .rack-close{position:fixed;top:76px;right:12px;z-index:60;background:#f7f7f5ed;border-radius:6px}
   .rack-color-tags{top:18px}
   .rack-color-choice{min-height:84px}
   .rack-tag-cord{height:16px}
