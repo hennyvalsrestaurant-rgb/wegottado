@@ -157,6 +157,8 @@ export default function ProductSpotlight() {
            isError ? <div role="alert" className="rack-loading">Collection could not be loaded right now.</div> : products.length === 0 ?
             <div className="rack-loading">New pieces coming soon.</div> :
             <>
+              <div className="rack-display-wrap">
+                <div className="rack-mobile-stationary-rail" aria-hidden="true"/>
               <div ref={rackScrollRef} className="rack-display" role="region" aria-label="Browse hanging garments. Swipe sideways to explore on touch devices." tabIndex={compact ? 0 : undefined} onScroll={updateRackCenter} onMouseLeave={() => { if (!compact) setHover(null); }}>
                 <div className="rack-rail" aria-hidden="true"/>
                 <div className="rack-garments">
@@ -187,6 +189,7 @@ export default function ProductSpotlight() {
                     </motion.button>;
                   })}
                 </div>
+              </div>
               </div>
               {compact && <div className="rack-mobile-controls" aria-label="Browse the clothes rack">
                 <button type="button" className="rack-browse-arrow" aria-label="Previous hanging garment" disabled={centerIndex === 0} onClick={() => browseRack(-1)}><ArrowLeft size={18}/></button>
