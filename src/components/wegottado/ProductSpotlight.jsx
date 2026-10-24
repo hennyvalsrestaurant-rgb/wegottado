@@ -249,7 +249,7 @@ export default function ProductSpotlight() {
                       title={label}
                       onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id); } }}
                       initial={reducedMotion ? false : { opacity: 0, y: -15, rotate: -7 }}
-                      animate={{ opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
+                      animate={{ opacity: 1, y: compact ? 0 : current ? 6 : 0, rotate: compact || current ? 0 : index % 2 ? 3 : -3 }}
                       whileTap={reducedMotion ? undefined : { scale: .94 }}
                       transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
                       <span className="rack-tag-cord" aria-hidden="true" />
