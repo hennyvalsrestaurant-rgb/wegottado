@@ -137,7 +137,8 @@ export default function ProductSpotlight() {
     return () => window.removeEventListener('keydown', keydown);
   }, [selected, step, close]);
 
-  const eased = reducedMotion ? { duration: 0.01 } : compact ? { duration: .24, ease: [0.22, 1, 0.36, 1] } : spring;
+  // One choreography on every device. Only the rack's scrolling layout differs on touch.
+  const eased = reducedMotion ? { duration: 0.01 } : spring;
   const productActive = chosen != null;
   const highlightedIndex = compact ? centerIndex : hover;
   const preview = highlightedIndex != null ? products[highlightedIndex] : null;
@@ -178,10 +179,10 @@ export default function ProductSpotlight() {
                         x: compact ? 0 : shift, y: 0,
                         flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
-                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: 0 }} transition={eased}><Hanger/></motion.div>
+                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: compact && hovered ? -2 : 0 }} transition={eased}><Hanger/></motion.div>
                       <motion.div className="rack-garment-art" layoutId={!reducedMotion ? 'rack-product-' + product.id : undefined} transition={eased}>
                         <motion.div className="rack-garment-inner" style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
-                          animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 48 : -48) : (index % 2 === 0 ? 73 : -72), scale: hovered ? (compact ? 1.06 : 1.18) : 1 }}
+                          animate={{ rotateY: hovered ? 0 : (index % 2 === 0 ? 73 : -72), scale: hovered ? 1.18 : 1 }}
                           transition={eased}>
                           <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
                         </motion.div>
@@ -210,7 +211,7 @@ export default function ProductSpotlight() {
         </motion.div>
       ) : (
         <motion.div key="focus-scene" className="rack-focus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          transition={{ duration: reducedMotion ? 0 : compact ? .18 : .35 }}
+          transition={{ duration: reducedMotion ? 0 : .35 }}
           onTouchStart={e => { touchRef.current = null; if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
           onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
           <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
@@ -225,10 +226,10 @@ export default function ProductSpotlight() {
                 layoutId={!reducedMotion && face === 'front' ? 'rack-product-' + chosen.id : undefined}
                 transition={eased}>
                 <motion.div className="rack-focus-inner"
-                  initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 20 : 38), rotateY: face === 'back' ? (compact ? -55 : -88) : (compact ? 55 : 88), scale: .96 }}
+                  initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? -88 : 88, scale: .96 }}
                   animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 20 : 38), rotateY: face === 'back' ? (compact ? 55 : 88) : (compact ? -55 : -88), scale: .97 }}
-                  transition={{ duration: reducedMotion ? 0 : compact ? .3 : .52, ease: [.22, 1, .36, 1] }}>
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? 88 : -88, scale: .97 }}
+                  transition={{ duration: reducedMotion ? 0 : .52, ease: [.22, 1, .36, 1] }}>
                   <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
                 </motion.div>
               </motion.div>
@@ -255,7 +256,7 @@ export default function ProductSpotlight() {
                       title={label}
                       onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id); } }}
                       initial={reducedMotion ? false : { opacity: 0, y: -15, rotate: -7 }}
-                      animate={{ opacity: 1, y: compact ? 0 : current ? 6 : 0, rotate: compact || current ? 0 : index % 2 ? 3 : -3 }}
+                      animate={{ opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
                       whileTap={reducedMotion ? undefined : { scale: .94 }}
                       transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
                       <span className="rack-tag-cord" aria-hidden="true" />
