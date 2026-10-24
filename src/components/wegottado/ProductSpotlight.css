@@ -46,6 +46,8 @@
 .rack-tag-card::before{content:'';position:absolute;top:5px;left:calc(50% - 3px);width:6px;height:6px;border-radius:50%;background:#f7f7f5;box-shadow:0 0 0 1px #00000044}
 .rack-tag-text{writing-mode:vertical-rl;text-orientation:mixed;text-transform:uppercase;font-size:8px;line-height:1;font-weight:800;letter-spacing:.025em;text-shadow:0 1px 3px #000c;white-space:nowrap}
 .rack-color-choice.is-selected .rack-tag-card{outline:2px solid #30312f;outline-offset:3px}
+.rack-color-choice.is-light .rack-tag-text{color:#242424;text-shadow:0 1px 0 #ffffff99}
+.rack-color-choice.is-light .rack-tag-card{border-color:#aaa}
 .rack-color-choice:focus-visible{outline:2px solid #202020;outline-offset:2px;border-radius:4px}
 .rack-color-choice:hover .rack-tag-card{box-shadow:inset 1px 1px 3px #fff7,0 6px 12px #0003}
 .rack-color-choice.is-selected .rack-tag-cord{height:35px}
@@ -128,7 +130,7 @@
   .rack-arrow--right { right:10px; }
   .rack-face-switch button { min-height:38px; min-width:74px; }
   .rack-color-tags{right:-6px;top:30px;gap:5px;max-width:none}
-  .rack-color-choice{flex-basis:40px;width:40px;min-height:120px}
+  .rack-color-choice{flex-basis:40px;width:40px;min-height:120px;min-width:40px}
   .rack-tag-card{width:31px;height:84px}
   .rack-tag-text{font-size:7px}
   .rack-ghost { display:none; }
