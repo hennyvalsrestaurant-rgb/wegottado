@@ -176,8 +176,9 @@ export default function ProductSpotlight() {
                       onClick={() => open(product.id)}
                       layout={!compact} transition={eased}
                       animate={{ zIndex: hovered ? 20 : 10 - distance,
-                        x: compact ? 0 : shift, y: 0,
-                        flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
+                        x: shift, y: 0,
+                        flexGrow: compact ? 0 : hovered ? 1.65 : 1,
+                        opacity: hasHover && distance > 2 ? .75 : 1 }}
                     >
                       <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: compact && hovered ? -2 : 0 }} transition={eased}><Hanger/></motion.div>
                       <motion.div className="rack-garment-art" layoutId={!reducedMotion ? 'rack-product-' + product.id : undefined} transition={eased}>
