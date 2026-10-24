@@ -110,7 +110,9 @@ export default function Navbar() {
             )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="xl:hidden cursor-hover"
+              aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileOpen}
+              className="xl:hidden cursor-hover flex h-11 w-11 items-center justify-center"
               style={{ color: 'var(--gold)' }}
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -126,7 +128,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-10"
+            className="fixed inset-0 z-40 flex max-h-dvh flex-col items-center justify-center gap-4 overflow-y-auto px-5 py-24 sm:gap-6"
             style={{ background: 'rgba(8,8,8,0.97)', backdropFilter: 'blur(30px)' }}
           >
             {NAV_LINKS.map((link, i) => (
@@ -137,7 +139,7 @@ export default function Navbar() {
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
                 onClick={() => scrollTo(link.href, link.isPage)}
-                className="heading-display text-4xl cursor-hover"
+                className="heading-display min-h-11 text-2xl sm:text-4xl cursor-hover"
                 style={{ color: 'var(--carrara)' }}
               >
                 {link.label}
