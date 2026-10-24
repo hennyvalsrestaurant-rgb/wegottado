@@ -118,7 +118,7 @@ export default function ProductSpotlight() {
                       layout={!compact} transition={eased}
                       animate={{ zIndex: hovered && !compact ? 20 : 10 - distance,
                         x: compact ? 0 : shift, y: 0,
-                        flexGrow: hovered && !compact ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
+                        flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
                       <Hanger/>
                       <motion.div className="rack-garment-art" layoutId={compact ? undefined : 'rack-product-' + product.id}
@@ -147,7 +147,7 @@ export default function ProductSpotlight() {
       ) : (
         <motion.div key="focus-scene" className="rack-focus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: reducedMotion ? 0 : .35 }}
-          onTouchStart={e => { if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+          onTouchStart={e => { touchRef.current = null; if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
           onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
           <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
           <div className="rack-ghost rack-ghost--left" aria-hidden="true"><img src={products[(activeIndex - 1 + products.length) % products.length]?.image_url} alt=""/></div>
