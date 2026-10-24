@@ -1,10 +1,17 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
 
 const HERO_IMG = "/images/wegottado-hero.webp";
 
 export default function HeroSection() {
   const sectionRef = useRef(null);
+  const [compactMotion, setCompactMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), (pointer: coarse), (prefers-reduced-motion: reduce)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px), (pointer: coarse), (prefers-reduced-motion: reduce)');
+    const update = () => setCompactMotion(mq.matches);
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
   // Motion values keep the 3D pointer effect off React's render path.
   const rawX = useMotionValue(0.5);
   const rawY = useMotionValue(0.5);
@@ -47,7 +54,7 @@ export default function HeroSection() {
   const COLORS = ['#00F5FF', '#FF00FF', '#7B2FFF', '#FFD700', '#FF6060', '#00FF99', '#fff'];
 
   const launchFireworks = useCallback(() => {
-    if (fwActiveRef.current) return;
+    if (compactMotion || fwActiveRef.current) return;
     fwActiveRef.current = true;
     const canvas = fwCanvasRef.current;
     if (!canvas) return;
@@ -137,7 +144,7 @@ export default function HeroSection() {
     };
 
     fwRafRef.current = requestAnimationFrame(tick);
-  }, []);
+  }, [compactMotion]);
 
   useEffect(() => {
     // Resize canvas to full section
@@ -156,7 +163,7 @@ export default function HeroSection() {
     let hasScrolled = false;
     const onScroll = () => {
       const bounds = section.getBoundingClientRect();
-      if (document.hidden || bounds.bottom <= 0 || bounds.top >= window.innerHeight || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (compactMotion || document.hidden || bounds.bottom <= 0 || bounds.top >= window.innerHeight || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       if (!hasScrolled) {
         hasScrolled = true;
         launchFireworks();
@@ -175,7 +182,7 @@ export default function HeroSection() {
       clearTimeout(scrollTimer);
       cancelAnimationFrame(fwRafRef.current);
     };
-  }, [launchFireworks]);
+  }, [launchFireworks, compactMotion]);
   // ─────────────────────────────────────────────────────────────────────
 
   // Autonomous looping animation variants for the background
@@ -195,7 +202,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="hero" ref={sectionRef} className="relative h-[100svh] min-h-[580px] overflow-hidden" style={{ perspective: '1200px' }}>
+    <section id="hero" ref={sectionRef} className="relative h-[100svh] min-h-[520px] overflow-hidden sm:min-h-[580px]" style={{ perspective: '1200px' }}>
       {/* 3D Magical background image — outer wrapper for scroll parallax + mouse 3D tilt */}
       <motion.div
         className="absolute inset-0"
@@ -211,7 +218,7 @@ export default function HeroSection() {
         <motion.div
           className="absolute inset-0"
           variants={bgVariants}
-          animate="animate"
+          animate={compactMotion ? false : "animate"}
           style={{ transformOrigin: 'center center', willChange: 'transform' }}>
           
           <motion.img
@@ -234,7 +241,7 @@ export default function HeroSection() {
         {/* Holographic rainbow sheen — shifts hue as image rotates */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          animate={{
+          animate={compactMotion ? false : {
             background: [
             `linear-gradient(135deg, rgba(0,245,255,0.09) 0%, rgba(123,47,255,0.12) 33%, rgba(255,0,255,0.09) 66%, rgba(212,175,55,0.11) 100%)`,
             `linear-gradient(225deg, rgba(212,175,55,0.11) 0%, rgba(0,245,255,0.09) 33%, rgba(123,47,255,0.12) 66%, rgba(255,0,255,0.09) 100%)`,
@@ -253,7 +260,7 @@ export default function HeroSection() {
         {/* Pulsing vignette pop */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          animate={compactMotion ? false : { opacity: [0.4, 0.7, 0.4] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           style={{ background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(8,8,8,0.6) 100%)' }} />
         
@@ -305,7 +312,7 @@ export default function HeroSection() {
           
           {/* Glitch layer 1 — cyan offset */}
           <motion.span
-            animate={{ x: [-2, 2, -1, 3, -2], opacity: [0.6, 0.8, 0.5, 0.7, 0.6] }}
+            animate={compactMotion ? false : { x: [-2, 2, -1, 3, -2], opacity: [0.6, 0.8, 0.5, 0.7, 0.6] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
             style={{
@@ -324,7 +331,7 @@ export default function HeroSection() {
 
           {/* Glitch layer 2 — magenta offset */}
           <motion.span
-            animate={{ x: [2, -3, 1, -2, 2], opacity: [0.5, 0.7, 0.4, 0.6, 0.5] }}
+            animate={compactMotion ? false : { x: [2, -3, 1, -2, 2], opacity: [0.5, 0.7, 0.4, 0.6, 0.5] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
             style={{
@@ -343,7 +350,7 @@ export default function HeroSection() {
 
           {/* Main neon text */}
           <motion.span
-            animate={{
+            animate={compactMotion ? false : {
               textShadow: [
               '0 0 10px #00F5FF, 0 0 30px #00F5FF, 0 0 60px rgba(0,245,255,0.5), 4px 0 0 rgba(255,0,255,0.4)',
               '0 0 14px #FF00FF, 0 0 40px #FF00FF, 0 0 80px rgba(255,0,255,0.5), -4px 0 0 rgba(0,245,255,0.4)',
@@ -377,7 +384,7 @@ export default function HeroSection() {
             key={i}
             className="absolute pointer-events-none"
             style={{ left: pos.left, top: pos.top, width: 2, height: 2 }}
-            animate={{
+            animate={compactMotion ? false : {
               opacity: [0, 1, 0, 0.8, 0],
               scale: [0.5, 2, 0.3, 1.5, 0],
               boxShadow: [
@@ -422,7 +429,7 @@ export default function HeroSection() {
           
           <span className="meta-text text-[10px]">SCROLL TO DISCOVER</span>
           <motion.div
-            animate={{ y: [0, 8, 0] }}
+            animate={compactMotion ? false : { y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
             className="w-px h-10"
             style={{ background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
