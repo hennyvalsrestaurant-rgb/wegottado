@@ -72,7 +72,7 @@ export default function ProductSpotlight() {
     const next = Math.max(0, Math.min(products.length - 1, centerIndex + delta));
     setCenterIndex(next);
     const item = rackScrollRef.current?.querySelectorAll('.rack-item')[next];
-    item?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', inline: 'center', block: 'nearest' });
+    item?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
   }, [centerIndex, products.length, reducedMotion]);
   useEffect(() => () => { if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current); }, []);
   const { format } = useCurrency();
@@ -93,8 +93,19 @@ export default function ProductSpotlight() {
   const chosenFaces = faceImages(chosen);
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
   const variants = useMemo(() => chosen ? products.filter(p => familyName(p.name) === familyName(chosen.name)) : [], [chosen, products]);
-  const open = useCallback((id) => { setSelected(id); setFace('front'); }, []);
+  const open = useCallback((id) => {
+    const index = products.findIndex(product => product.id === id);
+    if (index >= 0) setCenterIndex(index);
+    setSelected(id);
+    setFace('front');
+  }, [products]);
   const close = useCallback(() => { setSelected(null); setFace('front'); setHover(null); }, []);
+  useEffect(() => {
+    if (selected || !compact || !products.length || !rackScrollRef.current) return;
+    const item = rackScrollRef.current.querySelectorAll('.rack-item')[centerIndex];
+    item?.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+  // Only restore the last viewed rack position when returning from a product.
+  }, [selected, compact, products.length]);
   const step = useCallback(delta => {
     if (!products.length || activeIndex === -1) return;
     setDirection(delta >= 0 ? 1 : -1);
