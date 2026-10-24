@@ -37,9 +37,19 @@
 .rack-face-switch button{min-width:78px;min-height:31px;border:0;border-radius:30px;background:transparent;color:#666;letter-spacing:.13em;font-size:10px;font-weight:700}
 .rack-face-switch button.is-current{background:#202020;color:#fff}
 .rack-face-switch button:disabled{opacity:.25;cursor:not-allowed}
-.rack-variants{display:flex;align-items:center;justify-content:center;gap:8px;max-width:94vw;margin-top:12px}
-.rack-variant{display:flex;flex-direction:column;align-items:center;width:72px;max-width:18vw;padding:3px 2px;border:1px solid transparent;border-radius:3px;background:transparent;color:#555}
-.rack-variant.selected{border-color:#555}.rack-variant img{width:45px;height:47px;object-fit:contain;mix-blend-mode:multiply}.rack-variant span{max-width:100%;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Reference-video color choices: narrow cards hung on thin cords next to the garment. */
+.rack-color-tags{position:absolute;z-index:22;right:1%;top:34px;display:flex;align-items:flex-start;gap:7px;max-width:43%;pointer-events:none}
+.rack-color-choice{pointer-events:auto;position:relative;display:flex;flex-direction:column;align-items:center;flex:0 0 42px;width:42px;min-height:132px;padding:0;border:0;background:transparent;transform-origin:50% 0;filter:drop-shadow(1px 5px 4px #00000021);touch-action:manipulation}
+.rack-tag-cord{display:block;position:relative;height:30px;width:1px;flex-shrink:0;background:linear-gradient(#c0c0bc,#7a7b78)}
+.rack-tag-cord::before{content:'';position:absolute;top:-3px;left:-3px;width:7px;height:7px;border:1px solid #747671;border-radius:50%;background:#f7f7f5}
+.rack-tag-card{position:relative;display:flex;justify-content:center;align-items:center;width:33px;height:91px;padding:13px 4px 7px;border-radius:4px 4px 2px 2px;border:1px solid #00000026;background:var(--tag-fill,#55585e);box-shadow:inset 1px 1px 2px #ffffff59,1px 3px 5px #00000024;color:#fff;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.rack-tag-card::before{content:'';position:absolute;top:5px;left:calc(50% - 3px);width:6px;height:6px;border-radius:50%;background:#f7f7f5;box-shadow:0 0 0 1px #00000044}
+.rack-tag-text{writing-mode:vertical-rl;text-orientation:mixed;text-transform:uppercase;font-size:8px;line-height:1;font-weight:800;letter-spacing:.025em;text-shadow:0 1px 3px #000c;white-space:nowrap}
+.rack-color-choice.is-selected .rack-tag-card{outline:2px solid #30312f;outline-offset:3px}
+.rack-color-choice:focus-visible{outline:2px solid #202020;outline-offset:2px;border-radius:4px}
+.rack-color-choice:hover .rack-tag-card{box-shadow:inset 1px 1px 3px #fff7,0 6px 12px #0003}
+.rack-color-choice.is-selected .rack-tag-cord{height:35px}
+
 .rack-availability--focus{margin-top:12px;background:#f9f9f7}
 .rack-count{font-size:10px;letter-spacing:.16em;margin-top:12px;color:#888}
 .rack-arrow{position:absolute;z-index:25;top:48%;display:flex;align-items:center;justify-content:center;border:1px solid #b9b9b8;border-radius:50%;background:#f9f9f8b0;width:50px;height:50px;transform:translateY(-50%);transition:background .2s}
@@ -59,7 +69,12 @@
  .rack-ghost{width:90px;top:25%;opacity:.09}.rack-ghost--left{left:10%}.rack-ghost--right{right:10%}
  .rack-product-name{font-size:13px}.rack-face-switch button{min-width:62px}
  .rack-availability{padding:0 15px;font-size:10px}
- .rack-variants{gap:4px}.rack-variant{width:60px}
+ .rack-color-tags{top:26px;right:-28px;gap:2px;max-width:none}
+ .rack-color-choice{flex-basis:36px;width:36px;min-height:103px}
+ .rack-tag-cord{height:24px}
+ .rack-tag-card{width:26px;height:72px;padding:11px 2px 4px}
+ .rack-tag-text{font-size:6.5px;letter-spacing:0}
+ .rack-color-choice.is-selected .rack-tag-cord{height:28px}
 }
 /* Touch/tablet showroom: browse real-sized garments horizontally instead of squeezing into five narrow columns. */
 @media (max-width:1023px), (hover:none) {
@@ -112,8 +127,10 @@
   .rack-arrow--left { left:10px; }
   .rack-arrow--right { right:10px; }
   .rack-face-switch button { min-height:38px; min-width:74px; }
-  .rack-variants { flex-wrap:wrap; max-width:100%; }
-  .rack-variant { min-height:56px; }
+  .rack-color-tags{right:-6px;top:30px;gap:5px;max-width:none}
+  .rack-color-choice{flex-basis:40px;width:40px;min-height:120px}
+  .rack-tag-card{width:31px;height:84px}
+  .rack-tag-text{font-size:7px}
   .rack-ghost { display:none; }
   .rack-ticker { position:absolute; min-height:28px; }
 }
@@ -139,8 +156,11 @@
   .rack-arrow { width:44px; height:44px; top:34%; }
   .rack-arrow--left { left:4px; }
   .rack-arrow--right { right:4px; }
-  .rack-variants { gap:4px; margin-top:8px; }
-  .rack-variant { width:58px; }
+  .rack-color-tags{right:-26px;top:23px;gap:2px}
+  .rack-color-choice{flex-basis:35px;width:35px;min-height:99px}
+  .rack-tag-cord{height:23px}
+  .rack-tag-card{width:25px;height:70px;padding:10px 2px 3px}
+  .rack-tag-text{font-size:6.2px;letter-spacing:0}
   .rack-availability--focus { margin-top:10px; }
   .rack-count { margin-top:8px; }
 }
@@ -151,6 +171,11 @@
   .rack-garment-art { height:218px; }
   .rack-focus { min-height:530px; }
   .rack-focus-image { height:235px; }
+  .rack-color-tags{top:18px}
+  .rack-color-choice{min-height:84px}
+  .rack-tag-cord{height:16px}
+  .rack-tag-card{height:58px}
+  .rack-tag-text{font-size:6px}
 }
 @media (prefers-reduced-motion:reduce) {
   .rack-ticker-track { animation:none; }
