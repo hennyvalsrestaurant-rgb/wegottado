@@ -1,11 +1,20 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate, useReducedMotion } from 'framer-motion';
 
 const HERO_IMG = "/images/wegottado-hero.webp";
 
 export default function HeroSection() {
   const sectionRef = useRef(null);
   const [compactMotion, setCompactMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), (pointer: coarse), (prefers-reduced-motion: reduce)').matches);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return undefined;
+    const observer = new IntersectionObserver(([entry]) => setHeroVisible(entry.isIntersecting), { threshold: 0 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px), (pointer: coarse), (prefers-reduced-motion: reduce)');
     const update = () => setCompactMotion(mq.matches);
@@ -218,7 +227,8 @@ export default function HeroSection() {
         <motion.div
           className="absolute inset-0"
           variants={bgVariants}
-          animate={compactMotion ? false : "animate"}
+          animate={compactMotion ? (heroVisible && !prefersReducedMotion ? { y: [0, -6, 0], scale: [1, 1.013, 1] } : false) : heroVisible ? "animate" : false}
+          transition={compactMotion ? { duration: 11, repeat: Infinity, ease: "easeInOut" } : undefined}
           style={{ transformOrigin: 'center center', willChange: 'transform' }}>
           
           <motion.img
