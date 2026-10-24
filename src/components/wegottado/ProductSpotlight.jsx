@@ -34,7 +34,14 @@ export default function ProductSpotlight() {
   const [selected, setSelected] = useState(null);
   const [face, setFace] = useState('front');
   const [direction, setDirection] = useState(1);
+  const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), (hover: none)').matches);
 
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px), (hover: none)');
+    const update = () => setCompact(mq.matches);
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
   const reducedMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const touchRef = useRef(null);
@@ -75,7 +82,7 @@ export default function ProductSpotlight() {
     return () => window.removeEventListener('keydown', keydown);
   }, [selected, step, close]);
 
-  const eased = reducedMotion ? { duration: 0.01 } : spring;
+  const eased = reducedMotion ? { duration: 0.01 } : compact ? { duration: .28, ease: 'easeOut' } : spring;
   const productActive = chosen != null;
   const preview = hover != null ? products[hover] : null;
   return <section ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
@@ -88,13 +95,13 @@ export default function ProductSpotlight() {
       {!productActive ? (
         <motion.div key="rack-scene" className="rack-scene"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          exit={{ opacity: 0, filter: reducedMotion ? 'none' : 'blur(7px)', scale: 1.03 }}
+          exit={{ opacity: 0, filter: (reducedMotion || compact) ? 'none' : 'blur(7px)', scale: compact ? 1 : 1.03 }}
           transition={{ duration: reducedMotion ? 0 : .36 }}>
           {loading ? <div role="status" className="rack-loading">Preparing the collection…</div> :
            error ? <div role="alert" className="rack-loading">{error}</div> : products.length === 0 ?
             <div className="rack-loading">New pieces coming soon.</div> :
             <>
-              <div className="rack-display" onMouseLeave={() => setHover(null)}>
+              <div className="rack-display" role="region" aria-label="Browse hanging garments. Swipe sideways to explore on touch devices." tabIndex={compact ? 0 : undefined} onMouseLeave={() => { if (!compact) setHover(null); }}>
                 <div className="rack-rail" aria-hidden="true"/>
                 <div className="rack-garments">
                   {products.map((product, index) => {
@@ -106,20 +113,20 @@ export default function ProductSpotlight() {
                     return <motion.button type="button" key={product.id}
                       aria-label={'Inspect ' + product.name}
                       className={'rack-item' + (hovered ? ' is-expanded' : '')}
-                      onMouseEnter={() => setHover(index)} onFocus={() => setHover(index)}
+                      onMouseEnter={() => { if (!compact) setHover(index); }} onFocus={() => { if (!compact) setHover(index); }}
                       onClick={() => open(product.id)}
-                      layout transition={eased}
-                      animate={{ zIndex: hovered ? 20 : 10 - distance,
-                        x: shift, y: 0,
-                        flexGrow: hovered ? 1.65 : 1, opacity: hasHover && distance > 2 ? .75 : 1 }}
+                      layout={!compact} transition={eased}
+                      animate={{ zIndex: hovered && !compact ? 20 : 10 - distance,
+                        x: compact ? 0 : shift, y: 0,
+                        flexGrow: hovered && !compact ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
                       <Hanger/>
-                      <motion.div className="rack-garment-art" layoutId={'rack-product-' + product.id}
+                      <motion.div className="rack-garment-art" layoutId={compact ? undefined : 'rack-product-' + product.id}
                         transition={eased} style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
-                        animate={{ rotateY: hovered ? 0 : (index % 2 === 0 ? 73 : -72),
-                          scale: hovered ? 1.18 : 1 }}
+                        animate={{ rotateY: compact ? 0 : hovered ? 0 : (index % 2 === 0 ? 73 : -72),
+                          scale: compact ? 1 : hovered ? 1.18 : 1 }}
                       >
-                        <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
+                        <img src={faces.side && !hovered && !compact ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
                       </motion.div>
                     </motion.button>;
                   })}
@@ -129,7 +136,7 @@ export default function ProductSpotlight() {
                 <AnimatePresence mode="wait">
                   <motion.p key={preview?.id || 'prompt'} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: reducedMotion ? 0 : .22 }}>
-                    {preview ? preview.name : 'MOVE THROUGH THE RACK · SELECT A PIECE'}
+                    {preview ? preview.name : compact ? 'SWIPE TO BROWSE · TAP A GARMENT' : 'MOVE THROUGH THE RACK · SELECT A PIECE'}
                   </motion.p>
                 </AnimatePresence>
               </div>
@@ -140,7 +147,7 @@ export default function ProductSpotlight() {
       ) : (
         <motion.div key="focus-scene" className="rack-focus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: reducedMotion ? 0 : .35 }}
-          onTouchStart={e => { touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+          onTouchStart={e => { if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
           onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
           <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
           <div className="rack-ghost rack-ghost--left" aria-hidden="true"><img src={products[(activeIndex - 1 + products.length) % products.length]?.image_url} alt=""/></div>
@@ -150,11 +157,11 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={face === 'front' ? 'rack-product-' + chosen.id : undefined}
-                initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? -88 : 88, scale: .96 }}
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={!compact && face === 'front' ? 'rack-product-' + chosen.id : undefined}
+                initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 22 : 38), rotateY: compact ? 0 : face === 'back' ? -88 : 88, scale: compact ? 1 : .96 }}
                 animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? 88 : -88, scale: .97 }}
-                transition={{ duration: reducedMotion ? 0 : .52, ease: [.22, 1, .36, 1] }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 22 : 38), rotateY: compact ? 0 : face === 'back' ? 88 : -88, scale: compact ? 1 : .97 }}
+                transition={{ duration: reducedMotion ? 0 : compact ? .25 : .52, ease: [.22, 1, .36, 1] }}
               >
                 <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
               </motion.div>
