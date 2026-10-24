@@ -367,7 +367,7 @@ export default function HeroSection() {
               '0 0 14px #FF00FF, 0 0 40px #FF00FF, 0 0 80px rgba(255,0,255,0.5), -4px 0 0 rgba(0,245,255,0.4)',
               '0 0 10px #00F5FF, 0 0 30px #00F5FF, 0 0 60px rgba(0,245,255,0.5), 4px 0 0 rgba(255,0,255,0.4)']
 
-            }}
+            } : false}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               fontFamily: 'var(--font-heading)',
@@ -405,7 +405,7 @@ export default function HeroSection() {
               '0 0 8px 2px rgba(255,255,255,0.8)',
               '0 0 0px transparent']
 
-            }}
+            } : false}
             transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.6, ease: 'easeOut' }} />
 
           )}
