@@ -2,17 +2,19 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { getAvailableColorways, productColorLabel } from '@/lib/productVariants';
 import { useCurrency } from '@/components/wegottado/CurrencySelector';
 
 const sizesDefault = ['XS','S','M','L','XL','XXL'];
 const productImages = p => [...new Set([p?.front_image_url,p?.image_url,...(Array.isArray(p?.images) ? p.images : []),p?.back_image_url].filter(Boolean))];
-const familyName = name => String(name || '').split(/\s*[-–]\s*/)[0].toLowerCase().trim();
-const colorLabel = p => p.color_label || p.name.split(/\s*[-–]\s*/).slice(1).join(' - ') || p.name;
+const colorLabel = productColorLabel;
 
 export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { format } = useCurrency();
+  const queryClient = useQueryClient();
   const [product,setProduct] = useState(null);
   const [family,setFamily] = useState([]);
   const [loading,setLoading] = useState(true);
@@ -26,17 +28,25 @@ export default function ProductDetail() {
   useEffect(() => {
     let current = true;
     setLoading(true);setError('');setProduct(null);setSize('');setQuantity(1);setImageIndex(0);setAdded(false);
-    Promise.all([base44.entities.Product.get(productId),base44.entities.Product.filter({in_stock:true})])
+    Promise.all([base44.entities.Product.get(productId),queryClient.fetchQuery({
+      queryKey: ['wegottado', 'available-products'],
+      queryFn: async () => {
+        const result = await base44.entities.Product.filter({ in_stock: true });
+        const rows = Array.isArray(result) ? result : result?.items || [];
+        return rows.filter(p => p.id && p.name && p.image_url).slice(0, 12);
+      },
+      staleTime: 5 * 60_000,
+      gcTime: 15 * 60_000,
+    })])
       .then(([item, rows]) => {
         if (!current) return;
         if (!item) { setError('Product not found.'); return; }
         setProduct(item);
-        const list = Array.isArray(rows) ? rows : rows?.items || [];
-        setFamily(list.filter(p=> familyName(p.name) === familyName(item.name)));
+        setFamily(getAvailableColorways(rows, item));
       }).catch(()=>{if(current)setError('Unable to load this product.');})
       .finally(()=>{if(current)setLoading(false);});
     return ()=>{current=false;};
-  },[productId]);
+  },[productId, queryClient]);
   const images = useMemo(()=>productImages(product),[product]);
   const sizes = product?.sizes?.length ? product.sizes : sizesDefault;
   const soldOut = product?.sold_out_sizes || [];
