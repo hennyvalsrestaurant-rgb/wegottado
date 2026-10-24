@@ -6,7 +6,9 @@
 .rack-wordmark span{font-size:8px;vertical-align:top;letter-spacing:normal}
 .rack-scene,.rack-focus{min-height:calc(100svh - 90px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 18px 70px}
 .rack-loading{display:flex;align-items:center;justify-content:center;min-height:48vh;color:#777;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
-.rack-display{position:relative;display:block;width:min(1030px,94vw);height:clamp(290px,53vh,570px);perspective:1200px;padding:0}
+.rack-display-wrap{position:relative;width:min(1030px,94vw);flex-shrink:0}
+.rack-mobile-stationary-rail{display:none}
+.rack-display{position:relative;display:block;width:100%;height:clamp(290px,53vh,570px);perspective:1200px;padding:0}
 .rack-rail{position:absolute;z-index:2;top:var(--rack-rail-y);left:0;right:0;height:3px;border-radius:4px;background:linear-gradient(180deg,#ddd,#797b78 45%,#e8e9e4);box-shadow:0 2px 1px #0001}
 .rack-rail::before,.rack-rail::after{content:'';position:absolute;top:-4px;width:8px;height:10px;border:1px solid #bcbfbb;border-radius:2px;background:#f7f7f5}.rack-rail::before{left:-7px}.rack-rail::after{right:-7px}
 .rack-garments{position:absolute;z-index:3;top:var(--rack-rail-y);left:var(--rack-rail-inset);right:var(--rack-rail-inset);display:flex;align-items:flex-start;justify-content:center;height:calc(100% - var(--rack-rail-y));padding:0}
@@ -83,6 +85,8 @@
   .rack-experience { overflow-x:clip; overflow-y:visible; }
   .rack-topbar { min-height:70px; padding:12px clamp(14px,3vw,28px); }
   .rack-scene { min-height:calc(100svh - 70px); padding:24px 10px 55px; }
+  .rack-display-wrap{width:100%;--stationary-rail-y:24px}
+  .rack-mobile-stationary-rail{display:block;position:absolute;z-index:10;pointer-events:none;top:var(--stationary-rail-y);left:12px;right:12px;height:3px;border-radius:3px;background:linear-gradient(180deg,#ddd,#797b78 45%,#e8e9e4);box-shadow:0 2px 1px #0001}
   .rack-display {
     --rack-rail-y:24px; --rack-rail-inset:0px;
     --rack-item-width:clamp(150px,24vw,192px);
@@ -94,10 +98,7 @@
     scrollbar-width:thin; scrollbar-color:#b9b9b9 transparent;
     scroll-snap-type:x proximity; touch-action:pan-x pan-y;
   }
-  .rack-rail {
-    position:sticky; top:0; left:0; right:auto;
-    width:100%; height:3px; margin:0; z-index:2;
-  }
+  .rack-rail { visibility:hidden; position:relative;top:auto;left:auto;right:auto;width:100%;height:3px;margin:0; }
   .rack-garments {
     position:relative; top:auto; left:auto; right:auto;
     width:max-content; min-width:100%; height:calc(100% - 3px);
@@ -146,6 +147,7 @@
   .rack-toplink { font-size:9px; }
   .rack-wordmark { font-size:17px; }
   .rack-scene { min-height:calc(100svh - 64px); padding:16px 0 52px; }
+  .rack-display-wrap{--stationary-rail-y:22px}
   .rack-display { --rack-rail-y:22px; --rack-item-width:clamp(130px,38vw,160px); height:clamp(260px,46svh,355px); }
   .rack-garments { padding:0 max(8px,calc((100vw - var(--rack-item-width))/2)); }
   .rack-item { flex-basis:var(--rack-item-width) !important; width:var(--rack-item-width); }
