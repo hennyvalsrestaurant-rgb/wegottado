@@ -54,7 +54,8 @@
 .rack-color-choice.is-light .rack-tag-card{border-color:#aaa}
 .rack-color-choice:focus-visible{outline:2px solid #202020;outline-offset:2px;border-radius:4px}
 .rack-color-choice:hover .rack-tag-card{box-shadow:inset 1px 1px 3px #fff7,0 6px 12px #0003}
-.rack-color-choice.is-selected .rack-tag-cord{height:35px}
+/* Keep cord geometry fixed when changing colorways so tags never push neighboring elements. */
+.rack-color-choice.is-selected .rack-tag-cord{height:30px}
 
 .rack-availability--focus{margin-top:12px;background:#f9f9f7}
 .rack-count{font-size:10px;letter-spacing:.16em;margin-top:12px;color:#888}
@@ -80,7 +81,7 @@
  .rack-tag-cord{height:24px}
  .rack-tag-card{width:26px;height:72px;padding:11px 2px 4px}
  .rack-tag-text{font-size:6.5px;letter-spacing:0}
- .rack-color-choice.is-selected .rack-tag-cord{height:28px}
+ .rack-color-choice.is-selected .rack-tag-cord{height:24px}
 }
 /* Touch/tablet showroom: browse real-sized garments horizontally instead of squeezing into five narrow columns. */
 @media (max-width:1023px), (hover:none) {
@@ -140,7 +141,8 @@
   .rack-color-choice{flex-basis:40px;width:40px;min-height:120px;min-width:40px}
   .rack-tag-card{width:31px;height:84px}
   .rack-tag-text{font-size:7px}
-  .rack-ghost { display:none; }
+  /* Match desktop's softly visible neighboring garments, without blocking taps. */
+  .rack-ghost { display:block; opacity:.08; filter:blur(5px); width:clamp(75px,11vw,115px); top:27%; }
   .rack-ticker { position:absolute; min-height:28px; }
 }
 
