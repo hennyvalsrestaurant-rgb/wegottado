@@ -55,7 +55,7 @@ export default function ProductSpotlight() {
   const [direction, setDirection] = useState(1);
   const [centerIndex, setCenterIndex] = useState(0);
   const rackScrollRef = useRef(null);
-  const scrollFrameRef = useRef(null);
+  const settleTimerRef = useRef(null);
   const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px), (hover: none)').matches);
 
   useEffect(() => {
@@ -71,9 +71,13 @@ export default function ProductSpotlight() {
   const updateRackCenter = useCallback(() => {
     const rail = rackScrollRef.current;
     if (!rail || !compact) return;
-    if (scrollFrameRef.current != null) return;
-    scrollFrameRef.current = requestAnimationFrame(() => {
-      scrollFrameRef.current = null;
+    // Commit the focused garment only when momentum scrolling has settled.
+    // Updating 3D rotation during every scroll frame caused visible oscillation
+    // around the midpoint on iOS and Android touchscreens.
+    if (settleTimerRef.current != null) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      settleTimerRef.current = null;
+      if (rackScrollRef.current !== rail) return;
       const midpoint = rail.scrollLeft + rail.clientWidth / 2;
       const items = rail.querySelectorAll('.rack-item');
       let best = 0;
@@ -84,7 +88,7 @@ export default function ProductSpotlight() {
         if (distance < closest) { closest = distance; best = index; }
       });
       setCenterIndex(previous => previous === best ? previous : best);
-    });
+    }, 150);
   }, [compact]);
   const browseRack = useCallback(delta => {
     if (!products.length) return;
@@ -94,7 +98,7 @@ export default function ProductSpotlight() {
     const item = rail?.querySelectorAll('.rack-item')[next];
     if (rail && item) rail.scrollTo({ left: item.offsetLeft + item.offsetWidth / 2 - rail.clientWidth / 2, behavior: reducedMotion ? 'auto' : 'smooth' });
   }, [centerIndex, products.length, reducedMotion]);
-  useEffect(() => () => { if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current); }, []);
+  useEffect(() => () => { if (settleTimerRef.current != null) clearTimeout(settleTimerRef.current); }, []);
   const { format } = useCurrency();
   const activeIndex = useMemo(() => products.findIndex(p => p.id === selected), [products, selected]);
   const chosen = activeIndex < 0 ? null : products[activeIndex];
@@ -102,6 +106,8 @@ export default function ProductSpotlight() {
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
   const variants = useMemo(() => getAvailableColorways(products, chosen), [chosen, products]);
   const open = useCallback((id) => {
+    if (settleTimerRef.current != null) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = null;
     const index = products.findIndex(product => product.id === id);
     if (index >= 0) setCenterIndex(index);
     setSelected(id);
@@ -131,7 +137,7 @@ export default function ProductSpotlight() {
     return () => window.removeEventListener('keydown', keydown);
   }, [selected, step, close]);
 
-  const eased = reducedMotion ? { duration: 0.01 } : compact ? { duration: .28, ease: 'easeOut' } : spring;
+  const eased = reducedMotion ? { duration: 0.01 } : compact ? { duration: .24, ease: [0.22, 1, 0.36, 1] } : spring;
   const productActive = chosen != null;
   const highlightedIndex = compact ? centerIndex : hover;
   const preview = highlightedIndex != null ? products[highlightedIndex] : null;
@@ -170,11 +176,11 @@ export default function ProductSpotlight() {
                         x: compact ? 0 : shift, y: 0,
                         flexGrow: compact ? 0 : hovered ? 1.65 : 1, opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
-                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: compact && hovered ? -3 : 0 }} transition={eased}><Hanger/></motion.div>
-                      <motion.div className="rack-garment-art" layoutId={'rack-product-' + product.id}
+                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: 0 }} transition={eased}><Hanger/></motion.div>
+                      <motion.div className="rack-garment-art" layoutId={!compact ? 'rack-product-' + product.id : undefined}
                         transition={eased} style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
-                        animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 62 : -62) : (index % 2 === 0 ? 73 : -72),
-                          scale: hovered ? (compact ? 1.15 : 1.18) : 1 }}
+                        animate={{ rotateY: hovered ? 0 : compact ? (index % 2 === 0 ? 48 : -48) : (index % 2 === 0 ? 73 : -72),
+                          scale: hovered ? (compact ? 1.06 : 1.18) : 1 }}
                       >
                         <img src={faces.side && !hovered ? faces.side : faces.front} alt="" loading={index < 2 ? 'eager' : 'lazy'} decoding="async" draggable="false"/>
                       </motion.div>
@@ -201,7 +207,7 @@ export default function ProductSpotlight() {
         </motion.div>
       ) : (
         <motion.div key="focus-scene" className="rack-focus" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          transition={{ duration: reducedMotion ? 0 : .35 }}
+          transition={{ duration: reducedMotion ? 0 : compact ? .18 : .35 }}
           onTouchStart={e => { touchRef.current = null; if (e.target.closest('button, a')) return; touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
           onTouchEnd={e => { if (!touchRef.current) return; const dx = e.changedTouches[0].clientX - touchRef.current.x; const dy = e.changedTouches[0].clientY - touchRef.current.y; touchRef.current = null; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1); }}>
           <button type="button" onClick={close} className="rack-close">CLOSE <X size={15}/></button>
@@ -212,7 +218,7 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={face === 'front' ? 'rack-product-' + chosen.id : undefined}
+              <motion.div key={chosen.id + '-' + face} className="rack-focus-image" layoutId={!compact && face === 'front' ? 'rack-product-' + chosen.id : undefined}
                 initial={reducedMotion ? false : { opacity: 0, x: direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? -68 : -88) : (compact ? 68 : 88), scale: .96 }}
                 animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
                 exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * (compact ? 22 : 38), rotateY: face === 'back' ? (compact ? 68 : 88) : (compact ? -68 : -88), scale: .97 }}
