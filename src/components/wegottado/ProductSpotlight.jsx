@@ -71,8 +71,9 @@ export default function ProductSpotlight() {
     if (!products.length) return;
     const next = Math.max(0, Math.min(products.length - 1, centerIndex + delta));
     setCenterIndex(next);
-    const item = rackScrollRef.current?.querySelectorAll('.rack-item')[next];
-    item?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+    const rail = rackScrollRef.current;
+    const item = rail?.querySelectorAll('.rack-item')[next];
+    if (rail && item) rail.scrollTo({ left: item.offsetLeft + item.offsetWidth / 2 - rail.clientWidth / 2, behavior: reducedMotion ? 'auto' : 'smooth' });
   }, [centerIndex, products.length, reducedMotion]);
   useEffect(() => () => { if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current); }, []);
   const { format } = useCurrency();
@@ -102,8 +103,9 @@ export default function ProductSpotlight() {
   const close = useCallback(() => { setSelected(null); setFace('front'); setHover(null); }, []);
   useEffect(() => {
     if (selected || !compact || !products.length || !rackScrollRef.current) return;
-    const item = rackScrollRef.current.querySelectorAll('.rack-item')[centerIndex];
-    item?.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+    const rail = rackScrollRef.current;
+    const item = rail.querySelectorAll('.rack-item')[centerIndex];
+    if (item) rail.scrollTo({ left: item.offsetLeft + item.offsetWidth / 2 - rail.clientWidth / 2, behavior: 'auto' });
   // Only restore the last viewed rack position when returning from a product.
   }, [selected, compact, products.length]);
   const step = useCallback(delta => {
