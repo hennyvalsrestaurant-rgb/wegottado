@@ -111,9 +111,8 @@
     flex:0 0 var(--rack-item-width) !important;
     width:var(--rack-item-width); min-width:0; max-width:none;
     scroll-snap-align:center; touch-action:pan-x pan-y;
-    contain:layout style;
   }
-  .rack-garment-art { backface-visibility:hidden; -webkit-backface-visibility:hidden; contain:paint; }
+  .rack-garment-art { backface-visibility:hidden; -webkit-backface-visibility:hidden; }
   .rack-garment-inner,.rack-focus-inner { will-change:transform; }
   .rack-hanger-motion { backface-visibility:hidden; }
   .rack-color-choice.is-selected .rack-tag-cord { height:30px; }
