@@ -128,7 +128,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-40 flex max-h-dvh flex-col items-center justify-center gap-4 overflow-y-auto px-5 py-24 sm:gap-6"
+            className="fixed inset-0 z-40 flex max-h-dvh flex-col items-center justify-start gap-4 overflow-y-auto px-5 py-24 sm:justify-center sm:gap-6"
             style={{ background: 'rgba(8,8,8,0.97)', backdropFilter: 'blur(30px)' }}
           >
             {NAV_LINKS.map((link, i) => (
