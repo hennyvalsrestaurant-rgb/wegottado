@@ -52,6 +52,7 @@ export default function ProductSpotlight() {
   const [hover, setHover] = useState(null);
   const [selected, setSelected] = useState(null);
   const [face, setFace] = useState('front');
+  const [colorSwitching, setColorSwitching] = useState(false);
   const [direction, setDirection] = useState(1);
   const [centerIndex, setCenterIndex] = useState(0);
   const rackScrollRef = useRef(null);
@@ -105,7 +106,8 @@ export default function ProductSpotlight() {
   const chosenFaces = faceImages(chosen);
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
   const variants = useMemo(() => getAvailableColorways(products, chosen), [chosen, products]);
-  const open = useCallback((id) => {
+  const open = useCallback((id, fromColor = false) => {
+    setColorSwitching(fromColor);
     if (settleTimerRef.current != null) clearTimeout(settleTimerRef.current);
     settleTimerRef.current = null;
     const index = products.findIndex(product => product.id === id);
@@ -113,7 +115,7 @@ export default function ProductSpotlight() {
     setSelected(id);
     setFace('front');
   }, [products]);
-  const close = useCallback(() => { setSelected(null); setFace('front'); setHover(null); }, []);
+  const close = useCallback(() => { setColorSwitching(false); setSelected(null); setFace('front'); setHover(null); }, []);
   useEffect(() => {
     if (selected || !compact || !products.length || !rackScrollRef.current) return;
     const rail = rackScrollRef.current;
@@ -224,7 +226,7 @@ export default function ProductSpotlight() {
             <Hanger large/>
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
-                layoutId={!reducedMotion && face === 'front' ? 'rack-product-' + chosen.id : undefined}
+                layoutId={!reducedMotion && !colorSwitching && face === 'front' ? 'rack-product-' + chosen.id : undefined}
                 transition={eased}>
                 <motion.div className="rack-focus-inner"
                   initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? -88 : 88, scale: .96 }}
@@ -255,7 +257,7 @@ export default function ProductSpotlight() {
                       style={{ '--tag-fill': colorTagFill(label) }}
                       aria-label={'Select ' + label + ' color'} aria-pressed={current}
                       title={label}
-                      onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id); } }}
+                      onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id, true); } }}
                       initial={reducedMotion ? false : { opacity: 0, y: -15, rotate: -7 }}
                       animate={{ opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
                       whileTap={reducedMotion ? undefined : { scale: .94 }}
