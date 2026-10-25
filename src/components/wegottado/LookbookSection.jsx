@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import useCompactMotion from '@/hooks/useCompactMotion';
 import { base44 } from '@/api/base44Client';
 
 const DEFAULTS = {
@@ -10,6 +11,7 @@ const DEFAULTS = {
 
 export default function LookbookSection() {
   const sectionRef = useRef(null);
+  const compact = useCompactMotion();
   const titleRef = useRef(null);
   const titleInView = useInView(titleRef, { once: true, margin: '-100px' });
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
@@ -40,7 +42,7 @@ export default function LookbookSection() {
       </div>
 
       {/* Wide cinematic image */}
-      <motion.div className="relative mb-8 overflow-hidden" style={{ y: wideY }}>
+      <motion.div className="relative mb-8 overflow-hidden" style={{ y: compact ? 0 : wideY }}>
         <div className="relative" style={{ paddingTop: '42%' }}>
           <img src={images[0]} alt="Lookbook wide" className="absolute inset-0 w-full h-full object-contain" />
           <div className="absolute top-0 left-0 right-0 h-8 md:h-12" style={{ background: 'var(--obsidian)' }} />
@@ -53,7 +55,7 @@ export default function LookbookSection() {
 
       {/* Two column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: leftY }}>
+        <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: compact ? 0 : leftY }}>
           <img src={images[1]} alt="Look 01" className="w-full h-[500px] md:h-[650px] object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 transition-opacity duration-700" style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.8) 0%, transparent 50%)' }} />
           <div className="absolute bottom-8 left-8">
@@ -61,7 +63,7 @@ export default function LookbookSection() {
             <span className="heading-display text-2xl" style={{ color: 'var(--carrara)' }}>The Golden Thread</span>
           </div>
         </motion.div>
-        <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: rightY }}>
+        <motion.div className="relative overflow-hidden group cursor-hover" style={{ y: compact ? 0 : rightY }}>
           <img src={images[2]} alt="Look 02" className="w-full h-[500px] md:h-[650px] object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 transition-opacity duration-700" style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.8) 0%, transparent 50%)' }} />
           <div className="absolute bottom-8 left-8">

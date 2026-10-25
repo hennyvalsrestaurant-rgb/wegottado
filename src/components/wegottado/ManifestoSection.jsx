@@ -1,10 +1,12 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import useCompactMotion from '@/hooks/useCompactMotion';
 
 const FABRIC_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/ecf85b5d2_generated_f889f1cf.png";
 
 export default function ManifestoSection() {
   const sectionRef = useRef(null);
+  const compact = useCompactMotion();
   const textRef = useRef(null);
   const isInView = useInView(textRef, { once: true, margin: '-100px' });
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
@@ -15,7 +17,7 @@ export default function ManifestoSection() {
   return (
     <section ref={sectionRef} className="relative py-32 md:py-48 overflow-hidden">
       {/* Parallax marble background */}
-      <motion.div className="absolute inset-0" style={{ y: bgY }}>
+      <motion.div className="absolute inset-0" style={{ y: compact ? 0 : bgY }}>
         <div className="absolute inset-0 marble-bg opacity-30" />
         <img
           src={FABRIC_IMG}
@@ -27,7 +29,7 @@ export default function ManifestoSection() {
       {/* Gold line separator */}
       <motion.div
         className="absolute top-0 left-1/2 -translate-x-1/2 h-px"
-        style={{ width: lineWidth, background: 'var(--gold)', opacity: 0.3 }}
+        style={{ width: compact ? '100%' : lineWidth, background: 'var(--gold)', opacity: 0.3 }}
       />
 
       <div className="relative z-10 max-w-4xl mx-auto px-8 md:px-16 text-center" ref={textRef}>
@@ -78,7 +80,7 @@ export default function ManifestoSection() {
       {/* Bottom gold line */}
       <motion.div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px"
-        style={{ width: lineWidth, background: 'var(--gold)', opacity: 0.3 }}
+        style={{ width: compact ? '100%' : lineWidth, background: 'var(--gold)', opacity: 0.3 }}
       />
     </section>
   );

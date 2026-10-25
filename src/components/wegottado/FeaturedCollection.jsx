@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import useCompactMotion from '@/hooks/useCompactMotion';
 import { base44 } from '@/api/base44Client';
 
 const DEFAULT_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/0f2fef579_generated_d7ac6c34.png";
@@ -28,6 +29,7 @@ export default function FeaturedCollection() {
   }, []);
 
   const sectionRef = useRef(null);
+  const compact = useCompactMotion();
   const textRef = useRef(null);
   const isInView = useInView(textRef, { once: true, margin: '-100px' });
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
@@ -40,7 +42,7 @@ export default function FeaturedCollection() {
       <div className="px-6 md:px-[10vw]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
           {/* Image side */}
-          <motion.div className="relative" style={{ y: imgY }}>
+          <motion.div className="relative" style={{ y: compact ? 0 : imgY }}>
             <div className="relative overflow-hidden glossy-reflection">
               <img
                 src={imgSrc}
@@ -67,7 +69,7 @@ export default function FeaturedCollection() {
           </motion.div>
 
           {/* Text side */}
-          <motion.div ref={textRef} className="relative" style={{ y: textY }}>
+          <motion.div ref={textRef} className="relative" style={{ y: compact ? 0 : textY }}>
             <motion.span
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : {}}

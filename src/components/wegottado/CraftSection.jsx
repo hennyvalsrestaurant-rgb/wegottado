@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import useCompactMotion from '@/hooks/useCompactMotion';
 import { base44 } from '@/api/base44Client';
 
 const DEFAULT_IMG = "https://media.base44.com/images/public/6a401981c451758a55e9b4f5/a9b25a488_generated_09c8cd49.png";
@@ -13,6 +14,7 @@ const CRAFT_STATS = [
 
 export default function CraftSection() {
   const sectionRef = useRef(null);
+  const compact = useCompactMotion();
   const textRef = useRef(null);
   const isInView = useInView(textRef, { once: true, margin: '-100px' });
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
@@ -54,7 +56,7 @@ export default function CraftSection() {
               ))}
             </div>
           </div>
-          <motion.div className="relative" style={{ y: imgY }}>
+          <motion.div className="relative" style={{ y: compact ? 0 : imgY }}>
             <div className="relative overflow-hidden">
               <img src={craftImg} alt="Master craftsman" className="w-full h-[400px] md:h-[600px] object-contain" />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(8,8,8,0.4), transparent 40%)' }} />

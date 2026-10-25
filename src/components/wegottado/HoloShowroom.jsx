@@ -25,6 +25,7 @@ export default function HoloShowroom() {
   const lastScrollY = useRef(0);
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches) return undefined;
     const onScroll = () => {
       setFiltersVisible(false);
       clearTimeout(scrollTimerRef.current);
