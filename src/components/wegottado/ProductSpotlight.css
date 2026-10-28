@@ -32,7 +32,8 @@
 .rack-focus{min-height:calc(100svh - 90px);padding-top:15px;justify-content:center}
 .rack-close{position:absolute;top:0;right:clamp(16px,3vw,50px);z-index:32;display:flex;align-items:center;gap:7px;border:0;background:transparent;color:#222;padding:12px;font-size:11px;letter-spacing:.15em}
 .rack-focus-center{position:relative;z-index:11;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(700px,70vw);padding:0 0 22px;text-align:center}
-.rack-focus-image{height:clamp(280px,49svh,530px);width:min(460px,75vw);display:flex;align-items:flex-start;justify-content:center;perspective:1100px;transform-style:preserve-3d;filter:drop-shadow(0 18px 12px #00000012)}
+.rack-focus-media{position:relative;flex:0 0 auto;height:clamp(280px,49svh,530px);width:min(460px,100%);perspective:1100px}
+.rack-focus-image{position:absolute;inset:0;height:100%;width:100%;display:flex;align-items:flex-start;justify-content:center;transform-style:preserve-3d;filter:drop-shadow(0 18px 12px #00000012);pointer-events:none}
 .rack-focus-inner{width:100%;height:100%;transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .rack-focus-image img{height:100%;max-width:100%;width:100%;object-fit:contain;object-position:top center;mix-blend-mode:multiply;user-select:none}
 .rack-product-name{font-size:clamp(12px,1.5vw,17px);font-weight:600;line-height:1.3;letter-spacing:.035em;margin:3px auto 0;max-width:500px}
@@ -71,7 +72,7 @@
  .rack-rail{left:12px;right:12px}
  .rack-hanger{width:36px;height:auto;margin-top:-3px}.rack-garment-art{height:clamp(195px,32svh,340px)}
  .rack-item{min-width:20px}.rack-caption{font-size:9px;height:48px;padding:0 10px}
- .rack-focus-center{width:calc(100vw - 110px)}.rack-focus-image{width:100%;height:clamp(250px,42svh,380px)}
+ .rack-focus-center{width:calc(100vw - 110px)}.rack-focus-media{width:100%;height:clamp(250px,42svh,380px)}
  .rack-arrow{width:38px;height:38px}.rack-arrow--left{left:7px}.rack-arrow--right{right:7px}
  .rack-ghost{width:90px;top:25%;opacity:.09}.rack-ghost--left{left:10%}.rack-ghost--right{right:10%}
  .rack-product-name{font-size:13px}.rack-face-switch button{min-width:62px}
@@ -131,15 +132,20 @@
     padding:62px 0 65px; justify-content:center;
   }
   .rack-focus-center { width:calc(100vw - 118px); max-width:550px; padding:0; }
-  .rack-focus-image { height:clamp(230px,43svh,460px); width:100%; max-width:430px; }
+  .rack-focus-media { height:clamp(230px,43svh,460px); width:100%; max-width:430px; }
   .rack-close { top:7px; right:14px; min-height:44px; }
   .rack-arrow { width:46px; height:46px; top:42%; }
   .rack-arrow--left { left:10px; }
   .rack-arrow--right { right:10px; }
   .rack-face-switch button { min-height:38px; min-width:74px; }
-  .rack-color-tags{right:0;top:30px;gap:5px;max-width:none}
-  .rack-color-choice{flex-basis:40px;width:40px;min-height:120px;min-width:40px}
-  .rack-tag-card{width:31px;height:84px}
+  /* Give colorways their own dedicated row. No absolute tag may overlap the garment. */
+  .rack-color-tags{position:relative;inset:auto;right:auto;top:auto;left:auto;bottom:auto;z-index:22;
+    align-self:center;justify-content:center;align-items:flex-start;flex-wrap:nowrap;
+    gap:12px;max-width:100%;width:max-content;min-height:110px;
+    margin:10px auto 0;pointer-events:auto;overflow:visible}
+  .rack-color-choice{flex:0 0 46px;width:46px;min-height:104px;min-width:46px;filter:none;transform-origin:50% 0}
+  .rack-tag-cord,.rack-color-choice.is-selected .rack-tag-cord{height:21px}
+  .rack-tag-card{width:33px;height:78px}
   .rack-tag-text{font-size:7px}
   /* Match desktop's softly visible neighboring garments, without blocking taps. */
   .rack-ghost { display:block; opacity:.08; filter:blur(5px); width:clamp(75px,11vw,115px); top:27%; }
@@ -162,18 +168,17 @@
   .rack-scene > .rack-availability { margin-top:8px; }
   .rack-focus { min-height:calc(100svh - 64px); padding:60px 0 50px; }
   .rack-focus-center { width:calc(100vw - 104px); }
-  .rack-focus-image { height:clamp(195px,34svh,335px); width:100%; }
+  .rack-focus-media { height:clamp(195px,34svh,335px); width:100%; }
   .rack-hanger--large { width:70px; height:40px; margin-bottom:-8px; }
   .rack-product-name { font-size:12px; line-height:1.4; margin-top:6px; }
   .rack-arrow { width:44px; height:44px; top:34%; }
   .rack-arrow--left { left:4px; }
   .rack-arrow--right { right:4px; }
-  .rack-color-tags{right:0;top:23px;gap:2px}
-  .rack-color-choice{flex-basis:35px;width:35px;min-height:99px}
-  .rack-color-choice.is-selected .rack-tag-cord{height:23px}
-  .rack-tag-cord{height:23px}
-  .rack-tag-card{width:25px;height:70px;padding:10px 2px 3px}
-  .rack-tag-text{font-size:6.2px;letter-spacing:0}
+  .rack-color-tags{position:relative;inset:auto;gap:14px;max-width:100%;min-height:84px;margin:7px auto 0}
+  .rack-color-choice{flex:0 0 44px;width:44px;min-width:44px;min-height:82px}
+  .rack-tag-cord,.rack-color-choice.is-selected .rack-tag-cord{height:17px}
+  .rack-tag-card{width:31px;height:62px;padding:10px 2px 3px}
+  .rack-tag-text{font-size:7px;letter-spacing:0}
   .rack-availability--focus { margin-top:10px; }
   .rack-count { margin-top:8px; }
 }
@@ -183,14 +188,14 @@
   .rack-display { height:270px; }
   .rack-garment-art { height:218px; }
   .rack-focus { min-height:530px; }
-  .rack-focus-image { height:235px; }
+  .rack-focus-media { height:235px; }
   /* Keep the exit action reachable when the product view exceeds a short landscape screen. */
   .rack-close{position:fixed;top:76px;right:12px;z-index:60;background:#f7f7f5ed;border-radius:6px}
-  .rack-color-tags{top:18px}
-  .rack-color-choice{min-height:84px}
-  .rack-tag-cord{height:16px}
-  .rack-tag-card{height:58px}
-  .rack-tag-text{font-size:6px}
+  .rack-color-tags{position:relative;top:auto;right:auto;min-height:75px;margin-top:5px}
+  .rack-color-choice{min-height:73px}
+  .rack-tag-cord,.rack-color-choice.is-selected .rack-tag-cord{height:14px}
+  .rack-tag-card{height:55px}
+  .rack-tag-text{font-size:6.5px}
 }
 @media (prefers-reduced-motion:reduce) {
   .rack-ticker-track { animation:none; }
