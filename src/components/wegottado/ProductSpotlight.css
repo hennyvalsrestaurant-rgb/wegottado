@@ -318,6 +318,8 @@
     margin-top:6px;
     max-width:100%;
   }
+  /* Ghost silhouettes change on color selection and can appear to shimmer on touch GPUs. */
+  .rack-focus .rack-ghost{display:none}
   .rack-ticker-track{animation-duration:38s}
   .rack-experience.is-spotlight .rack-ticker-track{animation-play-state:paused}
 }
