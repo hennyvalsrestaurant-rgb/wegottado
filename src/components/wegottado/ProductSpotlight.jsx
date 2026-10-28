@@ -193,11 +193,11 @@ export default function ProductSpotlight() {
                       onClick={() => open(product.id)}
                       layout={!compact} transition={eased}
                       animate={{ zIndex: hovered ? 20 : 10 - distance,
-                        x: shift, y: 0,
+                        x: compact ? 0 : shift, y: 0,
                         flexGrow: compact ? 0 : hovered ? 1.65 : 1,
-                        opacity: hasHover && distance > 2 ? .75 : 1 }}
+                        opacity: compact ? 1 : hasHover && distance > 2 ? .75 : 1 }}
                     >
-                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: compact && hovered ? -2 : 0 }} transition={eased}><Hanger/></motion.div>
+                      <motion.div className="rack-hanger-motion" aria-hidden="true" animate={{ rotateZ: 0 }} transition={eased}><Hanger/></motion.div>
                       <motion.div className="rack-garment-art" layoutId={!reducedMotion ? 'rack-product-' + product.id : undefined} transition={eased}>
                         <motion.div className="rack-garment-inner" style={{ transformOrigin: '50% 0', transformStyle: 'preserve-3d' }}
                           animate={{ rotateY: hovered ? 0 : (index % 2 === 0 ? 73 : -72), scale: hovered ? 1.18 : 1 }}
@@ -281,7 +281,7 @@ export default function ProductSpotlight() {
                       onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id, true); } }}
                       initial={reducedMotion || compact ? false : { opacity: 0, y: -15, rotate: -7 }}
                       animate={compact ? { opacity: 1, y: 0, rotate: 0 } : { opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
-                      whileTap={reducedMotion ? undefined : { scale: .96 }}
+                      whileTap={reducedMotion || compact ? undefined : { scale: .96 }}
                       transition={reducedMotion || compact ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
                       <span className="rack-tag-cord" aria-hidden="true" />
                       <span className="rack-tag-card"><span className="rack-tag-text">{label}</span></span>
