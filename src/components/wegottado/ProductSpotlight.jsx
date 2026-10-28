@@ -291,8 +291,10 @@ export default function ProductSpotlight() {
               </div>
             )}
             </div>
-            <motion.h2 key={chosen.id} className="rack-product-name"
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
+            <motion.h2 key={compact ? 'touch-product-name' : chosen.id} className="rack-product-name"
+              initial={compact ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: compact || reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
             <p className="rack-product-price">{formatMoney(format, chosen.price)}</p>
             <div className="rack-face-switch" role="group" aria-label="Product views">
               <button type="button" className={face === 'front' ? 'is-current' : ''} onClick={() => setFace('front')}>FRONT</button>
