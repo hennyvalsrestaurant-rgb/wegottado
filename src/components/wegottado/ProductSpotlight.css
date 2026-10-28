@@ -137,7 +137,7 @@
   .rack-arrow--left { left:10px; }
   .rack-arrow--right { right:10px; }
   .rack-face-switch button { min-height:38px; min-width:74px; }
-  .rack-color-tags{right:-6px;top:30px;gap:5px;max-width:none}
+  .rack-color-tags{right:0;top:30px;gap:5px;max-width:none}
   .rack-color-choice{flex-basis:40px;width:40px;min-height:120px;min-width:40px}
   .rack-tag-card{width:31px;height:84px}
   .rack-tag-text{font-size:7px}
@@ -168,7 +168,7 @@
   .rack-arrow { width:44px; height:44px; top:34%; }
   .rack-arrow--left { left:4px; }
   .rack-arrow--right { right:4px; }
-  .rack-color-tags{right:-26px;top:23px;gap:2px}
+  .rack-color-tags{right:0;top:23px;gap:2px}
   .rack-color-choice{flex-basis:35px;width:35px;min-height:99px}
   .rack-color-choice.is-selected .rack-tag-cord{height:23px}
   .rack-tag-cord{height:23px}
