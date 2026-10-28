@@ -238,7 +238,9 @@ export default function ProductSpotlight() {
           <button type="button" className="rack-arrow rack-arrow--left" onClick={() => step(-1)} aria-label="Previous garment"><ArrowLeft size={24}/></button>
           <button type="button" className="rack-arrow rack-arrow--right" onClick={() => step(1)} aria-label="Next garment"><ArrowRight size={24}/></button>
           <div className="rack-focus-center">
-            <Hanger large/>
+            <div className="rack-product-stage">
+              <div className="rack-product-garment">
+                <Hanger large/>
             <div className="rack-focus-media">
             {compact && colorSwitching ? (
               // One composited garment at a time while switching colors on touch.
@@ -264,15 +266,7 @@ export default function ProductSpotlight() {
             </AnimatePresence>
             )}
             </div>
-            <motion.h2 key={chosen.id} className="rack-product-name"
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
-            <p className="rack-product-price">{formatMoney(format, chosen.price)}</p>
-            <div className="rack-face-switch" role="group" aria-label="Product views">
-              <button type="button" className={face === 'front' ? 'is-current' : ''} onClick={() => setFace('front')}>FRONT</button>
-              <button type="button" className={face === 'back' ? 'is-current' : ''} disabled={!chosenFaces.back}
-                title={!chosenFaces.back ? 'Second product view not available' : undefined}
-                onClick={() => { if (chosenFaces.back) setFace('back'); }}>BACK</button>
-            </div>
+              </div>
             {variants.length > 1 && (
               <div className="rack-color-tags" role="group" aria-label="Available garment colors">
                 {variants.map((item, index) => {
@@ -296,6 +290,17 @@ export default function ProductSpotlight() {
                 })}
               </div>
             )}
+            </div>
+            <motion.h2 key={chosen.id} className="rack-product-name"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
+            <p className="rack-product-price">{formatMoney(format, chosen.price)}</p>
+            <div className="rack-face-switch" role="group" aria-label="Product views">
+              <button type="button" className={face === 'front' ? 'is-current' : ''} onClick={() => setFace('front')}>FRONT</button>
+              <button type="button" className={face === 'back' ? 'is-current' : ''} disabled={!chosenFaces.back}
+                title={!chosenFaces.back ? 'Second product view not available' : undefined}
+                onClick={() => { if (chosenFaces.back) setFace('back'); }}>BACK</button>
+            </div>
+
             <button type="button" className="rack-availability rack-availability--focus" onClick={() => navigate('/product/' + chosen.id)}>SEE AVAILABILITY <ArrowUpRight size={13}/></button>
             <p className="rack-count">{String(activeIndex + 1).padStart(2, '0')} / {String(products.length).padStart(2, '0')}</p>
           </div>
