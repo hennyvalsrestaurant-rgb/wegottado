@@ -90,7 +90,7 @@ export default function ProductSpotlight() {
         if (distance < closest) { closest = distance; best = index; }
       });
       setCenterIndex(previous => previous === best ? previous : best);
-    }, 150);
+    }, 260);
   }, [compact]);
   const browseRack = useCallback(delta => {
     if (!products.length) return;
@@ -159,7 +159,7 @@ export default function ProductSpotlight() {
   }, [productActive, compact]);
   const highlightedIndex = compact ? centerIndex : hover;
   const preview = highlightedIndex != null ? products[highlightedIndex] : null;
-  return <section ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
+  return <section ref={sectionRef} className={"rack-experience" + (productActive ? " is-spotlight" : "")} aria-label="WEGOTTADO interactive fashion rack">
     <header className="rack-topbar">
       <a href="#manifesto" className="rack-toplink">ABOUT</a>
       <button type="button" onClick={close} className="rack-wordmark" aria-label="Return to WEGOTTADO rack">WEGOTTADO<span aria-hidden="true">®</span></button>

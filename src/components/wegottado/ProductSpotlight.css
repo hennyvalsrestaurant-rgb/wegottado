@@ -206,3 +206,146 @@
   .rack-display { scroll-behavior:auto; }
   .rack-focus-static-img{animation:none}
 }
+
+/* Product and its color tags form one scene. Desktop keeps its original
+   floating tags; touch screens reserve a real adjacent column. */
+.rack-product-stage{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+}
+.rack-product-garment{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width:0;
+  width:100%;
+}
+@media (max-width:1023px), (hover:none){
+  .rack-focus{
+    justify-content:flex-start;
+    align-items:center;
+    padding-top:clamp(58px,8svh,82px);
+  }
+  .rack-focus-center{
+    width:min(calc(100vw - 70px),600px);
+    max-width:600px;
+    flex:0 0 auto;
+    padding:0 0 20px;
+  }
+  .rack-product-stage{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) clamp(60px,18vw,100px);
+    align-items:start;
+    justify-items:stretch;
+    column-gap:0;
+    width:100%;
+  }
+  .rack-product-garment{
+    grid-column:1;
+    grid-row:1;
+    width:100%;
+    min-width:0;
+  }
+  .rack-product-stage .rack-focus-media{
+    width:100%;
+    max-width:430px;
+  }
+  /* The tags are beside the upper-right shoulder, but never on top of
+     the garment or its image area, even as the color changes. */
+  .rack-product-stage .rack-color-tags{
+    grid-column:2;
+    grid-row:1;
+    position:relative;
+    inset:auto;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    align-items:center;
+    justify-content:flex-start;
+    gap:3px;
+    width:100%;
+    max-width:100%;
+    height:auto;
+    min-height:0;
+    margin:0;
+    padding:clamp(18px,4svh,36px) 0 0;
+    pointer-events:auto;
+    overflow:visible;
+    z-index:12;
+  }
+  .rack-product-stage .rack-color-choice{
+    position:relative;
+    flex:0 0 auto;
+    box-sizing:border-box;
+    width:46px;
+    height:clamp(66px,9svh,92px);
+    min-height:0;
+    min-width:46px;
+    margin:0;
+    padding:0;
+    transform:none;
+    filter:none;
+    touch-action:manipulation;
+  }
+  .rack-product-stage .rack-tag-cord,
+  .rack-product-stage .rack-color-choice.is-selected .rack-tag-cord{
+    height:clamp(12px,2svh,18px);
+    flex:0 0 auto;
+  }
+  .rack-product-stage .rack-tag-card{
+    box-sizing:border-box;
+    width:32px;
+    height:calc(100% - clamp(12px,2svh,18px) - 2px);
+    min-height:44px;
+    padding:10px 3px 4px;
+    overflow:hidden;
+  }
+  .rack-product-stage .rack-tag-text{
+    max-height:100%;
+    overflow:hidden;
+    font-size:6.5px;
+    line-height:1;
+    letter-spacing:0;
+  }
+  .rack-product-name{
+    min-height:2.8em;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:6px;
+    max-width:100%;
+  }
+  .rack-ticker-track{animation-duration:38s}
+  .rack-experience.is-spotlight .rack-ticker-track{animation-play-state:paused}
+}
+@media (max-width:600px){
+  .rack-focus{
+    padding-top:54px;
+  }
+  .rack-focus-center{
+    width:calc(100vw - 70px);
+    padding:0 0 12px;
+  }
+  .rack-product-stage{
+    grid-template-columns:minmax(0,1fr) clamp(60px,18vw,74px);
+  }
+  .rack-product-stage .rack-color-choice{
+    width:44px;
+    min-width:44px;
+    height:clamp(62px,9svh,84px);
+  }
+  .rack-product-stage .rack-tag-card{width:30px}
+  .rack-product-stage .rack-color-tags{padding-top:clamp(15px,3svh,25px);gap:3px}
+}
+@media (max-height:650px) and (orientation:landscape){
+  .rack-focus{min-height:540px;padding-top:58px}
+  .rack-focus-center{padding-bottom:14px}
+  .rack-product-stage .rack-color-tags{padding-top:13px}
+  .rack-product-stage .rack-color-choice{height:62px}
+  .rack-product-stage .rack-tag-cord,
+  .rack-product-stage .rack-color-choice.is-selected .rack-tag-cord{height:12px}
+  .rack-product-stage .rack-tag-card{height:48px}
+}
