@@ -240,6 +240,15 @@ export default function ProductSpotlight() {
           <div className="rack-focus-center">
             <Hanger large/>
             <div className="rack-focus-media">
+            {compact && colorSwitching ? (
+              // One composited garment at a time while switching colors on touch.
+              // Cross-fading multiple full-size garment layers caused Safari flicker.
+              <div className="rack-focus-image rack-focus-image--color-static">
+                <img key={chosen.id + '-' + face} className="rack-focus-static-img"
+                  src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')}
+                  draggable="false" decoding="sync" />
+              </div>
+            ) : (
             <AnimatePresence initial={false} custom={direction} mode="sync">
               <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
                 layoutId={!reducedMotion && !colorSwitching && face === 'front' ? 'rack-product-' + chosen.id : undefined}
@@ -253,6 +262,7 @@ export default function ProductSpotlight() {
                 </motion.div>
               </motion.div>
             </AnimatePresence>
+            )}
             </div>
             <motion.h2 key={chosen.id} className="rack-product-name"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
