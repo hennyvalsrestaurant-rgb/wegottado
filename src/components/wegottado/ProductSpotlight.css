@@ -287,6 +287,7 @@
     margin:0;
     padding:0;
     transform:none;
+    left:-6px;
     filter:none;
     touch-action:manipulation;
   }
