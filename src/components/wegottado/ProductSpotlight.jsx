@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, ArrowUpRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -68,6 +68,7 @@ export default function ProductSpotlight() {
   const reducedMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const touchRef = useRef(null);
+  const wasShowingProductRef = useRef(false);
   const navigate = useNavigate();
   const updateRackCenter = useCallback(() => {
     const rail = rackScrollRef.current;
@@ -106,6 +107,11 @@ export default function ProductSpotlight() {
   const chosenFaces = faceImages(chosen);
   const visibleImage = face === 'back' && chosenFaces.back ? chosenFaces.back : chosenFaces.front;
   const variants = useMemo(() => getAvailableColorways(products, chosen), [chosen, products]);
+  // Preload the actual variants so a color tap never waits on a remote image.
+  useEffect(() => {
+    if (!chosen || typeof Image === 'undefined') return;
+    variants.forEach(item => { const image = new Image(); image.src = showroomImage(item); });
+  }, [chosen?.id, variants]);
   const open = useCallback((id, fromColor = false) => {
     setColorSwitching(fromColor);
     if (settleTimerRef.current != null) clearTimeout(settleTimerRef.current);
@@ -142,6 +148,15 @@ export default function ProductSpotlight() {
   // One choreography on every device. Only the rack's scrolling layout differs on touch.
   const eased = reducedMotion ? { duration: 0.01 } : spring;
   const productActive = chosen != null;
+  // Entering the showroom on touch must not leave the product below the fold.
+  // Only align on opening/closing, never on a color or face change.
+  useLayoutEffect(() => {
+    const opening = productActive && !wasShowingProductRef.current;
+    wasShowingProductRef.current = productActive;
+    if (!opening || !compact || !sectionRef.current) return;
+    const top = sectionRef.current.getBoundingClientRect().top;
+    if (Math.abs(top) > 3) window.scrollTo({ top: window.scrollY + top, behavior: 'instant' });
+  }, [productActive, compact]);
   const highlightedIndex = compact ? centerIndex : hover;
   const preview = highlightedIndex != null ? products[highlightedIndex] : null;
   return <section ref={sectionRef} className="rack-experience" aria-label="WEGOTTADO interactive fashion rack">
@@ -224,19 +239,21 @@ export default function ProductSpotlight() {
           <button type="button" className="rack-arrow rack-arrow--right" onClick={() => step(1)} aria-label="Next garment"><ArrowRight size={24}/></button>
           <div className="rack-focus-center">
             <Hanger large/>
-            <AnimatePresence initial={false} custom={direction} mode="wait">
+            <div className="rack-focus-media">
+            <AnimatePresence initial={false} custom={direction} mode="sync">
               <motion.div key={chosen.id + '-' + face} className="rack-focus-image"
                 layoutId={!reducedMotion && !colorSwitching && face === 'front' ? 'rack-product-' + chosen.id : undefined}
                 transition={eased}>
                 <motion.div className="rack-focus-inner"
-                  initial={reducedMotion ? false : { opacity: 0, x: direction * 38, rotateY: face === 'back' ? -88 : 88, scale: .96 }}
+                  initial={reducedMotion ? false : { opacity: 0, x: compact && colorSwitching ? 10 : direction * 38, rotateY: compact && colorSwitching ? 0 : face === 'back' ? -88 : 88, scale: compact && colorSwitching ? 1 : .96 }}
                   animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -direction * 38, rotateY: face === 'back' ? 88 : -88, scale: .97 }}
-                  transition={{ duration: reducedMotion ? 0 : .52, ease: [.22, 1, .36, 1] }}>
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: compact && colorSwitching ? -10 : -direction * 38, rotateY: compact && colorSwitching ? 0 : face === 'back' ? 88 : -88, scale: compact && colorSwitching ? 1 : .97 }}
+                  transition={{ duration: reducedMotion ? 0 : compact && colorSwitching ? .2 : .52, ease: [.22, 1, .36, 1] }}>
                   <img src={visibleImage} alt={chosen.name + (face === 'back' ? ' alternate view' : ' front view')} draggable="false" decoding="async"/>
                 </motion.div>
               </motion.div>
             </AnimatePresence>
+            </div>
             <motion.h2 key={chosen.id} className="rack-product-name"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>{chosen.name}</motion.h2>
             <p className="rack-product-price">{formatMoney(format, chosen.price)}</p>
@@ -258,10 +275,10 @@ export default function ProductSpotlight() {
                       aria-label={'Select ' + label + ' color'} aria-pressed={current}
                       title={label}
                       onClick={() => { if (!current) { setDirection(index > variants.findIndex(v => v.id === chosen.id) ? 1 : -1); open(item.id, true); } }}
-                      initial={reducedMotion ? false : { opacity: 0, y: -15, rotate: -7 }}
-                      animate={{ opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
-                      whileTap={reducedMotion ? undefined : { scale: .94 }}
-                      transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
+                      initial={reducedMotion || compact ? false : { opacity: 0, y: -15, rotate: -7 }}
+                      animate={compact ? { opacity: 1, y: 0, rotate: 0 } : { opacity: 1, y: current ? 6 : 0, rotate: current ? 0 : index % 2 ? 3 : -3 }}
+                      whileTap={reducedMotion ? undefined : { scale: .96 }}
+                      transition={reducedMotion || compact ? { duration: 0 } : { type: 'spring', stiffness: 230, damping: 20, delay: index * .07 }}>
                       <span className="rack-tag-cord" aria-hidden="true" />
                       <span className="rack-tag-card"><span className="rack-tag-text">{label}</span></span>
                     </motion.button>
